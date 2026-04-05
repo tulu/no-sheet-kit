@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NoSheetKit
 
-## Getting Started
+A suite of simple, private mini-apps that replace the spreadsheets people use for daily tracking. Your data lives in your browser (localStorage) and syncs to your own Google Drive — no backend, no database, nothing leaving your hands.
 
-First, run the development server:
+## Philosophy
+
+People end up tracking all kinds of things in sprawling spreadsheets. NoSheetKit replaces each of those use cases with a focused, purpose-built mini-app that just works — no setup, no account, no server.
+
+- **Private by default** — data is stored in `localStorage` and never sent anywhere
+- **Your cloud, your rules** — optional sync to the user's own Google Drive via OAuth
+- **Open source** — fork it, self-host it, extend it
+
+## Tech stack
+
+- [Next.js 16](https://nextjs.org) — App Router, TypeScript
+- [Tailwind CSS v4](https://tailwindcss.com)
+- [shadcn/ui](https://ui.shadcn.com) — component library
+- [next-themes](https://github.com/pacocoursey/next-themes) — dark/light mode
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/                  # Next.js App Router
+  layout.tsx          # Root layout with ThemeProvider
+  page.tsx            # Landing page
+  globals.css         # Tailwind + shadcn CSS variables
+components/
+  ui/                 # shadcn/ui components
+  layout/             # SiteHeader
+  providers/          # ThemeProvider wrapper
+lib/
+  utils.ts            # cn() helper
+```
 
-## Learn More
+## Contributing
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Contributions are welcome. Open an issue or a pull request.
