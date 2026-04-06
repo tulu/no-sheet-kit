@@ -1,7 +1,8 @@
 {
   "name": "no-sheet-kit",
   "version": "0.1.0",
-  "author": "Rubén Sosenke <https://github.com/tulu>",
+  "author": "Ruben Sosenke <https://github.com/tulu>",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev",
