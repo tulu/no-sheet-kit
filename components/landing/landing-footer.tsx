@@ -1,16 +1,19 @@
 "use client";
 
-const links = [
-  { label: "GitHub", href: "https://github.com/tulu/no-sheet-kit" },
-  { label: "Privacy", href: "/privacy" },
-  { label: "Terms", href: "/terms" },
-];
+import { useI18n } from "@/components/providers/i18n-provider";
 
 export function LandingFooter() {
+  const { t } = useI18n();
+  const links = [
+    { label: t.common.github, href: "https://github.com/tulu/no-sheet-kit" },
+    { label: t.common.privacy, href: "/privacy" },
+    { label: t.common.terms, href: "/terms" },
+  ];
+
   return (
     <footer className="border-t border-border px-12 py-8 max-sm:px-5 flex items-center justify-between max-md:flex-col max-md:gap-4 max-md:text-center">
       <p className="text-sm text-muted-foreground">
-        © 2026 NoSheetKit
+        {t.landing.footer.copyright}
       </p>
       <div className="flex gap-6">
         {links.map((link) => (

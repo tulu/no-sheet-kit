@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useI18n } from "@/components/providers/i18n-provider";
 
 function GoogleIcon() {
   return (
@@ -34,6 +35,7 @@ function GoogleIcon() {
 
 export function LoginOptions() {
   const router = useRouter();
+  const { t } = useI18n();
 
   function handleGoogle() {
     alert("Google Sign-In — coming soon!");
@@ -52,12 +54,12 @@ export function LoginOptions() {
         onClick={handleGoogle}
       >
         <GoogleIcon />
-        Continue with Google
+        {t.login.continueWithGoogle}
       </Button>
 
       <div className="flex items-center gap-3">
         <Separator className="flex-1" />
-        <span className="text-xs text-muted-foreground">or</span>
+        <span className="text-xs text-muted-foreground">{t.common.or}</span>
         <Separator className="flex-1" />
       </div>
 
@@ -67,7 +69,7 @@ export function LoginOptions() {
         className="w-full"
         onClick={handleAnonymous}
       >
-        Continue without signing in
+        {t.login.continueAnonymously}
       </Button>
     </div>
   );

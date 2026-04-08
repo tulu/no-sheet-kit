@@ -2,31 +2,12 @@
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
-
-const steps = [
-  {
-    n: "1",
-    title: "Use it right away — no login needed",
-    body: "Open the app and start adding data immediately. Everything is stored locally in your browser's localStorage. No account, no setup.",
-  },
-  {
-    n: "2",
-    title: "Optionally sign in with Google",
-    body: "If you want backups or reminders, sign in with Google. This unlocks Google Drive sync and Google Calendar integration — but it's never required.",
-  },
-  {
-    n: "3",
-    title: "Back up to your own Google Drive",
-    body: "When signed in, your data can be saved as JSON files in your own Drive. You own the files — NoSheetKit never stores anything on a server.",
-  },
-  {
-    n: "4",
-    title: "Get reminders via Google Calendar",
-    body: "Due dates and important events create calendar entries in a dedicated NoSheetKit calendar. Requires Google sign-in.",
-  },
-];
+import { useI18n } from "@/components/providers/i18n-provider";
 
 export function LandingHow() {
+  const { t } = useI18n();
+  const steps = t.landing.how.steps;
+
   return (
     <section className="max-w-[1100px] mx-auto px-6 pb-24 reveal">
       <Card>
@@ -34,9 +15,10 @@ export function LandingHow() {
           {/* Left: heading */}
           <div>
             <h2 className="font-display text-[clamp(44px,6vw,56px)] leading-[1.1] tracking-[-0.025em] text-foreground">
-              Simple by design,
+              {t.landing.how.titleStart}
               <br />
-              <em className="italic text-[#519186]">private</em> by default.
+              <em className="italic text-[#519186]">{t.landing.how.titleEmphasis}</em>{" "}
+              {t.landing.how.titleEnd}
             </h2>
           </div>
 
