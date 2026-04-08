@@ -7,6 +7,7 @@ export const enMessages = {
       pt: "PT",
     },
     backToNoSheetKit: "← Back to NoSheetKit",
+    home: "Home",
     getStarted: "Get started",
     privacy: "Privacy",
     terms: "Terms",
@@ -130,6 +131,17 @@ export const enMessages = {
     continueAnonymously: "Continue without signing in",
     legalPrefix: "By continuing you agree to our",
     legalConnector: "and",
+  },
+  apps: {
+    title: "Your apps",
+    subtitle: "Choose one of the available tools. This launcher will become your personal productivity home.",
+    comingSoon: "Coming soon",
+    userMenu: {
+      label: "User",
+      profile: "Profile",
+      account: "Account",
+      logout: "Log out",
+    },
   },
   legal: {
     privacy: {

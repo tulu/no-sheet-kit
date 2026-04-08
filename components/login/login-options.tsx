@@ -42,7 +42,7 @@ export function LoginOptions() {
   }
 
   function handleAnonymous() {
-    router.push("/app");
+    router.push("/apps");
   }
 
   return (

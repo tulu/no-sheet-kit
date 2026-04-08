@@ -5,6 +5,7 @@ import { useI18n } from "@/components/providers/i18n-provider";
 export function LandingFooter() {
   const { t } = useI18n();
   const links = [
+    { label: t.common.home, href: "/" },
     { label: t.common.github, href: "https://github.com/tulu/no-sheet-kit" },
     { label: t.common.privacy, href: "/privacy" },
     { label: t.common.terms, href: "/terms" },

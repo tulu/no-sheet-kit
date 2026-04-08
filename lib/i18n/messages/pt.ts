@@ -7,6 +7,7 @@ export const ptMessages = {
       pt: "PT",
     },
     backToNoSheetKit: "← Voltar para NoSheetKit",
+    home: "Home",
     getStarted: "Começar",
     privacy: "Privacidade",
     terms: "Termos",
@@ -130,6 +131,17 @@ export const ptMessages = {
     continueAnonymously: "Continuar sem login",
     legalPrefix: "Ao continuar você aceita nossos",
     legalConnector: "e a",
+  },
+  apps: {
+    title: "Seus apps",
+    subtitle: "Escolha uma das ferramentas disponíveis. Este launcher será sua base de produtividade pessoal.",
+    comingSoon: "Em breve",
+    userMenu: {
+      label: "Usuário",
+      profile: "Perfil",
+      account: "Conta",
+      logout: "Sair",
+    },
   },
   legal: {
     privacy: {

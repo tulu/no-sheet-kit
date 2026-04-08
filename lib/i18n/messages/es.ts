@@ -7,6 +7,7 @@ export const esMessages = {
       pt: "PT",
     },
     backToNoSheetKit: "← Volver a NoSheetKit",
+    home: "Home",
     getStarted: "Comenzar",
     privacy: "Privacidad",
     terms: "Términos",
@@ -130,6 +131,17 @@ export const esMessages = {
     continueAnonymously: "Continuar sin iniciar sesión",
     legalPrefix: "Al continuar aceptás nuestros",
     legalConnector: "y la",
+  },
+  apps: {
+    title: "Tus apps",
+    subtitle: "Elegí una de las herramientas disponibles. Este launcher va a ser tu espacio principal de productividad.",
+    comingSoon: "Próximamente",
+    userMenu: {
+      label: "Usuario",
+      profile: "Perfil",
+      account: "Cuenta",
+      logout: "Cerrar sesión",
+    },
   },
   legal: {
     privacy: {
