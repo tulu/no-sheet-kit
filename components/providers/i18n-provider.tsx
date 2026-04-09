@@ -4,7 +4,6 @@ import {
   createContext,
   useContext,
   useEffect,
-  useMemo,
   useState,
   type ReactNode,
 } from "react";
@@ -65,16 +64,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const value = useMemo<I18nContextValue>(() => {
-    return {
-      locale,
-      setLocale: (next) => {
-        setLocaleState(next);
-        persistLocaleCookie(next);
-      },
-      t: messagesByLocale[locale],
-    };
-  }, [locale]);
+  const value: I18nContextValue = {
+    locale,
+    setLocale: (next) => {
+      setLocaleState(next);
+      persistLocaleCookie(next);
+    },
+    t: messagesByLocale[locale],
+  };
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

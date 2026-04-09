@@ -3,7 +3,6 @@ import { Geist_Mono, Instrument_Serif, Instrument_Sans, Inter } from "next/font/
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { I18nProvider } from "@/components/providers/i18n-provider";
-
 const instrumentSerif = Instrument_Serif({
   variable: "--font-display",
   subsets: ["latin"],

@@ -1,41 +1,56 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { ChevronDown, CircleUserRound } from "lucide-react";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export function UserMenuPlaceholder() {
   const { t } = useI18n();
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  const settingsHref =
+    pathname.startsWith("/apps") && !pathname.startsWith("/apps/settings")
+      ? `/apps/settings?returnTo=${encodeURIComponent(pathname)}`
+      : "/apps/settings";
 
   return (
-    <details className="relative">
-      <summary className="list-none inline-flex items-center gap-2 rounded-md border border-border bg-background px-2.5 h-9 text-sm text-foreground cursor-pointer">
-        <CircleUserRound className="w-4 h-4 text-muted-foreground" />
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 gap-2 px-2.5"
+            aria-expanded={open}
+            aria-haspopup="menu"
+          />
+        }
+      >
+        <CircleUserRound className="size-4 text-muted-foreground" />
         <span className="hidden sm:inline">{t.apps.userMenu.label}</span>
-        <ChevronDown className="w-4 h-4 text-muted-foreground" />
-      </summary>
-      <div className="absolute right-0 mt-2 w-44 rounded-md border border-border bg-popover p-1 shadow-sm z-50">
-        <button
-          type="button"
-          disabled
-          className="w-full text-left px-2 py-1.5 text-sm text-muted-foreground"
+        <ChevronDown className="size-4 text-muted-foreground" />
+      </PopoverTrigger>
+      <PopoverContent align="end" sideOffset={8} className="w-48 p-1">
+        <Link
+          href={settingsHref}
+          onClick={() => setOpen(false)}
+          className="block w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted"
         >
-          {t.apps.userMenu.profile}
-        </button>
+          {t.apps.userMenu.settings}
+        </Link>
         <button
           type="button"
           disabled
-          className="w-full text-left px-2 py-1.5 text-sm text-muted-foreground"
-        >
-          {t.apps.userMenu.account}
-        </button>
-        <button
-          type="button"
-          disabled
-          className="w-full text-left px-2 py-1.5 text-sm text-muted-foreground"
+          className="w-full cursor-not-allowed rounded-sm px-2 py-1.5 text-left text-sm text-muted-foreground"
         >
           {t.apps.userMenu.logout}
         </button>
-      </div>
-    </details>
+      </PopoverContent>
+    </Popover>
   );
 }

@@ -2,6 +2,13 @@ export const LOCALES = ["en", "es", "pt"] as const;
 
 export type Locale = (typeof LOCALES)[number];
 
+/** Endonym: language name written in that language (for selectors). */
+export const LOCALE_NATIVE_NAMES: Record<Locale, string> = {
+  en: "English",
+  es: "Español",
+  pt: "Português",
+};
+
 export const DEFAULT_LOCALE: Locale = "en";
 export const LOCALE_COOKIE_NAME = "nsk_locale";
 

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
+import { ThemeToggle } from "@/components/landing/theme-toggle";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { LoginOptions } from "./login-options";
 
@@ -14,11 +15,14 @@ export function LoginPageContent() {
       <div className="mb-10 flex items-center justify-between gap-4">
         <Link
           href="/"
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-block"
+          className="min-w-0 truncate text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           {t.common.backToNoSheetKit}
         </Link>
-        <LanguageSwitcher />
+        <div className="flex shrink-0 items-center gap-2">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center gap-8 w-full max-w-sm mx-auto">
