@@ -73,6 +73,15 @@ export const ptMessages = {
             "Contagem regressiva de dias",
           ],
         },
+        links: {
+          desc: "Salve e organize seus links importantes em um só lugar para encontrar tudo rapidamente.",
+          features: [
+            "Salvar links úteis com título",
+            "Agrupar links por tema",
+            "Busca e filtros rápidos",
+            "Manter recursos organizados",
+          ],
+        },
         domains: {
           desc: "Gerencie todos os seus domínios em um só lugar. Acompanhe registradores, renovações, notas de DNS e evite expiração.",
           features: [
@@ -133,9 +142,15 @@ export const ptMessages = {
     legalConnector: "e a",
   },
   apps: {
-    title: "Seus apps",
+    title: "Aplicações",
     subtitle: "Escolha uma das ferramentas disponíveis. Este launcher será sua base de produtividade pessoal.",
     comingSoon: "Em breve",
+    shortDescriptions: {
+      loans: "Acompanhe dinheiro emprestado e recebido.",
+      dates: "Lembre datas e eventos importantes.",
+      links: "Salve e organize seus bookmarks.",
+      domains: "Gerencie seu portfólio de domínios.",
+    },
     userMenu: {
       label: "Usuário",
       profile: "Perfil",

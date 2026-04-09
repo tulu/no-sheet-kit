@@ -73,6 +73,15 @@ export const enMessages = {
             "Days-until countdown",
           ],
         },
+        links: {
+          desc: "Save and organize your important links in one place so they are always easy to find.",
+          features: [
+            "Store useful links with titles",
+            "Group links by topic",
+            "Quick search and filtering",
+            "Keep your resources tidy",
+          ],
+        },
         domains: {
           desc: "Keep tabs on all your domains in one place. Track registrars, renewal dates, DNS notes, and never lose a domain to expiry.",
           features: [
@@ -133,9 +142,15 @@ export const enMessages = {
     legalConnector: "and",
   },
   apps: {
-    title: "Your apps",
+    title: "Applications",
     subtitle: "Choose one of the available tools. This launcher will become your personal productivity home.",
     comingSoon: "Coming soon",
+    shortDescriptions: {
+      loans: "Track money lent and borrowed.",
+      dates: "Remember important dates and events.",
+      links: "Save and organize your bookmarks.",
+      domains: "Manage your domain portfolio.",
+    },
     userMenu: {
       label: "User",
       profile: "Profile",

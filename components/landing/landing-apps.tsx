@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight, Banknote, CalendarHeart, Globe, type LucideIcon } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
+import { Banknote, CalendarHeart, Globe, Link2, type LucideIcon } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/components/providers/i18n-provider";
 
 const ACCENT = "#519186";
@@ -22,6 +21,11 @@ const apps: {
     id: "dates",
     icon: CalendarHeart,
     name: "NSKDates",
+  },
+  {
+    id: "links",
+    icon: Link2,
+    name: "NSKLinks",
   },
   {
     id: "domains",
@@ -48,14 +52,17 @@ export function LandingApps() {
         </h2>
       </div>
 
-      <div className="grid grid-cols-3 gap-5 max-md:grid-cols-1">
+      <div className="grid grid-cols-2 gap-5 max-md:grid-cols-1">
         {apps.map((app) => (
           <Card key={app.id} className="reveal flex flex-col">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <app.icon className="w-6 h-6 flex-shrink-0" style={{ color: ACCENT }} />
-                {app.name}
-              </CardTitle>
+              <div className="flex items-start justify-between gap-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <app.icon className="w-6 h-6 flex-shrink-0" style={{ color: ACCENT }} />
+                  {app.name}
+                </CardTitle>
+                <Badge variant="secondary">{t.apps.comingSoon}</Badge>
+              </div>
               <CardDescription>{appCopy[app.id as keyof typeof appCopy].desc}</CardDescription>
             </CardHeader>
 
@@ -73,12 +80,6 @@ export function LandingApps() {
               </ul>
             </CardContent>
 
-            <CardFooter>
-              <Link href="/login" className={buttonVariants() + " w-full"}>
-                {t.landing.apps.cta}
-                <ArrowRight />
-              </Link>
-            </CardFooter>
           </Card>
         ))}
       </div>

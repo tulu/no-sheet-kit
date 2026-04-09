@@ -73,6 +73,15 @@ export const esMessages = {
             "Cuenta regresiva de días",
           ],
         },
+        links: {
+          desc: "Guardá y organizá tus links importantes en un solo lugar para encontrarlos rápido.",
+          features: [
+            "Guardar links útiles con título",
+            "Agrupar links por tema",
+            "Búsqueda y filtros rápidos",
+            "Mantener recursos ordenados",
+          ],
+        },
         domains: {
           desc: "Controlá todos tus dominios en un solo lugar. Seguimiento de registradores, renovaciones, notas DNS y evitá vencimientos.",
           features: [
@@ -133,9 +142,15 @@ export const esMessages = {
     legalConnector: "y la",
   },
   apps: {
-    title: "Tus apps",
+    title: "Aplicaciones",
     subtitle: "Elegí una de las herramientas disponibles. Este launcher va a ser tu espacio principal de productividad.",
     comingSoon: "Próximamente",
+    shortDescriptions: {
+      loans: "Seguí dinero prestado y recibido.",
+      dates: "Recordá fechas y eventos importantes.",
+      links: "Guardá y organizá tus bookmarks.",
+      domains: "Gestioná tu portfolio de dominios.",
+    },
     userMenu: {
       label: "Usuario",
       profile: "Perfil",
