@@ -145,6 +145,8 @@ export const enMessages = {
     title: "Applications",
     subtitle: "Choose one of the available tools. This launcher will become your personal productivity home.",
     comingSoon: "Coming soon",
+    switcherTitle: "Applications",
+    switcherEditLabel: "Edit favorites",
     shortDescriptions: {
       loans: "Track money lent and borrowed.",
       dates: "Remember important dates and events.",

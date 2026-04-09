@@ -4,6 +4,7 @@ import Image from "next/image";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { ThemeToggle } from "@/components/landing/theme-toggle";
 import { UserMenuPlaceholder } from "./user-menu-placeholder";
+import { AppsSwitcher } from "./apps-switcher";
 
 export function AppsHeader() {
   return (
@@ -16,6 +17,7 @@ export function AppsHeader() {
       <div className="flex items-center gap-2">
         <LanguageSwitcher />
         <ThemeToggle />
+        <AppsSwitcher />
         <UserMenuPlaceholder />
       </div>
     </header>

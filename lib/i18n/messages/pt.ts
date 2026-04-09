@@ -145,6 +145,8 @@ export const ptMessages = {
     title: "Aplicações",
     subtitle: "Escolha uma das ferramentas disponíveis. Este launcher será sua base de produtividade pessoal.",
     comingSoon: "Em breve",
+    switcherTitle: "Aplicações",
+    switcherEditLabel: "Editar favoritos",
     shortDescriptions: {
       loans: "Acompanhe dinheiro emprestado e recebido.",
       dates: "Lembre datas e eventos importantes.",

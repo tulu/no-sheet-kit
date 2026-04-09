@@ -145,6 +145,8 @@ export const esMessages = {
     title: "Aplicaciones",
     subtitle: "Elegí una de las herramientas disponibles. Este launcher va a ser tu espacio principal de productividad.",
     comingSoon: "Próximamente",
+    switcherTitle: "Aplicaciones",
+    switcherEditLabel: "Editar favoritos",
     shortDescriptions: {
       loans: "Seguí dinero prestado y recibido.",
       dates: "Recordá fechas y eventos importantes.",

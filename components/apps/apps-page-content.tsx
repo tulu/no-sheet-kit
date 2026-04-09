@@ -40,8 +40,8 @@ export function AppsPageContent() {
               <Card key={app.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between gap-3">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <app.icon className="w-6 h-6 flex-shrink-0" style={{ color: ACCENT }} />
+                    <CardTitle className="flex items-center gap-2.5 text-lg">
+                      <app.icon className="w-7 h-7 flex-shrink-0" style={{ color: ACCENT }} />
                       {app.name}
                     </CardTitle>
                     <Badge variant="secondary">{t.apps.comingSoon}</Badge>
