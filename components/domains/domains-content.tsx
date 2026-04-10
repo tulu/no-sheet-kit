@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import type { DomainStatusId, DomainsViewMode, NSKDomainItem } from "@/lib/domains/schema";
 import { getDaysUntilExpiry, isExpiringSoon } from "@/lib/domains/expiry";
 import type { Locale } from "@/lib/i18n/types";
@@ -8,6 +8,7 @@ import { getIntlLocaleTag } from "@/lib/i18n/locale-display";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { DomainCardActions } from "./domain-card-actions";
+import { DomainFavicon } from "./domain-favicon";
 
 function parseISODate(value: string): Date | undefined {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
@@ -89,11 +90,8 @@ export function DomainsContent({
               )}
             >
               <div className="flex gap-3">
-                <div
-                  className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50"
-                  aria-hidden
-                >
-                  <Globe className="size-4 text-muted-foreground" />
+                <div className="flex size-10 shrink-0 items-center justify-center" aria-hidden>
+                  <DomainFavicon domainName={item.domain_name} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
@@ -184,8 +182,11 @@ export function DomainsContent({
         <tbody>
           {items.map((item) => (
             <tr key={item.id} className="border-b border-border last:border-0 hover:bg-muted/20">
-              <td className="max-w-[180px] truncate px-3 py-2 font-medium text-foreground">
-                {item.domain_name}
+              <td className="max-w-[180px] px-3 py-2 font-medium text-foreground">
+                <div className="flex min-w-0 items-center gap-2">
+                  <DomainFavicon domainName={item.domain_name} className="size-8 shrink-0" />
+                  <span className="truncate">{item.domain_name}</span>
+                </div>
               </td>
               <td className="max-w-[140px] truncate px-3 py-2 text-muted-foreground">
                 {item.registrar || "—"}
