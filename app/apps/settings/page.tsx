@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AppsSettingsPageContent } from "@/components/apps/apps-settings-page-content";
+import { buildPageMetadata } from "@/lib/seo/build-page-metadata";
 
-export const metadata: Metadata = {
-  title: "Settings — NoSheetKit",
-};
+export const metadata: Metadata = buildPageMetadata("settings", "/apps/settings");
 
 export default function AppsSettingsPage() {
   return (

@@ -1,11 +1,33 @@
 "use client";
 
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { ThemeToggle } from "@/components/landing/theme-toggle";
+import { useLegalPageHref } from "@/components/legal/use-legal-page-href";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { LoginOptions } from "./login-options";
+
+function LoginLegalLinks() {
+  const { t } = useI18n();
+  const termsHref = useLegalPageHref("/terms");
+  const privacyHref = useLegalPageHref("/privacy");
+
+  return (
+    <p className="text-center text-xs leading-relaxed text-muted-foreground">
+      {t.login.legalPrefix}{" "}
+      <Link href={termsHref} className="underline underline-offset-2 hover:text-foreground">
+        {t.common.terms}
+      </Link>{" "}
+      {t.login.legalConnector}{" "}
+      <Link href={privacyHref} className="underline underline-offset-2 hover:text-foreground">
+        {t.common.privacy}
+      </Link>
+      .
+    </p>
+  );
+}
 
 export function LoginPageContent() {
   const { t } = useI18n();
@@ -44,17 +66,23 @@ export function LoginPageContent() {
 
         <LoginOptions />
 
-        <p className="text-xs text-muted-foreground text-center leading-relaxed">
-          {t.login.legalPrefix}{" "}
-          <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
-            {t.common.terms}
-          </Link>{" "}
-          {t.login.legalConnector}{" "}
-          <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
-            {t.common.privacy}
-          </Link>
-          .
-        </p>
+        <Suspense
+          fallback={
+            <p className="text-center text-xs leading-relaxed text-muted-foreground">
+              {t.login.legalPrefix}{" "}
+              <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
+                {t.common.terms}
+              </Link>{" "}
+              {t.login.legalConnector}{" "}
+              <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+                {t.common.privacy}
+              </Link>
+              .
+            </p>
+          }
+        >
+          <LoginLegalLinks />
+        </Suspense>
       </div>
     </main>
   );

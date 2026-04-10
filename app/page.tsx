@@ -1,28 +1,42 @@
-"use client";
+import type { Metadata } from "next";
+import { LandingPage } from "@/components/landing/landing-page";
+import { HomeJsonLd } from "@/components/seo/home-json-ld";
+import { seoCopy } from "@/lib/seo/copy";
+import { getMetadataBase, siteLogoPath, siteName } from "@/lib/seo/site";
 
-import { ScrollReveal } from "@/components/landing/scroll-reveal";
-import { LandingNav } from "@/components/landing/landing-nav";
-import { LandingHero } from "@/components/landing/landing-hero";
-import { LandingWhy } from "@/components/landing/landing-why";
-import { LandingApps } from "@/components/landing/landing-apps";
-import { LandingHow } from "@/components/landing/landing-how";
-import { LandingCta } from "@/components/landing/landing-cta";
-import { LandingFooter } from "@/components/landing/landing-footer";
-import { Separator } from "@/components/ui/separator";
+const base = getMetadataBase();
+
+export const metadata: Metadata = {
+  title: {
+    absolute: seoCopy.home.title,
+  },
+  description: seoCopy.home.description,
+  keywords: ["NoSheetKit", "privacy", "local-first", "productivity", "browser"],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: base.href,
+    siteName,
+    title: seoCopy.home.title,
+    description: seoCopy.home.description,
+    images: [{ url: siteLogoPath, alt: `${siteName} logo` }],
+  },
+  twitter: {
+    card: "summary",
+    title: seoCopy.home.title,
+    description: seoCopy.home.description,
+    images: [siteLogoPath],
+  },
+};
 
 export default function Home() {
   return (
-    <div className="overflow-x-hidden">
-      <ScrollReveal />
-      <LandingNav />
-      <LandingHero />
-      <LandingWhy />
-      <Separator className="max-w-[1100px] mx-auto" />
-      <LandingApps />
-      <Separator className="max-w-[1100px] mx-auto" />
-      <LandingHow />
-      <LandingCta />
-      <LandingFooter />
-    </div>
+    <>
+      <HomeJsonLd />
+      <LandingPage />
+    </>
   );
 }

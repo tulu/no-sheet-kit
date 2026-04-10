@@ -16,7 +16,7 @@ export const APP_CATALOG: Record<AppId, AppCatalogEntry> = {
   loans: { available: false, path: "/apps/loans" },
   dates: { available: true, path: "/apps/dates" },
   links: { available: false, path: "/apps/links" },
-  domains: { available: false, path: "/apps/domains" },
+  domains: { available: true, path: "/apps/domains" },
 };
 
 export function isAppAvailable(id: AppId): boolean {

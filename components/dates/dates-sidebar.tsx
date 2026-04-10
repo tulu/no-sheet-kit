@@ -97,7 +97,7 @@ export function DatesCategoryDesktopAside(props: DatesCategoryDesktopAsideProps)
   const { t } = useI18n();
 
   return (
-    <aside className="hidden w-56 shrink-0 flex-col border-r border-border bg-background/90 backdrop-blur-md md:flex">
+    <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-background/90 backdrop-blur-md md:flex">
       <div className="sticky top-0 flex flex-col gap-3 p-4">
         <h2 className="text-sm font-semibold tracking-tight text-foreground">{t.dates.sidebarTitle}</h2>
         <nav aria-label={t.dates.sidebarTitle}>
@@ -126,7 +126,7 @@ export function DatesCategoriesMobileSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="left"
-        className="w-[min(100%,20rem)] bg-background/90 backdrop-blur-md sm:max-w-sm"
+        className="w-[min(100%,22rem)] bg-background/90 backdrop-blur-md sm:max-w-[22rem]"
       >
         <SheetHeader>
           <SheetTitle>{t.dates.sidebarTitle}</SheetTitle>
