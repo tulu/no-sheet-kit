@@ -127,7 +127,7 @@ export function DomainsContent({
                   </div>
                 </div>
               </div>
-              <div className="mt-4 flex items-end justify-between gap-3 border-t border-border/80 pt-3 text-sm">
+              <div className="mt-4 flex items-end justify-between gap-3 pt-3 text-sm">
                 <p className="min-w-0 text-muted-foreground">
                   <span>{t.domains.cardExpiresLabel}:</span>{" "}
                   <span className="font-medium text-foreground">
@@ -144,7 +144,7 @@ export function DomainsContent({
                 </p>
               </div>
               {item.price.trim() || item.notes?.trim() ? (
-                <div className="mt-3 space-y-1 border-t border-border/60 pt-3 text-xs text-muted-foreground">
+                <div className="mt-3 space-y-1 pt-3 text-xs text-muted-foreground">
                   {item.price.trim() ? (
                     <p className="truncate">
                       <span className="text-foreground/80">{t.domains.fields.price}:</span>{" "}

@@ -55,6 +55,13 @@ type DomainSubmitValues = {
   notes: string;
 };
 
+const STATUS_SORT_RANK: Record<NSKDomainItem["status_id"], number> = {
+  active: 0,
+  parked: 1,
+  for_sale: 2,
+  abandoned: 3,
+};
+
 export function DomainsAppPage() {
   const { locale, t } = useI18n();
   const [activeFilter, setActiveFilter] = useState<DomainFilterId>("all");
@@ -98,9 +105,15 @@ export function DomainsAppPage() {
         ? store.items.filter((item) => isExpiringSoon(item.expires_on))
         : store.items.filter((item) => item.status_id === activeFilter);
 
-  const sortedItems = [...filteredItems].sort((a, b) =>
-    a.expires_on.localeCompare(b.expires_on)
-  );
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    if (activeFilter === "all") {
+      const byStatus = STATUS_SORT_RANK[a.status_id] - STATUS_SORT_RANK[b.status_id];
+      if (byStatus !== 0) return byStatus;
+    }
+    const byExpiry = a.expires_on.localeCompare(b.expires_on);
+    if (byExpiry !== 0) return byExpiry;
+    return a.domain_name.localeCompare(b.domain_name);
+  });
 
   const showExpiringBanner = store.items.some((item) => isExpiringSoon(item.expires_on));
 

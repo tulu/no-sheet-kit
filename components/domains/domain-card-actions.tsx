@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { ExternalLink, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useI18n } from "@/components/providers/i18n-provider";
@@ -42,9 +42,10 @@ export function DomainCardActions({ domainName, onEdit, onDelete }: DomainCardAc
         <button
           type="button"
           onClick={handleViewSite}
-          className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted"
+          className="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted"
         >
-          {t.domains.viewSite}
+          <span>{t.domains.viewSite}</span>
+          <ExternalLink className="size-3.5 text-muted-foreground" aria-hidden />
         </button>
         <button
           type="button"
@@ -52,9 +53,10 @@ export function DomainCardActions({ domainName, onEdit, onDelete }: DomainCardAc
             setOpen(false);
             onEdit();
           }}
-          className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted"
+          className="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted"
         >
-          {t.domains.edit}
+          <span>{t.domains.edit}</span>
+          <Pencil className="size-3.5 text-muted-foreground" aria-hidden />
         </button>
         <button
           type="button"
@@ -62,9 +64,10 @@ export function DomainCardActions({ domainName, onEdit, onDelete }: DomainCardAc
             setOpen(false);
             onDelete();
           }}
-          className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-destructive hover:bg-muted"
+          className="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm text-destructive hover:bg-muted"
         >
-          {t.domains.delete}
+          <span>{t.domains.delete}</span>
+          <Trash2 className="size-3.5" aria-hidden />
         </button>
       </PopoverContent>
     </Popover>
