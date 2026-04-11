@@ -1,26 +1,15 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { getItemsForDay } from "@/lib/dates/calendar-occurrences";
-import { getMonthGridDates } from "@/lib/dates/calendar-grid";
-import { DATE_TYPE_CHIP_CLASS } from "./date-type-badge-classes";
-import type { NSKDateItem } from "@/lib/dates/schema";
+import type { ReactNode } from "react";
+import { getMonthGridDates } from "@/lib/dates/dates-helpers";
 import {
   getCalendarWeekStartsOn,
   getIntlLocaleTag,
 } from "@/lib/i18n/locale-display";
 import type { Locale } from "@/lib/i18n/types";
-import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-type DatesCalendarViewProps = {
-  items: NSKDateItem[];
-  locale: Locale;
-  month: Date;
-  onMonthChange: (month: Date) => void;
-  onEdit: (item: NSKDateItem) => void;
-};
 
 function weekdayShortLabels(intlLocale: string, weekStartsOn: 0 | 1): string[] {
   const fmt = new Intl.DateTimeFormat(intlLocale, { weekday: "short" });
@@ -48,14 +37,29 @@ function isSameMonth(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
 }
 
-export function DatesCalendarView({
-  items,
+export type MonthGridCalendarProps<T> = {
+  locale: Locale;
+  month: Date;
+  onMonthChange: (month: Date) => void;
+  regionAriaLabel: string;
+  prevMonthAriaLabel: string;
+  nextMonthAriaLabel: string;
+  getItemsForDay: (day: Date) => T[];
+  getItemKey: (item: T) => string;
+  renderItem: (item: T) => ReactNode;
+};
+
+export function MonthGridCalendar<T>({
   locale,
   month,
   onMonthChange,
-  onEdit,
-}: DatesCalendarViewProps) {
-  const { t } = useI18n();
+  regionAriaLabel,
+  prevMonthAriaLabel,
+  nextMonthAriaLabel,
+  getItemsForDay,
+  getItemKey,
+  renderItem,
+}: MonthGridCalendarProps<T>) {
   const intlLocale = getIntlLocaleTag(locale);
   const weekStartsOn = getCalendarWeekStartsOn(locale);
   const grid = getMonthGridDates(month, weekStartsOn);
@@ -83,7 +87,7 @@ export function DatesCalendarView({
     <div
       className="flex w-full min-w-0 flex-col rounded-xl border border-border bg-card shadow-sm"
       role="region"
-      aria-label={t.dates.calendarMonthNav}
+      aria-label={regionAriaLabel}
     >
       <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-3 sm:px-4">
         <h2 className="min-w-0 text-lg font-semibold capitalize tracking-tight text-foreground sm:text-xl">
@@ -95,7 +99,7 @@ export function DatesCalendarView({
             variant="outline"
             size="icon-sm"
             onClick={goPrevMonth}
-            aria-label={t.dates.calendarPrevMonth}
+            aria-label={prevMonthAriaLabel}
           >
             <ChevronLeft className="size-4" aria-hidden />
           </Button>
@@ -104,7 +108,7 @@ export function DatesCalendarView({
             variant="outline"
             size="icon-sm"
             onClick={goNextMonth}
-            aria-label={t.dates.calendarNextMonth}
+            aria-label={nextMonthAriaLabel}
           >
             <ChevronRight className="size-4" aria-hidden />
           </Button>
@@ -123,7 +127,7 @@ export function DatesCalendarView({
         {grid.map((day) => {
           const inMonth = isSameMonth(day, month);
           const isToday = isSameDay(day, today);
-          const dayItems = getItemsForDay(items, day);
+          const dayItems = getItemsForDay(day);
           const dom = day.getDate();
 
           return (
@@ -148,18 +152,9 @@ export function DatesCalendarView({
               </div>
               <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
                 {dayItems.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={cn(
-                      "truncate rounded px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight sm:text-xs",
-                      DATE_TYPE_CHIP_CLASS[item.type_id]
-                    )}
-                    title={item.label}
-                    onClick={() => onEdit(item)}
-                  >
-                    {item.label}
-                  </button>
+                  <span key={getItemKey(item)} className="min-w-0">
+                    {renderItem(item)}
+                  </span>
                 ))}
               </div>
             </div>

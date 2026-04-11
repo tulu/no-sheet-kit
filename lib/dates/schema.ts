@@ -11,8 +11,10 @@ export const DATE_TYPE_IDS = [
 ] as const;
 
 export type DateTypeId = (typeof DATE_TYPE_IDS)[number];
-export type DateFilterId = "all" | DateTypeId;
+export type DateFilterId = "all" | DateTypeId | "upcoming_30";
 export type DatesViewMode = "list" | "grid" | "calendar";
+
+export const DATES_VIEW_MODES: readonly DatesViewMode[] = ["list", "grid", "calendar"];
 
 export type NSKDateItem = {
   id: string;

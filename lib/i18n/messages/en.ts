@@ -184,6 +184,8 @@ export const enMessages = {
     viewCalendar: "Calendar view",
     showPastDates: "Show past months",
     hidePastDates: "Hide past months",
+    pastSectionMonthSubtitle: "Already passed this year",
+    futureOneOffSectionTitle: "Later one-off dates",
     calendarMonthNav: "Month view",
     calendarPrevMonth: "Previous month",
     calendarNextMonth: "Next month",
@@ -224,6 +226,7 @@ export const enMessages = {
       milestone: "Milestones",
       memorial: "Memorials",
       other: "Other",
+      upcoming_30: "Next 30 days",
     },
   },
   domains: {
@@ -238,6 +241,10 @@ export const enMessages = {
     close: "Close",
     viewList: "List view",
     viewGrid: "Grid view",
+    viewCalendar: "Calendar view",
+    calendarMonthNav: "Month view",
+    calendarPrevMonth: "Previous month",
+    calendarNextMonth: "Next month",
     deleteDialogTitle: "Delete this domain?",
     deleteDialogDescription:
       "“{label}” will be permanently removed. This cannot be undone.",

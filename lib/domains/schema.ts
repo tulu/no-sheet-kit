@@ -6,7 +6,9 @@ export type DomainStatusId = (typeof DOMAIN_STATUS_IDS)[number];
 
 export type DomainFilterId = "all" | DomainStatusId | "expiring_soon";
 
-export type DomainsViewMode = "list" | "grid";
+export type DomainsViewMode = "list" | "grid" | "calendar";
+
+export const DOMAINS_VIEW_MODES: readonly DomainsViewMode[] = ["list", "grid", "calendar"];
 
 export type NSKDomainItem = {
   id: string;

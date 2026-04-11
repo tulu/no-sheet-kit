@@ -184,6 +184,8 @@ export const esMessages = {
     viewCalendar: "Vista de calendario",
     showPastDates: "Mostrar meses pasados",
     hidePastDates: "Ocultar meses pasados",
+    pastSectionMonthSubtitle: "Ya pasaron este año",
+    futureOneOffSectionTitle: "Fechas puntuales más adelante",
     calendarMonthNav: "Vista mensual",
     calendarPrevMonth: "Mes anterior",
     calendarNextMonth: "Mes siguiente",
@@ -224,6 +226,7 @@ export const esMessages = {
       milestone: "Hitos",
       memorial: "Conmemoraciones",
       other: "Otros",
+      upcoming_30: "Próximos 30 días",
     },
   },
   domains: {
@@ -238,6 +241,10 @@ export const esMessages = {
     close: "Cerrar",
     viewList: "Vista de lista",
     viewGrid: "Vista de grilla",
+    viewCalendar: "Vista de calendario",
+    calendarMonthNav: "Vista mensual",
+    calendarPrevMonth: "Mes anterior",
+    calendarNextMonth: "Mes siguiente",
     deleteDialogTitle: "¿Eliminar este dominio?",
     deleteDialogDescription:
       "Se eliminará permanentemente “{label}”. Esta acción no se puede deshacer.",

@@ -1,39 +1,54 @@
 "use client";
 
+import { startOfMonth } from "date-fns";
+import {
+  AlertTriangle,
+  Ban,
+  Calendar,
+  CircleParking,
+  Globe,
+  LayoutGrid,
+  List,
+  RadioTower,
+  Tag,
+  type LucideIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import {
   createEmptyNSKDomainsSchema,
+  DOMAINS_VIEW_MODES,
   type DomainFilterId,
   type DomainsViewMode,
   type NSKDomainItem,
 } from "@/lib/domains/schema";
-import { isExpiringSoon } from "@/lib/domains/expiry";
+import { isExpiringSoon } from "@/lib/domains/domains-helpers";
 import { readNSKDomainsStorage, writeNSKDomainsStorage } from "@/lib/domains/storage";
 import {
-  persistDomainsViewCookie,
-  readDomainsViewCookie,
-} from "@/lib/domains/view-persistence";
+  DOMAINS_VIEW_COOKIE_NAME,
+  persistAppViewCookie,
+  readAppViewCookie,
+} from "@/lib/apps/view-persistence";
+import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
+import { AppListToolbar } from "@/components/common/app-list-toolbar";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  type FilterSidebarItem,
+  FilterSidebarDesktopAside,
+  FilterSidebarMobileBar,
+  FilterSidebarMobileSheet,
+} from "@/components/common/filter-sidebar";
+import { Button } from "@/components/ui/button";
 import {
-  DomainsFilterDesktopAside,
-  DomainsFilterMobileBar,
-  DomainsFiltersMobileSheet,
-} from "./domains-sidebar";
-import { DomainsToolbar } from "./domains-toolbar";
-import { DomainsEmptyState } from "./domains-empty-state";
-import { DomainsExpiringBanner } from "./domains-expiring-banner";
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { InlineAlertBanner } from "@/components/common/inline-alert-banner";
 import { AddDomainSheet } from "./add-domain-sheet";
-import { DomainsContent } from "./domains-content";
+import { DomainsView } from "./domains-view";
 
 function uniqueSortedRegistrars(items: NSKDomainItem[]): string[] {
   const set = new Set<string>();
@@ -62,6 +77,55 @@ const STATUS_SORT_RANK: Record<NSKDomainItem["status_id"], number> = {
   abandoned: 3,
 };
 
+type DomainStatusFilterId = Exclude<DomainFilterId, "expiring_soon">;
+
+const DOMAIN_FILTER_BASE: DomainStatusFilterId[] = [
+  "all",
+  "active",
+  "parked",
+  "for_sale",
+  "abandoned",
+];
+
+const DOMAIN_FILTER_ICONS: Record<DomainFilterId, LucideIcon> = {
+  all: Globe,
+  active: RadioTower,
+  parked: CircleParking,
+  for_sale: Tag,
+  abandoned: Ban,
+  expiring_soon: AlertTriangle,
+};
+
+function buildDomainsFilterItems(
+  types: {
+    all: string;
+    active: string;
+    parked: string;
+    for_sale: string;
+    abandoned: string;
+    expiringSoon: string;
+  },
+  counts: Record<DomainFilterId, number>
+): FilterSidebarItem<DomainFilterId>[] {
+  const items: FilterSidebarItem<DomainFilterId>[] = DOMAIN_FILTER_BASE.map((id) => ({
+    id,
+    label: types[id],
+    icon: DOMAIN_FILTER_ICONS[id],
+    count: counts[id],
+  }));
+  if (counts.expiring_soon > 0) {
+    items.push({
+      id: "expiring_soon",
+      label: types.expiringSoon,
+      icon: DOMAIN_FILTER_ICONS.expiring_soon,
+      count: counts.expiring_soon,
+      tone: "destructive",
+      dividerBefore: true,
+    });
+  }
+  return items;
+}
+
 export function DomainsAppPage() {
   const { locale, t } = useI18n();
   const [activeFilter, setActiveFilter] = useState<DomainFilterId>("all");
@@ -70,12 +134,13 @@ export function DomainsAppPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<NSKDomainItem | null>(null);
+  const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(new Date()));
   const [itemPendingDelete, setItemPendingDelete] = useState<NSKDomainItem | null>(null);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => {
       setStore(readNSKDomainsStorage());
-      const fromCookie = readDomainsViewCookie();
+      const fromCookie = readAppViewCookie(DOMAINS_VIEW_COOKIE_NAME, DOMAINS_VIEW_MODES);
       if (fromCookie) setViewMode(fromCookie);
     });
     return () => cancelAnimationFrame(id);
@@ -116,6 +181,8 @@ export function DomainsAppPage() {
   });
 
   const showExpiringBanner = store.items.some((item) => isExpiringSoon(item.expires_on));
+
+  const domainsFilterItems = buildDomainsFilterItems(t.domains.types, filterCounts);
 
   function updateStore(nextItems: NSKDomainItem[]) {
     const nextStore = {
@@ -189,68 +256,90 @@ export function DomainsAppPage() {
 
   function handleViewModeChange(next: DomainsViewMode) {
     setViewMode(next);
-    persistDomainsViewCookie(next);
+    persistAppViewCookie(DOMAINS_VIEW_COOKIE_NAME, next);
+    if (next === "calendar") {
+      setCalendarMonth(startOfMonth(new Date()));
+    }
   }
-
-  const deleteLabel = itemPendingDelete?.domain_name ?? "";
 
   return (
     <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
-      <AlertDialog
+      <ConfirmDeleteAlertDialog
         open={itemPendingDelete != null}
         onOpenChange={(open) => {
           if (!open) setItemPendingDelete(null);
         }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t.domains.deleteDialogTitle}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {itemPendingDelete
-                ? t.domains.deleteDialogDescription.replace("{label}", deleteLabel)
-                : null}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t.domains.deleteDialogCancel}</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={() => handleConfirmDelete()}>
-              {t.domains.deleteDialogConfirm}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title={t.domains.deleteDialogTitle}
+        description={t.domains.deleteDialogDescription}
+        itemLabel={itemPendingDelete?.domain_name ?? null}
+        cancelLabel={t.domains.deleteDialogCancel}
+        confirmLabel={t.domains.deleteDialogConfirm}
+        onConfirm={handleConfirmDelete}
+      />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-row">
-        <DomainsFilterDesktopAside
-          activeFilter={activeFilter}
+        <FilterSidebarDesktopAside<DomainFilterId>
+          title={t.domains.sidebarTitle}
+          items={domainsFilterItems}
+          activeId={activeFilter}
           onFilterChange={setActiveFilter}
-          counts={filterCounts}
         />
-        <DomainsFiltersMobileSheet
+        <FilterSidebarMobileSheet<DomainFilterId>
           open={filtersOpen}
           onOpenChange={setFiltersOpen}
-          activeFilter={activeFilter}
+          title={t.domains.sidebarTitle}
+          items={domainsFilterItems}
+          activeId={activeFilter}
           onFilterChange={setActiveFilter}
-          counts={filterCounts}
         />
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <DomainsFilterMobileBar onOpenFilters={() => setFiltersOpen(true)} />
-          {showExpiringBanner ? <DomainsExpiringBanner /> : null}
+          <FilterSidebarMobileBar
+            title={t.domains.sidebarTitle}
+            onOpen={() => setFiltersOpen(true)}
+            openButtonAriaLabel={t.domains.openFiltersNav}
+          />
+          {showExpiringBanner ? (
+            <InlineAlertBanner
+              title={t.domains.types.expiringSoon}
+              description={t.domains.expiringBanner}
+            />
+          ) : null}
           <div className="min-h-0 flex-1 overflow-auto px-6 py-6">
-            <DomainsToolbar
-              total={filteredItems.length}
+            <AppListToolbar<DomainsViewMode>
+              totalLabel={t.domains.totalLabel.replace("{count}", String(filteredItems.length))}
+              viewModes={[
+                { id: "grid", icon: LayoutGrid, ariaLabel: t.domains.viewGrid },
+                { id: "list", icon: List, ariaLabel: t.domains.viewList },
+                { id: "calendar", icon: Calendar, ariaLabel: t.domains.viewCalendar },
+              ]}
               viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
+              addButtonLabel={t.domains.addNew}
               onAdd={openCreateSheet}
             />
 
             {sortedItems.length === 0 ? (
-              <DomainsEmptyState onAdd={openCreateSheet} />
+              <Empty className="border border-border p-10">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Globe />
+                  </EmptyMedia>
+                  <EmptyTitle className="text-xl font-semibold text-foreground">
+                    {t.domains.emptyTitle}
+                  </EmptyTitle>
+                  <EmptyDescription>{t.domains.emptyBody}</EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button onClick={openCreateSheet}>{t.domains.addNew}</Button>
+                </EmptyContent>
+              </Empty>
             ) : (
-              <DomainsContent
+              <DomainsView
                 items={sortedItems}
                 viewMode={viewMode}
                 locale={locale}
+                calendarMonth={calendarMonth}
+                onCalendarMonthChange={setCalendarMonth}
                 onEdit={openEditSheet}
                 onDelete={handleRequestDelete}
               />

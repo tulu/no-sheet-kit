@@ -184,6 +184,8 @@ export const ptMessages = {
     viewCalendar: "Visualização em calendário",
     showPastDates: "Mostrar meses passados",
     hidePastDates: "Ocultar meses passados",
+    pastSectionMonthSubtitle: "Já passaram este ano",
+    futureOneOffSectionTitle: "Datas pontuais mais à frente",
     calendarMonthNav: "Vista mensal",
     calendarPrevMonth: "Mês anterior",
     calendarNextMonth: "Próximo mês",
@@ -224,6 +226,7 @@ export const ptMessages = {
       milestone: "Marcos",
       memorial: "Memoriais",
       other: "Outros",
+      upcoming_30: "Próximos 30 dias",
     },
   },
   domains: {
@@ -238,6 +241,10 @@ export const ptMessages = {
     close: "Fechar",
     viewList: "Visualização em lista",
     viewGrid: "Visualização em grade",
+    viewCalendar: "Visualização em calendário",
+    calendarMonthNav: "Vista mensal",
+    calendarPrevMonth: "Mês anterior",
+    calendarNextMonth: "Próximo mês",
     deleteDialogTitle: "Excluir este domínio?",
     deleteDialogDescription:
       "“{label}” será removido permanentemente. Esta ação não pode ser desfeita.",
