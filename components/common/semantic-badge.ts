@@ -26,6 +26,8 @@ const SEMANTIC_TO_TONE: Record<string, BadgeTone> = {
   milestone: "violet",
   memorial: "slate",
   other: "teal",
+  loan_active: "emerald",
+  loan_settled: "neutral",
 };
 
 const DEFAULT_TONE: BadgeTone = "slate";
@@ -50,4 +52,37 @@ const TONE_OUTLINE_BADGE: Record<BadgeTone, string> = {
 
 export function semanticBadgeOutlineClass(semanticKey: string): string {
   return TONE_OUTLINE_BADGE[semanticToTone(semanticKey)];
+}
+
+/** Circular KPI / stat icon: light tint + border (matches outline badge rhythm). */
+const TONE_KPI_ICON_WRAP: Record<BadgeTone, string> = {
+  emerald: "border border-emerald-500/40 bg-emerald-500/10",
+  neutral: "border border-border bg-muted/50",
+  amber: "border border-amber-500/40 bg-amber-500/10",
+  rose: "border border-rose-500/40 bg-rose-500/10",
+  blue: "border border-blue-500/40 bg-blue-500/10",
+  pink: "border border-pink-500/40 bg-pink-500/10",
+  violet: "border border-violet-500/40 bg-violet-500/10",
+  slate: "border border-slate-500/30 bg-slate-500/10",
+  teal: "border border-teal-500/40 bg-teal-500/10",
+};
+
+const TONE_KPI_ICON_GLYPH: Record<BadgeTone, string> = {
+  emerald: "text-emerald-700 dark:text-emerald-400",
+  neutral: "text-muted-foreground",
+  amber: "text-amber-800 dark:text-amber-400",
+  rose: "text-rose-700 dark:text-rose-300",
+  blue: "text-blue-700 dark:text-blue-300",
+  pink: "text-pink-800 dark:text-pink-300",
+  violet: "text-violet-800 dark:text-violet-300",
+  slate: "text-slate-700 dark:text-slate-300",
+  teal: "text-teal-800 dark:text-teal-300",
+};
+
+export function kpiStatIconWrapClass(tone: BadgeTone): string {
+  return TONE_KPI_ICON_WRAP[tone];
+}
+
+export function kpiStatIconGlyphClass(tone: BadgeTone): string {
+  return TONE_KPI_ICON_GLYPH[tone];
 }
