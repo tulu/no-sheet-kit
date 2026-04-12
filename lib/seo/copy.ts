@@ -20,6 +20,11 @@ export const seoCopy = {
     description:
       "Track domain names, registrars, renewal dates, and notes in one private portfolio view.",
   },
+  loans: {
+    title: "Loans",
+    description:
+      "Track money you lent and money you borrowed, with partial payments and balances stored privately in your browser.",
+  },
   settings: {
     title: "Settings",
     description: "Language and appearance for NoSheetKit while you use the apps.",
