@@ -13,7 +13,7 @@ type AppCatalogEntry = {
 };
 
 export const APP_CATALOG: Record<AppId, AppCatalogEntry> = {
-  loans: { available: false, path: "/apps/loans" },
+  loans: { available: true, path: "/apps/loans" },
   dates: { available: true, path: "/apps/dates" },
   links: { available: false, path: "/apps/links" },
   domains: { available: true, path: "/apps/domains" },
