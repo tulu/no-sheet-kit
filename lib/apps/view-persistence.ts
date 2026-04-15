@@ -3,6 +3,7 @@ const DEFAULT_MAX_AGE_SEC = 60 * 60 * 24 * 365;
 export const DATES_VIEW_COOKIE_NAME = "nsk_dates_view";
 export const DOMAINS_VIEW_COOKIE_NAME = "nsk_domains_view";
 export const LOANS_VIEW_COOKIE_NAME = "nsk_loans_view";
+export const LINKS_VIEW_COOKIE_NAME = "nsk_links_view";
 
 /** Read a view-mode cookie if it matches one of `validModes`. */
 export function readAppViewCookie<T extends string>(

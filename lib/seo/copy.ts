@@ -25,6 +25,11 @@ export const seoCopy = {
     description:
       "Track money you lent and money you borrowed, with partial payments and balances stored privately in your browser.",
   },
+  links: {
+    title: "Links",
+    description:
+      "Save links with automatic metadata extraction, tags, and review status. Everything stays private by default.",
+  },
   settings: {
     title: "Settings",
     description: "Language and appearance for NoSheetKit while you use the apps.",
