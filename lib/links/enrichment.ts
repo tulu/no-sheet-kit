@@ -10,6 +10,10 @@ import {
 /** Large SPAs often emit `<meta property="og:*">` late in a huge HTML document. */
 const MAX_RESPONSE_BYTES = 2_800_000;
 const REQUEST_TIMEOUT_MS = 8000;
+/** Scan start of HTML for og/twitter meta before full parse (helps when body is huge and response is byte-capped). */
+const OG_IMAGE_PREFIX_SCAN_BYTES = 400_000;
+
+const JSONLD_IMAGE_KEYS = new Set(["image", "thumbnailurl", "logo", "thumbnail"]);
 
 export type EnrichedLinkData = {
   url: string;
@@ -201,6 +205,93 @@ function dedupeStrings(values: string[]): string[] {
   return out;
 }
 
+/** Best-effort og/twitter image from the first chunk of HTML (handles truncation / late body). */
+function extractOgImageFromHtmlPrefix(html: string, baseUrl: string): string | undefined {
+  const slice = html.slice(0, Math.min(html.length, OG_IMAGE_PREFIX_SCAN_BYTES));
+  const patterns: RegExp[] = [
+    /property=["']og:image:secure_url["'][^>]*content=["']([^"']+)["']/i,
+    /content=["']([^"']+)["'][^>]*property=["']og:image:secure_url["']/i,
+    /property=["']og:image["'][^>]*content=["']([^"']+)["']/i,
+    /content=["']([^"']+)["'][^>]*property=["']og:image["']/i,
+    /name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i,
+    /content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i,
+    /name=["']twitter:image:src["'][^>]*content=["']([^"']+)["']/i,
+    /content=["']([^"']+)["'][^>]*name=["']twitter:image:src["']/i,
+  ];
+  for (const re of patterns) {
+    const m = slice.match(re);
+    if (m?.[1]) {
+      const resolved = resolveUrl(baseUrl, cleanText(m[1]));
+      if (resolved) return resolved;
+    }
+  }
+  return undefined;
+}
+
+function pushJsonLdImageishValue(val: unknown, acc: string[]): void {
+  if (val === null || val === undefined) return;
+  if (typeof val === "string") {
+    const t = val.trim();
+    if (t.startsWith("http://") || t.startsWith("https://")) acc.push(t);
+    return;
+  }
+  if (Array.isArray(val)) {
+    for (const x of val) pushJsonLdImageishValue(x, acc);
+    return;
+  }
+  if (typeof val !== "object") return;
+  const o = val as Record<string, unknown>;
+  for (const k of ["url", "contentUrl"]) {
+    const u = o[k];
+    if (typeof u === "string") {
+      const t = u.trim();
+      if (t.startsWith("http://") || t.startsWith("https://")) acc.push(t);
+    }
+  }
+}
+
+function walkJsonLdForImageStrings(node: unknown, acc: string[]): void {
+  if (node === null || node === undefined) return;
+  if (typeof node === "string") {
+    const t = node.trim();
+    if (t.startsWith("http://") || t.startsWith("https://")) acc.push(t);
+    return;
+  }
+  if (Array.isArray(node)) {
+    for (const el of node) walkJsonLdForImageStrings(el, acc);
+    return;
+  }
+  if (typeof node !== "object") return;
+  const o = node as Record<string, unknown>;
+  for (const [key, val] of Object.entries(o)) {
+    if (key === "@context") continue;
+    const lower = key.toLowerCase();
+    if (JSONLD_IMAGE_KEYS.has(lower)) {
+      pushJsonLdImageishValue(val, acc);
+    }
+    walkJsonLdForImageStrings(val, acc);
+  }
+}
+
+function extractFirstJsonLdImage($: CheerioAPI, baseUrl: string): string | undefined {
+  const acc: string[] = [];
+  $('script[type="application/ld+json"]').each((_, el) => {
+    const raw = $(el).text().trim();
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw) as unknown;
+      walkJsonLdForImageStrings(data, acc);
+    } catch {
+      // ignore invalid JSON-LD
+    }
+  });
+  for (const raw of dedupeStrings(acc)) {
+    const resolved = resolveUrl(baseUrl, cleanText(raw) ?? raw);
+    if (resolved) return resolved;
+  }
+  return undefined;
+}
+
 function buildHints($: CheerioAPI, ldTypes: string[]): LinkAutoTagHints {
   const articleTags: string[] = [];
   $('meta[property="article:tag"]').each((_, el) => {
@@ -230,11 +321,17 @@ function extractMetadata(html: string, finalUrl: string): EnrichedLinkData {
   const twTitle = metaName($, "twitter:title");
   const description =
     metaContent($, "og:description") ?? metaName($, "description") ?? metaName($, "twitter:description");
-  const image =
+  const fromPrefix = extractOgImageFromHtmlPrefix(html, finalUrl);
+  const fromMeta =
     resolveUrl(finalUrl, metaContent($, "og:image:secure_url")) ??
     resolveUrl(finalUrl, metaContent($, "og:image")) ??
     resolveUrl(finalUrl, metaName($, "twitter:image")) ??
-    resolveUrl(finalUrl, cleanText($("meta[name='twitter:image:src']").first().attr("content"))) ??
+    resolveUrl(finalUrl, cleanText($("meta[name='twitter:image:src']").first().attr("content")));
+  const fromJsonLd = extractFirstJsonLdImage($, finalUrl);
+  const image =
+    fromPrefix ??
+    fromMeta ??
+    fromJsonLd ??
     resolveUrl(
       finalUrl,
       cleanText(

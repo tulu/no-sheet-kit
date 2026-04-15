@@ -21,7 +21,8 @@ export type AppListToolbarSearchProps = {
 type AppListToolbarProps<TView extends string> = {
   totalLabel: string;
   viewModes?: AppListViewModeDef<TView>[];
-  viewMode: TView;
+  /** `null` until the app has read the persisted view (no mode looks selected). */
+  viewMode: TView | null;
   onViewModeChange: (next: TView) => void;
   addButtonLabel: string;
   onAdd: () => void;
@@ -71,8 +72,9 @@ export function AppListToolbar<TView extends string>({
                 onClick={() => onViewModeChange(mode.id)}
                 className={cn(
                   "inline-flex h-8 w-8 items-center justify-center rounded-sm text-muted-foreground",
-                  viewMode === mode.id && "bg-muted text-foreground"
+                  viewMode != null && viewMode === mode.id && "bg-muted text-foreground"
                 )}
+                aria-pressed={viewMode != null && viewMode === mode.id}
                 aria-label={mode.ariaLabel}
               >
                 <mode.icon className="size-4" aria-hidden />

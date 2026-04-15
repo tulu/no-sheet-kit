@@ -11,7 +11,7 @@ import {
   Tags,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { AppListToolbar } from "@/components/common/app-list-toolbar";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
 import {
@@ -52,6 +52,7 @@ import {
 import { readNSKLinksStorage, writeNSKLinksStorage } from "@/lib/links/storage";
 import { AddLinkSheet } from "./add-link-sheet";
 import { LinksView } from "./links-view";
+import { LinksViewSkeleton } from "./links-view-skeleton";
 
 type EnrichResponse = {
   url: string;
@@ -112,7 +113,8 @@ function buildFilterItems(
 export function LinksAppPage() {
   const { locale, t } = useI18n();
   const [activeFilter, setActiveFilter] = useState<string>("all");
-  const [viewMode, setViewMode] = useState<LinksViewMode>("grid");
+  const [viewMode, setViewMode] = useState<LinksViewMode | null>(null);
+  const [isStoreHydrated, setIsStoreHydrated] = useState(false);
   const [store, setStore] = useState(createEmptyNSKLinksSchema);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -120,13 +122,14 @@ export function LinksAppPage() {
   const [itemPendingDelete, setItemPendingDelete] = useState<NSKLinkItem | null>(null);
   const [linkSearch, setLinkSearch] = useState("");
 
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      setStore(readNSKLinksStorage());
-      const fromCookie = readAppViewCookie(LINKS_VIEW_COOKIE_NAME, LINKS_VIEW_MODES);
-      if (fromCookie) setViewMode(fromCookie);
+  useLayoutEffect(() => {
+    const fromCookie = readAppViewCookie(LINKS_VIEW_COOKIE_NAME, LINKS_VIEW_MODES);
+    const nextStore = readNSKLinksStorage();
+    queueMicrotask(() => {
+      setViewMode(fromCookie ?? "grid");
+        setStore(nextStore);
+        setIsStoreHydrated(true);
     });
-    return () => cancelAnimationFrame(id);
   }, []);
 
   const allCount = store.items.length;
@@ -365,7 +368,7 @@ export function LinksAppPage() {
                 { id: "grid", icon: LayoutGrid, ariaLabel: t.links.viewGrid },
                 { id: "list", icon: List, ariaLabel: t.links.viewList },
               ]}
-              viewMode={viewMode}
+              viewMode={isStoreHydrated ? viewMode : null}
               onViewModeChange={handleViewModeChange}
               addButtonLabel={t.links.addNew}
               onAdd={openCreateSheet}
@@ -377,7 +380,9 @@ export function LinksAppPage() {
               }}
             />
 
-            {store.items.length === 0 ? (
+            {!isStoreHydrated ? (
+              <LinksViewSkeleton viewMode={viewMode ?? "grid"} />
+            ) : store.items.length === 0 ? (
               <Empty className="border border-border p-10">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
@@ -414,7 +419,7 @@ export function LinksAppPage() {
             ) : (
               <LinksView
                 items={sortedItems}
-                viewMode={viewMode}
+                viewMode={viewMode ?? "grid"}
                 locale={locale}
                 onEdit={openEditSheet}
                 onDelete={handleRequestDelete}
