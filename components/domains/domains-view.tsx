@@ -48,7 +48,7 @@ function DomainFaviconImage({
       aria-hidden
       width={32}
       height={32}
-      className={className ?? "size-8"}
+      className={className ?? "size-6"}
       loading="lazy"
       referrerPolicy="no-referrer"
       onError={() => {
@@ -261,7 +261,7 @@ export function DomainsView({
               <TableRow key={item.id} className="hover:bg-muted/20">
                 <TableCell className="max-w-[180px] px-3 py-2 font-medium text-foreground">
                   <div className="flex min-w-0 items-center gap-2">
-                    <DomainFaviconImage domainName={item.domain_name} className="size-8 shrink-0" />
+                    <DomainFaviconImage domainName={item.domain_name} className="size-6 shrink-0" />
                     <span className="truncate">{item.domain_name}</span>
                   </div>
                 </TableCell>
