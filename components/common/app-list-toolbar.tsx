@@ -1,13 +1,21 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
+import { Search, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 export type AppListViewModeDef<TView extends string> = {
   id: TView;
   icon: LucideIcon;
   ariaLabel: string;
+};
+
+export type AppListToolbarSearchProps = {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  "aria-label"?: string;
 };
 
 type AppListToolbarProps<TView extends string> = {
@@ -17,6 +25,8 @@ type AppListToolbarProps<TView extends string> = {
   onViewModeChange: (next: TView) => void;
   addButtonLabel: string;
   onAdd: () => void;
+  /** When omitted, other apps keep the toolbar compact without a search field. */
+  search?: AppListToolbarSearchProps;
 };
 
 export function AppListToolbar<TView extends string>({
@@ -26,12 +36,32 @@ export function AppListToolbar<TView extends string>({
   onViewModeChange,
   addButtonLabel,
   onAdd,
+  search,
 }: AppListToolbarProps<TView>) {
   return (
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-      <p className="text-sm text-muted-foreground">{totalLabel}</p>
+    <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
+      <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <p className="shrink-0 text-sm text-muted-foreground">{totalLabel}</p>
+        {search ? (
+          <div className="relative min-w-0 flex-1 lg:max-w-md">
+            <Search
+              className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden
+            />
+            <Input
+              value={search.value}
+              onChange={(e) => search.onChange(e.target.value)}
+              placeholder={search.placeholder}
+              aria-label={search["aria-label"] ?? search.placeholder}
+              type="search"
+              autoComplete="off"
+              className="h-9 pl-9"
+            />
+          </div>
+        ) : null}
+      </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center justify-end gap-2 sm:justify-start">
         {viewModes && viewModes.length > 0 ? (
           <div className="inline-flex rounded-md border border-border bg-background p-0.5">
             {viewModes.map((mode) => (
