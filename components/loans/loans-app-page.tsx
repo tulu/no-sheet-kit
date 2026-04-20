@@ -14,8 +14,11 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { useAppLocalHydration } from "@/lib/apps/use-app-local-hydration";
+import { filterItemsBySearch } from "@/lib/apps/filter-items-by-search";
+import { appCrudToast, appLoanPaymentRecordedToast, appLoanPaymentsUpdatedToast } from "@/lib/app-toasts";
 import {
   createEmptyNSKLoansSchema,
   LOANS_VIEW_MODES,
@@ -30,14 +33,11 @@ import {
   balanceByCurrency,
   formatLoanNumber,
   loanMatchesFilter,
+  loanMatchesSearch,
   mapToSortedEntries,
 } from "@/lib/loans/loans-helpers";
 import { readNSKLoansStorage, writeNSKLoansStorage } from "@/lib/loans/storage";
-import {
-  LOANS_VIEW_COOKIE_NAME,
-  persistAppViewCookie,
-  readAppViewCookie,
-} from "@/lib/apps/view-persistence";
+import { LOANS_VIEW_COOKIE_NAME, persistAppViewCookie } from "@/lib/apps/view-persistence";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
 import { kpiStatIconGlyphClass, kpiStatIconWrapClass } from "@/components/common/semantic-badge";
 import { AppListToolbar } from "@/components/common/app-list-toolbar";
@@ -60,7 +60,9 @@ import {
 import { AddLoanSheet } from "./add-loan-sheet";
 import { LoanPaymentsSheet } from "./loan-payments-sheet";
 import { LoanPaymentSheet } from "./loan-payment-sheet";
+import { ListSearchEmptyState } from "@/components/common/list-search-empty";
 import { LoansView } from "./loans-view";
+import { LoansViewSkeleton } from "./loans-view-skeleton";
 
 const EPS = 0.009;
 
@@ -138,6 +140,8 @@ export function LoansAppPage() {
   const [activeFilter, setActiveFilter] = useState<LoanFilterId>("all");
   const [viewMode, setViewMode] = useState<LoansViewMode>("grid");
   const [store, setStore] = useState(createEmptyNSKLoansSchema);
+  const [isStoreHydrated, setIsStoreHydrated] = useState(false);
+  const [loanSearch, setLoanSearch] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<NSKLoanItem | null>(null);
@@ -152,14 +156,12 @@ export function LoansAppPage() {
       ? (store.items.find((i) => i.id === paymentsListLoanId) ?? null)
       : null;
 
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      setStore(readNSKLoansStorage());
-      const fromCookie = readAppViewCookie(LOANS_VIEW_COOKIE_NAME, LOANS_VIEW_MODES);
-      if (fromCookie) setViewMode(fromCookie);
-    });
-    return () => cancelAnimationFrame(id);
-  }, []);
+  useAppLocalHydration(readNSKLoansStorage, setStore, setIsStoreHydrated, {
+    cookieName: LOANS_VIEW_COOKIE_NAME,
+    validModes: LOANS_VIEW_MODES,
+    defaultView: "grid",
+    setViewMode,
+  });
 
   const filterCounts: Record<LoanFilterId, number> = {
     all: 0,
@@ -175,8 +177,9 @@ export function LoansAppPage() {
   }
 
   const filteredItems = store.items.filter((item) => loanMatchesFilter(item, activeFilter));
+  const searchFilteredItems = filterItemsBySearch(filteredItems, loanSearch, loanMatchesSearch);
 
-  const sortedItems = [...filteredItems].sort((a, b) => {
+  const sortedItems = [...searchFilteredItems].sort((a, b) => {
     const byUpdated = b.updated_at.localeCompare(a.updated_at);
     if (byUpdated !== 0) return byUpdated;
     return a.counterparty_name.localeCompare(b.counterparty_name);
@@ -218,6 +221,7 @@ export function LoansAppPage() {
         updated_at: now,
       };
       updateStore([...store.items, newItem]);
+      appCrudToast(t, "loans", "created");
     } else {
       updateStore(
         store.items.map((item) =>
@@ -235,6 +239,7 @@ export function LoansAppPage() {
             : item
         )
       );
+      appCrudToast(t, "loans", "updated");
     }
     setEditingItem(null);
     setSheetOpen(false);
@@ -247,6 +252,7 @@ export function LoansAppPage() {
   function handleConfirmDelete() {
     if (!itemPendingDelete) return;
     updateStore(store.items.filter((entry) => entry.id !== itemPendingDelete.id));
+    appCrudToast(t, "loans", "deleted");
     setItemPendingDelete(null);
   }
 
@@ -290,6 +296,7 @@ export function LoansAppPage() {
           : item
       )
     );
+    appLoanPaymentRecordedToast(t);
     closePaymentSheet();
   }
 
@@ -310,6 +317,7 @@ export function LoansAppPage() {
         item.id === loanId ? { ...item, payments, updated_at: now } : item
       )
     );
+    appLoanPaymentsUpdatedToast(t);
   }
 
   return (
@@ -349,6 +357,10 @@ export function LoansAppPage() {
             openButtonAriaLabel={t.loans.openFiltersNav}
           />
           <div className="min-h-0 flex-1 overflow-auto px-6 py-6">
+            {!isStoreHydrated ? (
+              <LoansViewSkeleton viewMode={viewMode} />
+            ) : (
+              <>
             <div className="mb-6 grid gap-4 sm:grid-cols-3">
               <LoanSummaryStatCard
                 icon={ArrowUpRight}
@@ -436,7 +448,7 @@ export function LoansAppPage() {
             </div>
 
             <AppListToolbar<LoansViewMode>
-              totalLabel={t.loans.totalLabel.replace("{count}", String(filteredItems.length))}
+              totalLabel={t.loans.totalLabel.replace("{count}", String(searchFilteredItems.length))}
               viewModes={[
                 { id: "grid", icon: LayoutGrid, ariaLabel: t.loans.viewGrid },
                 { id: "list", icon: List, ariaLabel: t.loans.viewList },
@@ -445,9 +457,39 @@ export function LoansAppPage() {
               onViewModeChange={handleViewModeChange}
               addButtonLabel={t.loans.addNew}
               onAdd={openCreateSheet}
+              search={{
+                value: loanSearch,
+                onChange: setLoanSearch,
+                placeholder: t.loans.searchPlaceholder,
+                "aria-label": t.loans.searchAriaLabel,
+              }}
             />
 
-            {sortedItems.length === 0 ? (
+            {store.items.length === 0 ? (
+              <Empty className="border border-border p-10">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Banknote />
+                  </EmptyMedia>
+                  <EmptyTitle className="text-xl font-semibold text-foreground">
+                    {t.loans.emptyTitle}
+                  </EmptyTitle>
+                  <EmptyDescription>{t.loans.emptyBody}</EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button onClick={openCreateSheet}>{t.loans.addNew}</Button>
+                </EmptyContent>
+              </Empty>
+            ) : sortedItems.length === 0 && loanSearch.trim() ? (
+              <ListSearchEmptyState
+                labels={{
+                  title: t.loans.searchEmptyTitle,
+                  body: t.loans.searchEmptyBody,
+                  clear: t.loans.searchClear,
+                }}
+                onClear={() => setLoanSearch("")}
+              />
+            ) : sortedItems.length === 0 ? (
               <Empty className="border border-border p-10">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
@@ -472,6 +514,8 @@ export function LoansAppPage() {
                 onAddPayment={(item) => openPaymentSheet(item)}
                 onViewPayments={openPaymentsListSheet}
               />
+            )}
+              </>
             )}
           </div>
         </div>

@@ -3,6 +3,7 @@ import { Geist_Mono, Instrument_Serif, Instrument_Sans, Inter } from "next/font/
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { I18nProvider } from "@/components/providers/i18n-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { getMetadataBase, siteName } from "@/lib/seo/site";
 const instrumentSerif = Instrument_Serif({
   variable: "--font-display",
@@ -76,7 +77,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <I18nProvider>{children}</I18nProvider>
+          <I18nProvider>
+            {children}
+            <Toaster richColors position="top-center" />
+          </I18nProvider>
         </ThemeProvider>
       </body>
     </html>

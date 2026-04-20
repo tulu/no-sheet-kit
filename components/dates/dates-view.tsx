@@ -46,6 +46,18 @@ function monthName(locale: Locale, monthIndex: number): string {
   );
 }
 
+/** Within a named calendar month block, order by day-of-month (recurring-friendly), then full ISO date. */
+function compareByDayOfMonthThenIsoDate(a: NSKDateItem, b: NSKDateItem): number {
+  const da = parseItemLocalDate(a);
+  const db = parseItemLocalDate(b);
+  if (!da && !db) return 0;
+  if (!da) return 1;
+  if (!db) return -1;
+  const byDom = da.getDate() - db.getDate();
+  if (byDom !== 0) return byDom;
+  return a.date.localeCompare(b.date);
+}
+
 function groupByCalendarMonth(items: NSKDateItem[]): Map<number, NSKDateItem[]> {
   const map = new Map<number, NSKDateItem[]>();
   for (const item of items) {
@@ -56,7 +68,7 @@ function groupByCalendarMonth(items: NSKDateItem[]): Map<number, NSKDateItem[]> 
     map.get(m)!.push(item);
   }
   for (const list of map.values()) {
-    list.sort((a, b) => a.date.localeCompare(b.date));
+    list.sort(compareByDayOfMonthThenIsoDate);
   }
   return map;
 }
@@ -210,42 +222,44 @@ function MonthBlock({
         ) : null}
       </h3>
 
-      <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-md:grid-cols-1">
+      <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {monthItems.map((item) => {
           const { dayMonth, year } = formatDayMonthYear(locale, item);
           return (
-            <Card key={item.id}>
-              <CardHeader className="gap-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <CardTitle className="leading-tight">{item.label}</CardTitle>
-                    <div className="flex flex-wrap items-end gap-x-2 gap-y-0.5">
-                      <span className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">
-                        {dayMonth}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{year}</span>
+            <li key={item.id}>
+              <Card className="h-full border border-border/70">
+                <CardHeader className="gap-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <CardTitle className="leading-tight">{item.label}</CardTitle>
+                      <div className="flex flex-wrap items-end gap-x-2 gap-y-0.5">
+                        <span className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+                          {dayMonth}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{year}</span>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={cn("font-medium", semanticBadgeOutlineClass(item.type_id))}
+                      >
+                        {t.dates.types[item.type_id]}
+                      </Badge>
+                      <CardActionsMenu
+                        ariaLabel={t.dates.cardActionsMenu}
+                        actions={dateCardMenuActions(t.dates, () => onEdit(item), () =>
+                          onDelete(item)
+                        )}
+                      />
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className={cn("font-medium", semanticBadgeOutlineClass(item.type_id))}
-                    >
-                      {t.dates.types[item.type_id]}
-                    </Badge>
-                    <CardActionsMenu
-                      ariaLabel={t.dates.cardActionsMenu}
-                      actions={dateCardMenuActions(t.dates, () => onEdit(item), () =>
-                        onDelete(item)
-                      )}
-                    />
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
+                </CardHeader>
+              </Card>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </section>
   );
 }
