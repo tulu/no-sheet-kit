@@ -13,8 +13,11 @@ import {
   Tag,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { useAppLocalHydration } from "@/lib/apps/use-app-local-hydration";
+import { filterItemsBySearch } from "@/lib/apps/filter-items-by-search";
+import { appCrudToast } from "@/lib/app-toasts";
 import {
   createEmptyNSKDomainsSchema,
   DOMAINS_VIEW_MODES,
@@ -22,13 +25,9 @@ import {
   type DomainsViewMode,
   type NSKDomainItem,
 } from "@/lib/domains/schema";
-import { isExpiringSoon } from "@/lib/domains/domains-helpers";
+import { domainMatchesSearch, isExpiringSoon } from "@/lib/domains/domains-helpers";
 import { readNSKDomainsStorage, writeNSKDomainsStorage } from "@/lib/domains/storage";
-import {
-  DOMAINS_VIEW_COOKIE_NAME,
-  persistAppViewCookie,
-  readAppViewCookie,
-} from "@/lib/apps/view-persistence";
+import { DOMAINS_VIEW_COOKIE_NAME, persistAppViewCookie } from "@/lib/apps/view-persistence";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
 import { AppListToolbar } from "@/components/common/app-list-toolbar";
 import {
@@ -47,8 +46,10 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { InlineAlertBanner } from "@/components/common/inline-alert-banner";
+import { ListSearchEmptyState } from "@/components/common/list-search-empty";
 import { AddDomainSheet } from "./add-domain-sheet";
 import { DomainsView } from "./domains-view";
+import { DomainsViewSkeleton } from "./domains-view-skeleton";
 
 function uniqueSortedRegistrars(items: NSKDomainItem[]): string[] {
   const set = new Set<string>();
@@ -131,20 +132,20 @@ export function DomainsAppPage() {
   const [activeFilter, setActiveFilter] = useState<DomainFilterId>("all");
   const [viewMode, setViewMode] = useState<DomainsViewMode>("grid");
   const [store, setStore] = useState(createEmptyNSKDomainsSchema);
+  const [isStoreHydrated, setIsStoreHydrated] = useState(false);
+  const [domainSearch, setDomainSearch] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<NSKDomainItem | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(new Date()));
   const [itemPendingDelete, setItemPendingDelete] = useState<NSKDomainItem | null>(null);
 
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      setStore(readNSKDomainsStorage());
-      const fromCookie = readAppViewCookie(DOMAINS_VIEW_COOKIE_NAME, DOMAINS_VIEW_MODES);
-      if (fromCookie) setViewMode(fromCookie);
-    });
-    return () => cancelAnimationFrame(id);
-  }, []);
+  useAppLocalHydration(readNSKDomainsStorage, setStore, setIsStoreHydrated, {
+    cookieName: DOMAINS_VIEW_COOKIE_NAME,
+    validModes: DOMAINS_VIEW_MODES,
+    defaultView: "grid",
+    setViewMode,
+  });
 
   const filterCounts: Record<DomainFilterId, number> = {
     all: store.items.length,
@@ -170,7 +171,8 @@ export function DomainsAppPage() {
         ? store.items.filter((item) => isExpiringSoon(item.expires_on))
         : store.items.filter((item) => item.status_id === activeFilter);
 
-  const sortedItems = [...filteredItems].sort((a, b) => {
+  const searchFilteredItems = filterItemsBySearch(filteredItems, domainSearch, domainMatchesSearch);
+  const sortedItems = [...searchFilteredItems].sort((a, b) => {
     if (activeFilter === "all") {
       const byStatus = STATUS_SORT_RANK[a.status_id] - STATUS_SORT_RANK[b.status_id];
       if (byStatus !== 0) return byStatus;
@@ -210,6 +212,7 @@ export function DomainsAppPage() {
         updated_at: now,
       };
       updateStore([...store.items, newItem]);
+      appCrudToast(t, "domains", "created");
     } else {
       const nextItems = store.items.map((item) =>
         item.id === editingItem.id
@@ -228,6 +231,7 @@ export function DomainsAppPage() {
           : item
       );
       updateStore(nextItems);
+      appCrudToast(t, "domains", "updated");
     }
 
     setEditingItem(null);
@@ -241,6 +245,7 @@ export function DomainsAppPage() {
   function handleConfirmDelete() {
     if (!itemPendingDelete) return;
     updateStore(store.items.filter((entry) => entry.id !== itemPendingDelete.id));
+    appCrudToast(t, "domains", "deleted");
     setItemPendingDelete(null);
   }
 
@@ -306,7 +311,7 @@ export function DomainsAppPage() {
           ) : null}
           <div className="min-h-0 flex-1 overflow-auto px-6 py-6">
             <AppListToolbar<DomainsViewMode>
-              totalLabel={t.domains.totalLabel.replace("{count}", String(filteredItems.length))}
+              totalLabel={t.domains.totalLabel.replace("{count}", String(searchFilteredItems.length))}
               viewModes={[
                 { id: "grid", icon: LayoutGrid, ariaLabel: t.domains.viewGrid },
                 { id: "list", icon: List, ariaLabel: t.domains.viewList },
@@ -316,9 +321,17 @@ export function DomainsAppPage() {
               onViewModeChange={handleViewModeChange}
               addButtonLabel={t.domains.addNew}
               onAdd={openCreateSheet}
+              search={{
+                value: domainSearch,
+                onChange: setDomainSearch,
+                placeholder: t.domains.searchPlaceholder,
+                "aria-label": t.domains.searchAriaLabel,
+              }}
             />
 
-            {sortedItems.length === 0 ? (
+            {!isStoreHydrated ? (
+              <DomainsViewSkeleton viewMode={viewMode} />
+            ) : store.items.length === 0 ? (
               <Empty className="border border-border p-10">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
@@ -331,6 +344,32 @@ export function DomainsAppPage() {
                 </EmptyHeader>
                 <EmptyContent>
                   <Button onClick={openCreateSheet}>{t.domains.addNew}</Button>
+                </EmptyContent>
+              </Empty>
+            ) : sortedItems.length === 0 && domainSearch.trim() ? (
+              <ListSearchEmptyState
+                labels={{
+                  title: t.domains.searchEmptyTitle,
+                  body: t.domains.searchEmptyBody,
+                  clear: t.domains.searchClear,
+                }}
+                onClear={() => setDomainSearch("")}
+              />
+            ) : sortedItems.length === 0 ? (
+              <Empty className="border border-border p-10">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Globe />
+                  </EmptyMedia>
+                  <EmptyTitle className="text-xl font-semibold text-foreground">
+                    {t.domains.searchEmptyTitle}
+                  </EmptyTitle>
+                  <EmptyDescription>{t.domains.searchEmptyBody}</EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button type="button" variant="outline" onClick={() => setActiveFilter("all")}>
+                    {t.domains.types.all}
+                  </Button>
                 </EmptyContent>
               </Empty>
             ) : (

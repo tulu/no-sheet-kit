@@ -14,6 +14,30 @@ export const ptMessages = {
     terms: "Termos",
     github: "GitHub",
     or: "ou",
+    appToasts: {
+      links: {
+        created: { title: "Link adicionado" },
+        updated: { title: "Link atualizado" },
+        deleted: { title: "Link removido" },
+      },
+      domains: {
+        created: { title: "Domínio adicionado" },
+        updated: { title: "Domínio atualizado" },
+        deleted: { title: "Domínio removido" },
+      },
+      dates: {
+        created: { title: "Data adicionada" },
+        updated: { title: "Data atualizada" },
+        deleted: { title: "Data removida" },
+      },
+      loans: {
+        created: { title: "Empréstimo adicionado" },
+        updated: { title: "Empréstimo atualizado" },
+        deleted: { title: "Empréstimo removido" },
+        paymentRecorded: { title: "Pagamento registrado" },
+        paymentsUpdated: { title: "Pagamentos atualizados" },
+      },
+    },
   },
   landing: {
     nav: {
@@ -199,6 +223,11 @@ export const ptMessages = {
     cardActionsMenu: "Ações da data",
     emptyTitle: "Ainda não há datas",
     emptyBody: "Crie sua primeira data e mantenha eventos importantes em um só lugar.",
+    searchPlaceholder: "Buscar datas…",
+    searchAriaLabel: "Buscar datas",
+    searchEmptyTitle: "Nenhuma data corresponde",
+    searchEmptyBody: "Tente outras palavras, limpe a busca ou mude o filtro de categoria.",
+    searchClear: "Limpar busca",
     upcomingTitle: "Próximos eventos nos próximos 30 dias",
     upcomingEmpty: "Nenhum evento nos próximos 30 dias.",
     daysLeft: "Faltam {count} dias",
@@ -241,6 +270,11 @@ export const ptMessages = {
     close: "Fechar",
     viewList: "Visualização em lista",
     viewGrid: "Visualização em grade",
+    searchPlaceholder: "Buscar empréstimos…",
+    searchAriaLabel: "Buscar empréstimos",
+    searchEmptyTitle: "Nenhum empréstimo corresponde",
+    searchEmptyBody: "Tente outras palavras, limpe a busca ou mude o filtro lateral.",
+    searchClear: "Limpar busca",
     deleteDialogTitle: "Excluir este empréstimo?",
     deleteDialogDescription:
       "“{label}” será removido permanentemente. Esta ação não pode ser desfeita.",
@@ -412,6 +446,11 @@ export const ptMessages = {
     cardActionsMenu: "Ações do domínio",
     emptyTitle: "Ainda não há domínios",
     emptyBody: "Adicione seu primeiro domínio e mantenha vencimentos e registradores em um só lugar.",
+    searchPlaceholder: "Buscar domínios…",
+    searchAriaLabel: "Buscar domínios",
+    searchEmptyTitle: "Nenhum domínio corresponde",
+    searchEmptyBody: "Tente outras palavras, limpe a busca ou mude o filtro de status.",
+    searchClear: "Limpar busca",
     expiringBanner:
       "Um ou mais domínios expiram nos próximos 30 dias. Revise-os abaixo ou use o filtro Expirando em breve.",
     cardExpiresLabel: "Expira",

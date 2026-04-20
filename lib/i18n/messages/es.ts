@@ -14,6 +14,30 @@ export const esMessages = {
     terms: "Términos",
     github: "GitHub",
     or: "o",
+    appToasts: {
+      links: {
+        created: { title: "Enlace añadido" },
+        updated: { title: "Enlace actualizado" },
+        deleted: { title: "Enlace eliminado" },
+      },
+      domains: {
+        created: { title: "Dominio añadido" },
+        updated: { title: "Dominio actualizado" },
+        deleted: { title: "Dominio eliminado" },
+      },
+      dates: {
+        created: { title: "Fecha añadida" },
+        updated: { title: "Fecha actualizada" },
+        deleted: { title: "Fecha eliminada" },
+      },
+      loans: {
+        created: { title: "Préstamo añadido" },
+        updated: { title: "Préstamo actualizado" },
+        deleted: { title: "Préstamo eliminado" },
+        paymentRecorded: { title: "Pago registrado" },
+        paymentsUpdated: { title: "Pagos actualizados" },
+      },
+    },
   },
   landing: {
     nav: {
@@ -199,6 +223,11 @@ export const esMessages = {
     cardActionsMenu: "Acciones de la fecha",
     emptyTitle: "Todavía no hay fechas",
     emptyBody: "Creá tu primera fecha y mantené tus eventos importantes en un solo lugar.",
+    searchPlaceholder: "Buscar fechas…",
+    searchAriaLabel: "Buscar fechas",
+    searchEmptyTitle: "No hay fechas que coincidan",
+    searchEmptyBody: "Probá otras palabras, limpiá la búsqueda o cambiá el filtro de categoría.",
+    searchClear: "Limpiar búsqueda",
     upcomingTitle: "Eventos próximos en los próximos 30 días",
     upcomingEmpty: "No hay eventos próximos en los próximos 30 días.",
     daysLeft: "Faltan {count} días",
@@ -241,6 +270,11 @@ export const esMessages = {
     close: "Cerrar",
     viewList: "Vista de lista",
     viewGrid: "Vista de grilla",
+    searchPlaceholder: "Buscar préstamos…",
+    searchAriaLabel: "Buscar préstamos",
+    searchEmptyTitle: "No hay préstamos que coincidan",
+    searchEmptyBody: "Probá otras palabras, limpiá la búsqueda o cambiá el filtro lateral.",
+    searchClear: "Limpiar búsqueda",
     deleteDialogTitle: "¿Eliminar este préstamo?",
     deleteDialogDescription:
       "Se eliminará permanentemente “{label}”. Esta acción no se puede deshacer.",
@@ -412,6 +446,11 @@ export const esMessages = {
     cardActionsMenu: "Acciones del dominio",
     emptyTitle: "Todavía no hay dominios",
     emptyBody: "Agregá tu primer dominio y mantené vencimientos y registrars en un solo lugar.",
+    searchPlaceholder: "Buscar dominios…",
+    searchAriaLabel: "Buscar dominios",
+    searchEmptyTitle: "No hay dominios que coincidan",
+    searchEmptyBody: "Probá otras palabras, limpiá la búsqueda o cambiá el filtro de estado.",
+    searchClear: "Limpiar búsqueda",
     expiringBanner:
       "Uno o más dominios vencen en los próximos 30 días. Revisalos abajo o usá el filtro Próximos a vencer.",
     cardExpiresLabel: "Vence",

@@ -1,3 +1,4 @@
+import { tokensMatchHaystack } from "@/lib/apps/filter-items-by-search";
 import type { NSKDomainItem } from "./schema";
 
 // --- Expiry (banner + filter) ---
@@ -98,4 +99,22 @@ export function normalizeDomainSiteUrl(domainName: string): string {
   const slash = host.indexOf("/");
   if (slash >= 0) host = host.slice(0, slash);
   return `https://${host}`;
+}
+
+function domainSearchHaystack(item: NSKDomainItem): string {
+  return [
+    item.domain_name,
+    item.registrar,
+    item.status_id,
+    item.purchased_at,
+    item.expires_on,
+    item.price,
+    item.notes ?? "",
+  ]
+    .join(" ")
+    .toLowerCase();
+}
+
+export function domainMatchesSearch(item: NSKDomainItem, rawQuery: string): boolean {
+  return tokensMatchHaystack(rawQuery, domainSearchHaystack(item));
 }

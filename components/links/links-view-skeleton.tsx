@@ -16,7 +16,7 @@ import type { LinksViewMode } from "@/lib/links/schema";
 const LINK_CARD_HERO_H = "h-36";
 
 export type LinksViewSkeletonProps = {
-  viewMode: LinksViewMode | null;
+  viewMode: LinksViewMode;
 };
 
 function LinksSkeletonGrid() {
@@ -107,7 +107,5 @@ export function LinksViewSkeleton({ viewMode }: LinksViewSkeletonProps) {
       return <LinksSkeletonGrid />;
     case "list":
       return <LinksSkeletonList />;
-    default:
-      return null;
   }
 }

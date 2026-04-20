@@ -14,6 +14,30 @@ export const enMessages = {
     terms: "Terms",
     github: "GitHub",
     or: "or",
+    appToasts: {
+      links: {
+        created: { title: "Link added" },
+        updated: { title: "Link updated" },
+        deleted: { title: "Link deleted" },
+      },
+      domains: {
+        created: { title: "Domain added" },
+        updated: { title: "Domain updated" },
+        deleted: { title: "Domain deleted" },
+      },
+      dates: {
+        created: { title: "Date added" },
+        updated: { title: "Date updated" },
+        deleted: { title: "Date deleted" },
+      },
+      loans: {
+        created: { title: "Loan added" },
+        updated: { title: "Loan updated" },
+        deleted: { title: "Loan deleted" },
+        paymentRecorded: { title: "Payment recorded" },
+        paymentsUpdated: { title: "Payments updated" },
+      },
+    },
   },
   landing: {
     nav: {
@@ -199,6 +223,11 @@ export const enMessages = {
     cardActionsMenu: "Date actions",
     emptyTitle: "No dates yet",
     emptyBody: "Create your first date and keep important events in one place.",
+    searchPlaceholder: "Search dates…",
+    searchAriaLabel: "Search dates",
+    searchEmptyTitle: "No matching dates",
+    searchEmptyBody: "Try different words, clear the search, or change the category filter.",
+    searchClear: "Clear search",
     upcomingTitle: "Upcoming events in the next 30 days",
     upcomingEmpty: "No upcoming events in the next 30 days.",
     daysLeft: "{count} days left",
@@ -241,6 +270,11 @@ export const enMessages = {
     close: "Close",
     viewList: "List view",
     viewGrid: "Grid view",
+    searchPlaceholder: "Search loans…",
+    searchAriaLabel: "Search loans",
+    searchEmptyTitle: "No matching loans",
+    searchEmptyBody: "Try different words, clear the search, or change the sidebar filter.",
+    searchClear: "Clear search",
     deleteDialogTitle: "Delete this loan?",
     deleteDialogDescription:
       "“{label}” will be permanently removed. This cannot be undone.",
@@ -412,6 +446,11 @@ export const enMessages = {
     cardActionsMenu: "Domain actions",
     emptyTitle: "No domains yet",
     emptyBody: "Add your first domain and keep renewals and registrars in one place.",
+    searchPlaceholder: "Search domains…",
+    searchAriaLabel: "Search domains",
+    searchEmptyTitle: "No matching domains",
+    searchEmptyBody: "Try different words, clear the search, or change the status filter.",
+    searchClear: "Clear search",
     expiringBanner:
       "One or more domains expire within 30 days. Review them below or use the Expiring soon filter.",
     cardExpiresLabel: "Expires",
