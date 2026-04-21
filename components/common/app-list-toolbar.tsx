@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Search, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,8 @@ type AppListToolbarProps<TView extends string> = {
   onAdd: () => void;
   /** When omitted, other apps keep the toolbar compact without a search field. */
   search?: AppListToolbarSearchProps;
+  /** Rendered after the search field in the leading cluster (e.g. toggles). */
+  searchTrailing?: ReactNode;
 };
 
 export function AppListToolbar<TView extends string>({
@@ -38,26 +41,34 @@ export function AppListToolbar<TView extends string>({
   addButtonLabel,
   onAdd,
   search,
+  searchTrailing,
 }: AppListToolbarProps<TView>) {
   return (
     <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
       <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
         <p className="shrink-0 text-sm text-muted-foreground">{totalLabel}</p>
-        {search ? (
-          <div className="relative min-w-0 flex-1 lg:max-w-md">
-            <Search
-              className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden
-            />
-            <Input
-              value={search.value}
-              onChange={(e) => search.onChange(e.target.value)}
-              placeholder={search.placeholder}
-              aria-label={search["aria-label"] ?? search.placeholder}
-              type="search"
-              autoComplete="off"
-              className="h-9 pl-9"
-            />
+        {search || searchTrailing ? (
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3 sm:flex-row sm:gap-4">
+            {search ? (
+              <div className="relative min-w-0 flex-1 lg:max-w-md">
+                <Search
+                  className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden
+                />
+                <Input
+                  value={search.value}
+                  onChange={(e) => search.onChange(e.target.value)}
+                  placeholder={search.placeholder}
+                  aria-label={search["aria-label"] ?? search.placeholder}
+                  type="search"
+                  autoComplete="off"
+                  className="h-9 pl-9"
+                />
+              </div>
+            ) : null}
+            {searchTrailing ? (
+              <div className="flex shrink-0 items-center gap-2">{searchTrailing}</div>
+            ) : null}
           </div>
         ) : null}
       </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { PanelLeft, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -138,6 +139,7 @@ export type FilterSidebarMobileSheetProps<T extends string> = {
   onOpenChange: (open: boolean) => void;
   title: string;
   navAriaLabel?: string;
+  footer?: ReactNode;
 } & FilterSidebarNavProps<T>;
 
 export function FilterSidebarMobileSheet<T extends string>({
@@ -145,6 +147,7 @@ export function FilterSidebarMobileSheet<T extends string>({
   onOpenChange,
   title,
   navAriaLabel,
+  footer,
   items,
   activeId,
   onFilterChange,
@@ -154,12 +157,12 @@ export function FilterSidebarMobileSheet<T extends string>({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="left"
-        className="w-[min(100%,22rem)] bg-background/90 backdrop-blur-md sm:max-w-[22rem]"
+        className="flex w-[min(100%,22rem)] flex-col bg-background/90 backdrop-blur-md sm:max-w-[22rem]"
       >
         <SheetHeader>
           <SheetTitle>{title}</SheetTitle>
         </SheetHeader>
-        <nav className="px-4 pb-4" aria-label={aria}>
+        <nav className="min-h-0 flex-1 overflow-auto px-4 pb-2" aria-label={aria}>
           <FilterSidebarNav
             items={items}
             activeId={activeId}
@@ -167,6 +170,9 @@ export function FilterSidebarMobileSheet<T extends string>({
             onAfterSelect={() => onOpenChange(false)}
           />
         </nav>
+        {footer ? (
+          <div className="shrink-0 border-t border-border px-4 py-3">{footer}</div>
+        ) : null}
       </SheetContent>
     </Sheet>
   );
