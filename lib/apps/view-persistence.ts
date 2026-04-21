@@ -1,31 +1,79 @@
 const DEFAULT_MAX_AGE_SEC = 60 * 60 * 24 * 365;
 
-export const DATES_VIEW_COOKIE_NAME = "nsk_dates_view";
-export const DOMAINS_VIEW_COOKIE_NAME = "nsk_domains_view";
-export const LOANS_VIEW_COOKIE_NAME = "nsk_loans_view";
-export const LINKS_VIEW_COOKIE_NAME = "nsk_links_view";
-export const TASKS_VIEW_COOKIE_NAME = "nsk_tasks_view";
+/** Single cookie: JSON object mapping app key → persisted view mode string. */
+export const NSK_APP_VIEWS_COOKIE_NAME = "nsk_app_views";
 
-/** Read a view-mode cookie if it matches one of `validModes`. */
-export function readAppViewCookie<T extends string>(
-  cookieName: string,
-  validModes: readonly T[]
-): T | null {
+export const APP_VIEW_PERSISTENCE_KEYS = [
+  "dates",
+  "domains",
+  "loans",
+  "links",
+  "tasks",
+  "collections",
+] as const;
+export type AppViewPersistenceKey = (typeof APP_VIEW_PERSISTENCE_KEYS)[number];
+
+function getCookieValue(name: string): string | null {
   if (typeof document === "undefined") return null;
-  const cookiePart = document.cookie
-    .split("; ")
-    .find((item) => item.startsWith(`${cookieName}=`));
-  const raw = cookiePart?.split("=")[1];
-  const value = raw ? decodeURIComponent(raw) : null;
-  if (!value || !(validModes as readonly string[]).includes(value)) return null;
-  return value as T;
+  const parts = document.cookie.split("; ");
+  for (const part of parts) {
+    if (part.startsWith(`${name}=`)) {
+      return decodeURIComponent(part.slice(name.length + 1));
+    }
+  }
+  return null;
 }
 
-export function persistAppViewCookie(
-  cookieName: string,
+function readBundleObject(): Record<string, string> {
+  const raw = getCookieValue(NSK_APP_VIEWS_COOKIE_NAME);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    const out: Record<string, string> = {};
+    for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
+      if (typeof v === "string" && v.length > 0) out[k] = v;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+function writeBundleObject(next: Record<string, string>, maxAgeSeconds: number = DEFAULT_MAX_AGE_SEC): void {
+  if (typeof document === "undefined") return;
+  const encoded = encodeURIComponent(JSON.stringify(next));
+  document.cookie = `${NSK_APP_VIEWS_COOKIE_NAME}=${encoded}; Max-Age=${maxAgeSeconds}; Path=/; SameSite=Lax`;
+}
+
+/**
+ * Read persisted view mode for one app from the shared bundle cookie (`nsk_app_views`).
+ */
+export function readAppViewBundlePreference<T extends string>(
+  appKey: AppViewPersistenceKey,
+  validModes: readonly T[]
+): T | null {
+  const bundle = readBundleObject();
+  let fromBundle = bundle[appKey];
+  if (appKey === "collections" && fromBundle === "table") {
+    fromBundle = "list";
+  }
+  if (typeof fromBundle === "string" && (validModes as readonly string[]).includes(fromBundle)) {
+    return fromBundle as T;
+  }
+  return null;
+}
+
+/**
+ * Persist one app’s view mode into the shared bundle cookie.
+ */
+export function persistAppViewBundle(
+  appKey: AppViewPersistenceKey,
   mode: string,
   maxAgeSeconds: number = DEFAULT_MAX_AGE_SEC
 ): void {
   if (typeof document === "undefined") return;
-  document.cookie = `${cookieName}=${encodeURIComponent(mode)}; Max-Age=${maxAgeSeconds}; Path=/; SameSite=Lax`;
+  const bundle = readBundleObject();
+  bundle[appKey] = mode;
+  writeBundleObject(bundle, maxAgeSeconds);
 }

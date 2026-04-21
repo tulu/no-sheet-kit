@@ -27,6 +27,8 @@ type AppListToolbarProps<TView extends string> = {
   onViewModeChange: (next: TView) => void;
   addButtonLabel: string;
   onAdd: () => void;
+  /** When false, the primary add button is hidden (e.g. views that are not tied to one list). */
+  showAddButton?: boolean;
   /** When omitted, other apps keep the toolbar compact without a search field. */
   search?: AppListToolbarSearchProps;
   /** Rendered after the search field in the leading cluster (e.g. toggles). */
@@ -42,6 +44,7 @@ export function AppListToolbar<TView extends string>({
   onAdd,
   search,
   searchTrailing,
+  showAddButton = true,
 }: AppListToolbarProps<TView>) {
   return (
     <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
@@ -93,7 +96,7 @@ export function AppListToolbar<TView extends string>({
             ))}
           </div>
         ) : null}
-        <Button onClick={onAdd}>{addButtonLabel}</Button>
+        {showAddButton ? <Button onClick={onAdd}>{addButtonLabel}</Button> : null}
       </div>
     </div>
   );

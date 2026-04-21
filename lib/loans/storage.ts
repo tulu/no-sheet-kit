@@ -87,6 +87,8 @@ export function readNSKLoansStorage(): NSKLoansSchema {
     const parsed = JSON.parse(raw) as Partial<NSKLoansSchema> & { items?: unknown };
     return {
       version: NSKLOANS_SCHEMA_VERSION,
+      last_google_sync_at:
+        typeof parsed.last_google_sync_at === "string" ? parsed.last_google_sync_at : null,
       items: normalizeItems(parsed.items),
     };
   } catch {
@@ -98,6 +100,7 @@ export function writeNSKLoansStorage(next: NSKLoansSchema) {
   if (typeof window === "undefined") return;
   const toPersist: NSKLoansSchema = {
     version: NSKLOANS_SCHEMA_VERSION,
+    last_google_sync_at: next.last_google_sync_at ?? null,
     items: normalizeItems(next.items),
   };
   window.localStorage.setItem(NSKLOANS_STORAGE_KEY, JSON.stringify(toPersist));

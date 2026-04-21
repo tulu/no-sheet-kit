@@ -1,14 +1,15 @@
 "use client";
 
-import { Folder, LayoutDashboard, LayoutGrid, List, PanelLeft, Settings2 } from "lucide-react";
+import { Folder, LayoutDashboard, LayoutGrid, List, Settings2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { AppListToolbar } from "@/components/common/app-list-toolbar";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
 import {
+  FilterSidebarDesktopAside,
+  FilterSidebarMobileBar,
   FilterSidebarMobileSheet,
-  FilterSidebarNav,
   type FilterSidebarItem,
 } from "@/components/common/filter-sidebar";
 import { ListSearchEmptyState } from "@/components/common/list-search-empty";
@@ -25,7 +26,7 @@ import {
 } from "@/components/ui/empty";
 import { useAppLocalHydration } from "@/lib/apps/use-app-local-hydration";
 import { filterItemsBySearch } from "@/lib/apps/filter-items-by-search";
-import { TASKS_VIEW_COOKIE_NAME, persistAppViewCookie } from "@/lib/apps/view-persistence";
+import { persistAppViewBundle } from "@/lib/apps/view-persistence";
 import {
   appCrudToast,
   appTasksCommentToast,
@@ -90,7 +91,7 @@ export function TasksAppPage() {
   } | null>(null);
 
   useAppLocalHydration(readNSKTasksStorage, setStore, setIsStoreHydrated, {
-    cookieName: TASKS_VIEW_COOKIE_NAME,
+    appViewKey: "tasks",
     validModes: TASKS_VIEW_MODES,
     defaultView: "kanban",
     setViewMode,
@@ -177,13 +178,13 @@ export function TasksAppPage() {
   const spacesSorted = useMemo(() => sortSpaces(store.spaces), [store.spaces]);
 
   const sidebarItems: FilterSidebarItem<NavId>[] = useMemo(() => {
-    const dashCount = store.tasks.filter((x) => !x.archived).length;
     const rows: FilterSidebarItem<NavId>[] = [
       {
         id: TASKS_DASHBOARD_NAV_ID,
         label: t.tasks.dashboardNav,
         icon: LayoutDashboard,
-        count: dashCount,
+        count: 0,
+        hideCount: true,
         tone: "accent",
       },
     ];
@@ -213,7 +214,7 @@ export function TasksAppPage() {
 
   function handleViewModeChange(next: TasksViewMode) {
     setViewMode(next);
-    persistAppViewCookie(TASKS_VIEW_COOKIE_NAME, next);
+    persistAppViewBundle("tasks", next);
   }
 
   function openCreateTask() {
@@ -279,6 +280,13 @@ export function TasksAppPage() {
     setSpaceDeleteWithTasks(space);
   }
 
+  function dismissSpaceSheetAfterSave() {
+    setSpaceSheetOpen(false);
+    setEditingSpace(null);
+    setSpaceSheetInitialName(undefined);
+    setReopenManageAfterSpaceSheet(false);
+  }
+
   function handleSpaceSubmit(name: string) {
     const now = new Date().toISOString();
     if (editingSpace) {
@@ -289,6 +297,7 @@ export function TasksAppPage() {
         ),
       }));
       appTasksSpaceToast(t, "updated");
+      dismissSpaceSheetAfterSave();
       return;
     }
     commit((prev) => {
@@ -300,6 +309,7 @@ export function TasksAppPage() {
       };
     });
     appTasksSpaceToast(t, "created");
+    dismissSpaceSheetAfterSave();
   }
 
   function confirmDeleteSpace() {
@@ -560,28 +570,18 @@ export function TasksAppPage() {
       />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-row">
-        <aside className="hidden min-h-0 w-60 shrink-0 flex-col border-r border-border bg-background/90 backdrop-blur-md md:flex">
-          <div className="flex h-full min-h-0 flex-1 flex-col gap-3 p-4">
-            <h2 className="shrink-0 text-sm font-semibold tracking-tight text-foreground">{t.tasks.sidebarTitle}</h2>
-            <nav className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden" aria-label={t.tasks.sidebarTitle}>
-              <FilterSidebarNav<NavId>
-                items={sidebarItems}
-                activeId={activeNav}
-                onFilterChange={handleNavChange}
-              />
-            </nav>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-full shrink-0 gap-2"
-              onClick={openManageSpaces}
-            >
+        <FilterSidebarDesktopAside<NavId>
+          title={t.tasks.sidebarTitle}
+          items={sidebarItems}
+          activeId={activeNav}
+          onFilterChange={handleNavChange}
+          footer={
+            <Button type="button" variant="outline" size="sm" className="w-full gap-2" onClick={openManageSpaces}>
               <Settings2 className="size-4 shrink-0" aria-hidden />
               {t.tasks.manageSpacesTitle}
             </Button>
-          </div>
-        </aside>
+          }
+        />
 
         <FilterSidebarMobileSheet<NavId>
           open={filtersOpen}
@@ -599,62 +599,60 @@ export function TasksAppPage() {
         />
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <div className="flex items-center gap-2 border-b border-border bg-background/90 px-4 py-2 backdrop-blur-md md:hidden">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon-sm"
-              onClick={() => setFiltersOpen(true)}
-              aria-label={t.tasks.openSpacesNav}
-            >
-              <PanelLeft className="size-4 rtl:rotate-180" aria-hidden />
-            </Button>
-            <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-              {t.tasks.sidebarTitle}
-            </span>
-            <Button type="button" variant="outline" size="icon-sm" onClick={openManageSpaces} aria-label={t.tasks.manageSpacesTitle}>
-              <Settings2 className="size-4" aria-hidden />
-            </Button>
-          </div>
+          <FilterSidebarMobileBar
+            title={t.tasks.sidebarTitle}
+            onOpen={() => setFiltersOpen(true)}
+            openButtonAriaLabel={t.tasks.openSpacesNav}
+            endSlot={
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                onClick={openManageSpaces}
+                aria-label={t.tasks.manageSpacesTitle}
+              >
+                <Settings2 className="size-4" aria-hidden />
+              </Button>
+            }
+          />
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 py-6">
-            {!isStoreHydrated ? (
-              <div className="min-h-0 flex-1 overflow-y-auto">
-                {activeSpaceId ? (
-                  <TasksViewSkeleton viewMode={viewMode} />
-                ) : (
-                  <div className="space-y-4">
-                    <div className="h-40 animate-pulse rounded-lg bg-muted/40" />
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="h-32 animate-pulse rounded-lg bg-muted/40" />
-                      <div className="h-32 animate-pulse rounded-lg bg-muted/40" />
-                    </div>
+          {!isStoreHydrated ? (
+            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto px-6 py-6">
+              {activeSpaceId ? (
+                <TasksViewSkeleton viewMode={viewMode} />
+              ) : (
+                <div className="space-y-4">
+                  <div className="h-40 animate-pulse rounded-lg bg-muted/40" />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="h-32 animate-pulse rounded-lg bg-muted/40" />
+                    <div className="h-32 animate-pulse rounded-lg bg-muted/40" />
                   </div>
-                )}
-              </div>
-            ) : activeNav === TASKS_DASHBOARD_NAV_ID ? (
-              <div className="min-h-0 flex-1 overflow-y-auto">
-                {store.spaces.length === 0 ? (
-                  <Empty className="border border-border p-10">
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon">
-                        <Folder />
-                      </EmptyMedia>
-                      <EmptyTitle className="text-xl font-semibold text-foreground">{t.tasks.dashboardEmptyTitle}</EmptyTitle>
-                      <EmptyDescription>{t.tasks.dashboardEmptyBody}</EmptyDescription>
-                    </EmptyHeader>
-                    <EmptyContent>
-                      <Button type="button" onClick={openCreateSpaceFromDashboard}>
-                        {t.tasks.dashboardEmptyCta}
-                      </Button>
-                    </EmptyContent>
-                  </Empty>
-                ) : (
-                  <TasksDashboard schema={store} />
-                )}
-              </div>
-            ) : (
-              <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+                </div>
+              )}
+            </div>
+          ) : activeNav === TASKS_DASHBOARD_NAV_ID ? (
+            <div className="min-h-0 min-w-0 flex-1 overflow-auto px-6 py-6">
+              {store.spaces.length === 0 ? (
+                <Empty className="border border-border p-10">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Folder />
+                    </EmptyMedia>
+                    <EmptyTitle className="text-xl font-semibold text-foreground">{t.tasks.dashboardEmptyTitle}</EmptyTitle>
+                    <EmptyDescription>{t.tasks.dashboardEmptyBody}</EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Button type="button" onClick={openCreateSpaceFromDashboard}>
+                      {t.tasks.dashboardEmptyCta}
+                    </Button>
+                  </EmptyContent>
+                </Empty>
+              ) : (
+                <TasksDashboard schema={store} />
+              )}
+            </div>
+          ) : (
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden px-6 py-6">
                 <div className="shrink-0">
                   <AppListToolbar<TasksViewMode>
                   totalLabel={t.tasks.totalLabel.replace("{count}", String(searchFilteredTasks.length))}
@@ -735,8 +733,7 @@ export function TasksAppPage() {
                   )}
                 </div>
               </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
 

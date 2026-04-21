@@ -17,7 +17,11 @@ import {
   CardActionsMenu,
   type CardActionsMenuItem,
 } from "@/components/common/card-actions-menu";
-import { semanticBadgeOutlineClass } from "@/components/common/semantic-badge";
+import {
+  semanticBadgeOutlineClass,
+  semanticToTone,
+  type BadgeTone,
+} from "@/components/common/semantic-badge";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -29,6 +33,18 @@ import {
 } from "@/components/ui/table";
 
 const AMOUNT_EPSILON = 0.009;
+
+const TONE_TOP_ACCENT: Record<BadgeTone, string> = {
+  emerald: "bg-emerald-500",
+  neutral: "bg-muted-foreground/45",
+  amber: "bg-amber-500",
+  rose: "bg-rose-500",
+  blue: "bg-blue-500",
+  pink: "bg-pink-500",
+  violet: "bg-violet-500",
+  slate: "bg-slate-500",
+  teal: "bg-teal-500",
+};
 
 /** Positive = they owe you (lent outstanding); negative = you owe them (borrowed outstanding). */
 function signedNetOutstanding(loan: NSKLoanItem): number {
@@ -132,63 +148,70 @@ export function LoansView({
           return (
             <li
               key={item.id}
-              className="flex flex-col rounded-2xl border border-zinc-200/90 bg-card p-5 shadow-sm dark:border-zinc-800/90 dark:bg-zinc-950/40"
+              className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200/90 bg-card shadow-sm dark:border-zinc-800/90 dark:bg-zinc-950/40"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex min-w-0 flex-1 items-center overflow-hidden">
-                  <div className="flex min-w-0 max-w-full items-center gap-2">
-                    <p className="min-w-0 truncate font-semibold leading-tight text-foreground">
-                      {item.counterparty_name}
-                    </p>
-                    <Badge
-                      variant="outline"
-                      className={cn("shrink-0 font-medium", semanticBadgeOutlineClass(statusSemantic(item)))}
-                    >
-                      {active ? t.loans.statusActive : t.loans.statusSettled}
-                    </Badge>
+              <div
+                className={cn("h-1 w-full shrink-0", TONE_TOP_ACCENT[semanticToTone(statusSemantic(item))])}
+                aria-hidden
+              />
+
+              <div className="flex flex-1 flex-col p-5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex min-w-0 flex-1 items-center overflow-hidden">
+                    <div className="flex min-w-0 max-w-full items-center gap-2">
+                      <p className="min-w-0 truncate font-semibold leading-tight text-foreground">
+                        {item.counterparty_name}
+                      </p>
+                      <Badge
+                        variant="outline"
+                        className={cn("shrink-0 font-medium", semanticBadgeOutlineClass(statusSemantic(item)))}
+                      >
+                        {active ? t.loans.statusActive : t.loans.statusSettled}
+                      </Badge>
+                    </div>
                   </div>
+                  <CardActionsMenu
+                    ariaLabel={t.loans.cardActionsMenu}
+                    actions={loanCardMenuActions(
+                      item,
+                      {
+                        edit: t.loans.edit,
+                        delete: t.loans.delete,
+                        viewPayments: t.loans.viewPayments,
+                        addPayment: t.loans.addPayment,
+                      },
+                      () => onEdit(item),
+                      () => onDelete(item),
+                      () => onViewPayments(item),
+                      () => onAddPayment(item)
+                    )}
+                  />
                 </div>
-                <CardActionsMenu
-                  ariaLabel={t.loans.cardActionsMenu}
-                  actions={loanCardMenuActions(
-                    item,
-                    {
-                      edit: t.loans.edit,
-                      delete: t.loans.delete,
-                      viewPayments: t.loans.viewPayments,
-                      addPayment: t.loans.addPayment,
-                    },
-                    () => onEdit(item),
-                    () => onDelete(item),
-                    () => onViewPayments(item),
-                    () => onAddPayment(item)
-                  )}
-                />
+                <p className="text-sm text-muted-foreground">{formatDateShort(item.date, locale)}</p>
+                <div className="mt-5 flex min-h-0 min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                  <p className={cn("text-3xl font-bold tracking-tight tabular-nums", balanceTone)}>
+                    {formatSignedLoanBalance(signed, item.currency, locale)}
+                  </p>
+                  <p className="text-right text-sm text-muted-foreground">{balanceCaption}</p>
+                </div>
+                <dl className="mt-2 space-y-1.5 pt-4 text-xs">
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">{t.loans.cardAmount}</dt>
+                    <dd className="tabular-nums text-foreground/90">
+                      {moneyLabel(item.currency, loanAmountNum, locale)}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-2 text-muted-foreground">
+                    <dt>{t.loans.table.payments}</dt>
+                    <dd className="tabular-nums">{t.loans.cardPaymentCount.replace("{count}", String(item.payments.length))}</dd>
+                  </div>
+                </dl>
+                {item.notes?.trim() ? (
+                  <p className="mt-3 line-clamp-3 border-t border-border/70 pt-3 text-xs whitespace-pre-wrap text-muted-foreground">
+                    {item.notes}
+                  </p>
+                ) : null}
               </div>
-              <p className="text-sm text-muted-foreground">{formatDateShort(item.date, locale)}</p>
-              <div className="mt-5 flex min-h-0 min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-                <p className={cn("text-3xl font-bold tracking-tight tabular-nums", balanceTone)}>
-                  {formatSignedLoanBalance(signed, item.currency, locale)}
-                </p>
-                <p className="text-right text-sm text-muted-foreground">{balanceCaption}</p>
-              </div>
-              <dl className="mt-2 space-y-1.5 pt-4 text-xs">
-                <div className="flex justify-between gap-2">
-                  <dt className="text-muted-foreground">{t.loans.cardAmount}</dt>
-                  <dd className="tabular-nums text-foreground/90">
-                    {moneyLabel(item.currency, loanAmountNum, locale)}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-2 text-muted-foreground">
-                  <dt>{t.loans.table.payments}</dt>
-                  <dd className="tabular-nums">{t.loans.cardPaymentCount.replace("{count}", String(item.payments.length))}</dd>
-                </div>
-              </dl>
-              {item.notes?.trim() ? (
-                <p className="mt-3 line-clamp-3 border-t border-border/70 pt-3 text-xs whitespace-pre-wrap text-muted-foreground">
-                  {item.notes}
-                </p>
-              ) : null}
             </li>
           );
         })}

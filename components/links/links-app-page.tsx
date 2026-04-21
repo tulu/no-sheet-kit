@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/empty";
 import { useAppLocalHydration } from "@/lib/apps/use-app-local-hydration";
 import { filterItemsBySearch } from "@/lib/apps/filter-items-by-search";
-import { LINKS_VIEW_COOKIE_NAME, persistAppViewCookie } from "@/lib/apps/view-persistence";
+import { persistAppViewBundle } from "@/lib/apps/view-persistence";
 import { appCrudToast } from "@/lib/app-toasts";
 import {
   createEmptyNSKLinksSchema,
@@ -153,7 +153,7 @@ export function LinksAppPage() {
   const [linkSearch, setLinkSearch] = useState("");
 
   useAppLocalHydration(readNSKLinksStorage, setStore, setIsStoreHydrated, {
-    cookieName: LINKS_VIEW_COOKIE_NAME,
+    appViewKey: "links",
     validModes: LINKS_VIEW_MODES,
     defaultView: "grid",
     setViewMode,
@@ -352,7 +352,7 @@ export function LinksAppPage() {
 
   function handleViewModeChange(next: LinksViewMode) {
     setViewMode(next);
-    persistAppViewCookie(LINKS_VIEW_COOKIE_NAME, next);
+    persistAppViewBundle("links", next);
   }
 
   function handleRefreshMetadata(item: NSKLinkItem) {

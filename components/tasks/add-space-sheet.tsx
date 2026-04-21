@@ -44,7 +44,6 @@ export function AddSpaceSheet({
       return;
     }
     onSubmit(trimmed);
-    onClose();
   }
 
   return (
