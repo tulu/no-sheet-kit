@@ -8,7 +8,7 @@ export const seoCopy = {
   apps: {
     title: "Apps",
     description:
-      "Open NoSheetKit tools: track loans, remember dates, save links, and manage domains. Private by default with optional Google Drive and Calendar.",
+      "Open NoSheetKit tools: track loans, remember dates, save links, manage domains, and organize tasks in spaces. Private by default with optional Google Drive and Calendar.",
   },
   dates: {
     title: "Dates",
@@ -29,6 +29,11 @@ export const seoCopy = {
     title: "Links",
     description:
       "Save links with automatic metadata extraction, tags, and review status. Everything stays private by default.",
+  },
+  tasks: {
+    title: "Tasks",
+    description:
+      "Organize tasks in spaces with a Kanban board, due dates, comments, and local-only storage in your browser.",
   },
   settings: {
     title: "Settings",

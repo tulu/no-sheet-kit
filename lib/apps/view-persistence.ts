@@ -4,6 +4,7 @@ export const DATES_VIEW_COOKIE_NAME = "nsk_dates_view";
 export const DOMAINS_VIEW_COOKIE_NAME = "nsk_domains_view";
 export const LOANS_VIEW_COOKIE_NAME = "nsk_loans_view";
 export const LINKS_VIEW_COOKIE_NAME = "nsk_links_view";
+export const TASKS_VIEW_COOKIE_NAME = "nsk_tasks_view";
 
 /** Read a view-mode cookie if it matches one of `validModes`. */
 export function readAppViewCookie<T extends string>(

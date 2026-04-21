@@ -3,6 +3,7 @@ import {
   CalendarHeart,
   Globe,
   Link2,
+  ListTodo,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -17,6 +18,7 @@ const ICONS: Record<AppId, LucideIcon> = {
   dates: CalendarHeart,
   links: Link2,
   domains: Globe,
+  tasks: ListTodo,
 };
 
 /** Product names (not translated). */
@@ -25,6 +27,7 @@ const DISPLAY_NAMES: Record<AppId, string> = {
   dates: "NSKDates",
   links: "NSKLinks",
   domains: "NSKDomains",
+  tasks: "NSKTasks",
 };
 
 export type LauncherApp = {
