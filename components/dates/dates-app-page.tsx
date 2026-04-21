@@ -30,7 +30,7 @@ import {
   type NSKDateItem,
 } from "@/lib/dates/schema";
 import { readNSKDatesStorage, writeNSKDatesStorage } from "@/lib/dates/storage";
-import { DATES_VIEW_COOKIE_NAME, persistAppViewCookie } from "@/lib/apps/view-persistence";
+import { persistAppViewBundle } from "@/lib/apps/view-persistence";
 import { dateMatchesSearch, isUpcomingWithin30Days } from "@/lib/dates/dates-helpers";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
 import { AppListToolbar } from "@/components/common/app-list-toolbar";
@@ -114,7 +114,7 @@ export function DatesAppPage() {
   const [itemPendingDelete, setItemPendingDelete] = useState<NSKDateItem | null>(null);
 
   useAppLocalHydration(readNSKDatesStorage, setStore, setIsStoreHydrated, {
-    cookieName: DATES_VIEW_COOKIE_NAME,
+    appViewKey: "dates",
     validModes: DATES_VIEW_MODES,
     defaultView: "grid",
     setViewMode,
@@ -233,7 +233,7 @@ export function DatesAppPage() {
 
   function handleViewModeChange(next: DatesViewMode) {
     setViewMode(next);
-    persistAppViewCookie(DATES_VIEW_COOKIE_NAME, next);
+    persistAppViewBundle("dates", next);
     if (next === "calendar") {
       setCalendarMonth(startOfMonth(new Date()));
     }

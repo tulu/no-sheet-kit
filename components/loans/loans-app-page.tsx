@@ -37,7 +37,7 @@ import {
   mapToSortedEntries,
 } from "@/lib/loans/loans-helpers";
 import { readNSKLoansStorage, writeNSKLoansStorage } from "@/lib/loans/storage";
-import { LOANS_VIEW_COOKIE_NAME, persistAppViewCookie } from "@/lib/apps/view-persistence";
+import { persistAppViewBundle } from "@/lib/apps/view-persistence";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
 import { kpiStatIconGlyphClass, kpiStatIconWrapClass } from "@/components/common/semantic-badge";
 import { AppListToolbar } from "@/components/common/app-list-toolbar";
@@ -157,7 +157,7 @@ export function LoansAppPage() {
       : null;
 
   useAppLocalHydration(readNSKLoansStorage, setStore, setIsStoreHydrated, {
-    cookieName: LOANS_VIEW_COOKIE_NAME,
+    appViewKey: "loans",
     validModes: LOANS_VIEW_MODES,
     defaultView: "grid",
     setViewMode,
@@ -268,7 +268,7 @@ export function LoansAppPage() {
 
   function handleViewModeChange(next: LoansViewMode) {
     setViewMode(next);
-    persistAppViewCookie(LOANS_VIEW_COOKIE_NAME, next);
+    persistAppViewBundle("loans", next);
   }
 
   function openPaymentSheet(loan: NSKLoanItem) {

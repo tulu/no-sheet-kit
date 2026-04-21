@@ -108,6 +108,8 @@ export function readNSKTasksStorage(): NSKTasksSchema {
 
     return {
       version: NSKTASKS_SCHEMA_VERSION,
+      last_google_sync_at:
+        typeof parsed.last_google_sync_at === "string" ? parsed.last_google_sync_at : null,
       spaces,
       tasks,
     };
@@ -123,6 +125,7 @@ export function writeNSKTasksStorage(next: NSKTasksSchema) {
   const tasks = normalizeTasks(next.tasks, validSpaceIds);
   const payload: NSKTasksSchema = {
     version: NSKTASKS_SCHEMA_VERSION,
+    last_google_sync_at: next.last_google_sync_at ?? null,
     spaces,
     tasks,
   };

@@ -44,6 +44,8 @@ export type NSKSpace = {
 
 export type NSKTasksSchema = {
   version: number;
+  /** ISO timestamp of last successful Google Drive sync for this app payload, if any. */
+  last_google_sync_at: string | null;
   spaces: NSKSpace[];
   tasks: NSKTask[];
 };
@@ -55,6 +57,7 @@ export function isTaskStatus(value: string): value is TaskStatus {
 export function createEmptyNSKTasksSchema(): NSKTasksSchema {
   return {
     version: NSKTASKS_SCHEMA_VERSION,
+    last_google_sync_at: null,
     spaces: [],
     tasks: [],
   };
@@ -65,6 +68,7 @@ export function createBootstrapNSKTasksSchema(): NSKTasksSchema {
   const spaceId = crypto.randomUUID();
   return {
     version: NSKTASKS_SCHEMA_VERSION,
+    last_google_sync_at: null,
     spaces: [
       {
         id: spaceId,

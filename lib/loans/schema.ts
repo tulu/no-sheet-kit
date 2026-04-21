@@ -30,12 +30,15 @@ export type NSKLoanItem = {
 
 export type NSKLoansSchema = {
   version: number;
+  /** ISO timestamp of last successful Google Drive sync for this app payload, if any. */
+  last_google_sync_at: string | null;
   items: NSKLoanItem[];
 };
 
 export function createEmptyNSKLoansSchema(): NSKLoansSchema {
   return {
     version: NSKLOANS_SCHEMA_VERSION,
+    last_google_sync_at: null,
     items: [],
   };
 }

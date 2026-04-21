@@ -2,17 +2,17 @@
 
 import type { Dispatch, SetStateAction } from "react";
 import { useLayoutEffect } from "react";
-import { readAppViewCookie } from "@/lib/apps/view-persistence";
+import { readAppViewBundlePreference, type AppViewPersistenceKey } from "@/lib/apps/view-persistence";
 
 export type AppViewCookieOptions<TView extends string> = {
-  cookieName: string;
+  appViewKey: AppViewPersistenceKey;
   validModes: readonly TView[];
   defaultView: TView;
   setViewMode: Dispatch<SetStateAction<TView>>;
 };
 
 /**
- * One-shot client hydration: read localStorage + optional view cookie, then commit in a microtask
+ * One-shot client hydration: read localStorage + optional view preference from the shared views cookie, then commit in a microtask
  * (same pattern across NSK list apps; avoids setState-in-effect lint issues).
  */
 export function useAppLocalHydration<TStore, TView extends string>(
@@ -24,7 +24,7 @@ export function useAppLocalHydration<TStore, TView extends string>(
   useLayoutEffect(() => {
     const nextStore = readStore();
     const fromView =
-      readAppViewCookie(viewCookie.cookieName, viewCookie.validModes) ?? viewCookie.defaultView;
+      readAppViewBundlePreference(viewCookie.appViewKey, viewCookie.validModes) ?? viewCookie.defaultView;
     queueMicrotask(() => {
       setStore(nextStore);
       viewCookie.setViewMode(fromView);

@@ -13,7 +13,11 @@ import {
 } from "@/components/ui/table";
 import { CardActionsMenu, type CardActionsMenuItem } from "@/components/common/card-actions-menu";
 import { MonthGridCalendar } from "@/components/common/month-grid-calendar";
-import { semanticBadgeOutlineClass } from "@/components/common/semantic-badge";
+import {
+  semanticBadgeOutlineClass,
+  semanticToTone,
+  type BadgeTone,
+} from "@/components/common/semantic-badge";
 import {
   getItemsForDay as getDateItemsForCalendarDay,
   isOccurrenceStrictlyPast,
@@ -26,6 +30,18 @@ import type { Locale } from "@/lib/i18n/types";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { cn } from "@/lib/utils";
+
+const TONE_TOP_ACCENT: Record<BadgeTone, string> = {
+  emerald: "bg-emerald-500",
+  neutral: "bg-muted-foreground/45",
+  amber: "bg-amber-500",
+  rose: "bg-rose-500",
+  blue: "bg-blue-500",
+  pink: "bg-pink-500",
+  violet: "bg-violet-500",
+  slate: "bg-slate-500",
+  teal: "bg-teal-500",
+};
 
 function dateCardMenuActions(
   td: { edit: string; delete: string },
@@ -227,8 +243,12 @@ function MonthBlock({
           const { dayMonth, year } = formatDayMonthYear(locale, item);
           return (
             <li key={item.id}>
-              <Card className="h-full border border-border/70">
-                <CardHeader className="gap-3">
+              <Card className="h-full overflow-hidden border border-border/70 gap-0 py-0 pb-4">
+                <div
+                  className={cn("h-1 w-full shrink-0", TONE_TOP_ACCENT[semanticToTone(item.type_id)])}
+                  aria-hidden
+                />
+                <CardHeader className="gap-3 rounded-none px-4 pb-0 pt-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1 space-y-2">
                       <CardTitle className="leading-tight">{item.label}</CardTitle>

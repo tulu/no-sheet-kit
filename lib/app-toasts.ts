@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 import type { Messages } from "@/lib/i18n/messages";
 
-export type AppToastApp = "links" | "domains" | "dates" | "loans" | "tasks";
+export type AppToastApp = "links" | "domains" | "dates" | "loans" | "tasks" | "collections";
 
 export type AppCrudAction = "created" | "updated" | "deleted";
 
@@ -35,5 +35,18 @@ export function appTasksCommentToast(t: Messages, action: "created" | "updated" 
       : action === "updated"
         ? t.common.appToasts.tasks.commentUpdated
         : t.common.appToasts.tasks.commentDeleted;
+  toast.success(row.title);
+}
+
+export function appCollectionsCollectionToast(
+  t: Messages,
+  action: "created" | "updated" | "deleted"
+): void {
+  const row =
+    action === "created"
+      ? t.common.appToasts.collections.collectionCreated
+      : action === "updated"
+        ? t.common.appToasts.collections.collectionUpdated
+        : t.common.appToasts.collections.collectionDeleted;
   toast.success(row.title);
 }

@@ -27,7 +27,7 @@ import {
 } from "@/lib/domains/schema";
 import { domainMatchesSearch, isExpiringSoon } from "@/lib/domains/domains-helpers";
 import { readNSKDomainsStorage, writeNSKDomainsStorage } from "@/lib/domains/storage";
-import { DOMAINS_VIEW_COOKIE_NAME, persistAppViewCookie } from "@/lib/apps/view-persistence";
+import { persistAppViewBundle } from "@/lib/apps/view-persistence";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
 import { AppListToolbar } from "@/components/common/app-list-toolbar";
 import {
@@ -141,7 +141,7 @@ export function DomainsAppPage() {
   const [itemPendingDelete, setItemPendingDelete] = useState<NSKDomainItem | null>(null);
 
   useAppLocalHydration(readNSKDomainsStorage, setStore, setIsStoreHydrated, {
-    cookieName: DOMAINS_VIEW_COOKIE_NAME,
+    appViewKey: "domains",
     validModes: DOMAINS_VIEW_MODES,
     defaultView: "grid",
     setViewMode,
@@ -261,7 +261,7 @@ export function DomainsAppPage() {
 
   function handleViewModeChange(next: DomainsViewMode) {
     setViewMode(next);
-    persistAppViewCookie(DOMAINS_VIEW_COOKIE_NAME, next);
+    persistAppViewBundle("domains", next);
     if (next === "calendar") {
       setCalendarMonth(startOfMonth(new Date()));
     }
