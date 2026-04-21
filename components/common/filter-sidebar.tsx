@@ -119,7 +119,7 @@ export function FilterSidebarDesktopAside<T extends string>({
 }: FilterSidebarDesktopAsideProps<T>) {
   const aria = navAriaLabel ?? title;
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-background/90 backdrop-blur-md md:flex">
+    <aside className="hidden w-75 shrink-0 flex-col border-r border-border bg-background/90 backdrop-blur-md md:flex">
       <div className="sticky top-0 flex flex-col gap-3 p-4">
         <h2 className="text-sm font-semibold tracking-tight text-foreground">{title}</h2>
         <nav aria-label={aria}>

@@ -21,6 +21,7 @@ export type NSKLinkItem = {
   auto_tags: string[];
   reviewed: boolean;
   reviewed_at?: string;
+  review_due_date?: string; // YYYY-MM-DD
   status: LinkStatus;
   error_message?: string;
   created_at: string;

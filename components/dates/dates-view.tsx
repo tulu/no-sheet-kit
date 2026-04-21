@@ -233,7 +233,7 @@ function MonthBlock({
                     <div className="min-w-0 flex-1 space-y-2">
                       <CardTitle className="leading-tight">{item.label}</CardTitle>
                       <div className="flex flex-wrap items-end gap-x-2 gap-y-0.5">
-                        <span className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+                        <span className="text-xl font-semibold tabular-nums tracking-tight text-foreground">
                           {dayMonth}
                         </span>
                         <span className="text-xs text-muted-foreground">{year}</span>
