@@ -7,6 +7,7 @@ export const DATE_TYPE_IDS = [
   "reminder",
   "milestone",
   "memorial",
+  "document_expiration",
   "other",
 ] as const;
 

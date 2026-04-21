@@ -9,6 +9,7 @@ import {
   CalendarRange,
   CalendarX2,
   CircleEllipsis,
+  FileText,
   Flag,
   Flower2,
   HeartHandshake,
@@ -60,6 +61,7 @@ const DATE_FILTER_BASE_ORDER: Exclude<DateFilterId, "upcoming_30">[] = [
   "reminder",
   "milestone",
   "memorial",
+  "document_expiration",
   "other",
 ];
 
@@ -70,6 +72,7 @@ const DATE_FILTER_ICONS: Record<DateFilterId, LucideIcon> = {
   reminder: Bell,
   milestone: Flag,
   memorial: Flower2,
+  document_expiration: FileText,
   other: CircleEllipsis,
   upcoming_30: CalendarClock,
 };
@@ -124,6 +127,7 @@ export function DatesAppPage() {
     reminder: 0,
     milestone: 0,
     memorial: 0,
+    document_expiration: 0,
     other: 0,
     upcoming_30: 0,
   };

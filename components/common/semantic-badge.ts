@@ -25,6 +25,7 @@ const SEMANTIC_TO_TONE: Record<string, BadgeTone> = {
   reminder: "amber",
   milestone: "violet",
   memorial: "slate",
+  document_expiration: "rose",
   other: "teal",
   loan_active: "emerald",
   loan_settled: "neutral",

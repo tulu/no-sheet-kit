@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { parseDate } from "chrono-node";
-import { Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,19 +19,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from "@/components/ui/input-group";
+import { NaturalDateField } from "@/components/common/natural-date-field";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { DATE_TYPE_IDS, type DateTypeId, type NSKDateItem } from "@/lib/dates/schema";
-import { getDayPickerLocale, getIntlLocaleTag } from "@/lib/i18n/locale-display";
-import type { Locale } from "@/lib/i18n/types";
 
 const REQUIRED_MARK = (
   <span className="text-destructive" aria-hidden>
@@ -64,57 +52,21 @@ const DEFAULT_FORM: DateFormValues = {
   notes: "",
 };
 
-function parseISODate(value: string): Date | undefined {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
-  const date = new Date(`${value}T00:00:00`);
-  return Number.isNaN(date.getTime()) ? undefined : date;
-}
-
-function toISODate(value: Date): string {
-  const year = value.getFullYear();
-  const month = String(value.getMonth() + 1).padStart(2, "0");
-  const day = String(value.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function formatDateDisplay(date: Date | undefined, locale: Locale): string {
-  if (!date) return "";
-  return date.toLocaleDateString(getIntlLocaleTag(locale), {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
-
-function parseDateFromInput(text: string): Date | undefined {
-  const trimmed = text.trim();
-  if (!trimmed) return undefined;
-  const parsed = parseDate(trimmed);
-  if (!parsed || Number.isNaN(parsed.getTime())) return undefined;
-  return parsed;
-}
-
 export function AddDateSheet({ open, editingItem, onClose, onSubmit }: AddDateSheetProps) {
   const { t, locale } = useI18n();
   const [form, setForm] = useState<DateFormValues>(DEFAULT_FORM);
   const [error, setError] = useState<string | null>(null);
-  const [dateInput, setDateInput] = useState("");
-  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const sheetTitle = editingItem ? t.dates.editDate : t.dates.addDate;
-  const resolvedDate = parseDateFromInput(dateInput) ?? parseISODate(form.date);
 
   useEffect(() => {
     if (!open) return;
     const id = requestAnimationFrame(() => {
       if (!editingItem) {
         setForm(DEFAULT_FORM);
-        setDateInput("");
-        setCalendarOpen(false);
         setError(null);
         return;
       }
-      const fromIso = parseISODate(editingItem.date);
       setForm({
         label: editingItem.label,
         type_id: editingItem.type_id,
@@ -122,33 +74,26 @@ export function AddDateSheet({ open, editingItem, onClose, onSubmit }: AddDateSh
         is_recurring: editingItem.is_recurring,
         notes: editingItem.notes ?? "",
       });
-      setDateInput(
-        fromIso ? formatDateDisplay(fromIso, locale) : editingItem.date
-      );
-      setCalendarOpen(false);
       setError(null);
     });
     return () => cancelAnimationFrame(id);
-  }, [editingItem, locale, open]);
+  }, [editingItem, open]);
 
   function handleSave() {
     if (!form.label.trim()) {
       setError(t.dates.errors.labelRequired);
       return;
     }
-    const parsed =
-      parseDateFromInput(dateInput) ?? (form.date ? parseISODate(form.date) : undefined);
-    if (!parsed) {
+    if (!form.date) {
       setError(t.dates.errors.dateRequired);
       return;
     }
-    const iso = toISODate(parsed);
     setError(null);
     onSubmit({
       ...form,
       label: form.label.trim(),
       notes: form.notes.trim(),
-      date: iso,
+      date: form.date,
     });
   }
 
@@ -200,74 +145,16 @@ export function AddDateSheet({ open, editingItem, onClose, onSubmit }: AddDateSh
             </Select>
           </div>
 
-          <Field className="gap-1.5">
-            <FieldLabel htmlFor="nsk-dates-natural-date">
-              {t.dates.fields.date}
-              {REQUIRED_MARK}
-            </FieldLabel>
-            <InputGroup>
-              <InputGroupInput
-                id="nsk-dates-natural-date"
-                value={dateInput}
-                placeholder={t.dates.fields.dateNaturalPlaceholder}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setDateInput(v);
-                  const d = parseDateFromInput(v);
-                  if (d) {
-                    setForm((prev) => ({ ...prev, date: toISODate(d) }));
-                  } else if (!v.trim()) {
-                    setForm((prev) => ({ ...prev, date: "" }));
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "ArrowDown") {
-                    e.preventDefault();
-                    setCalendarOpen(true);
-                  }
-                }}
-              />
-              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                <PopoverTrigger
-                  nativeButton={false}
-                  render={<InputGroupAddon align="inline-end" />}
-                >
-                  <InputGroupButton
-                    id="nsk-dates-calendar-trigger"
-                    variant="ghost"
-                    size="icon-xs"
-                    aria-label={t.dates.fields.date}
-                  >
-                    <CalendarIcon className="size-4" />
-                    <span className="sr-only">{t.dates.fields.date}</span>
-                  </InputGroupButton>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-auto overflow-hidden p-0"
-                  align="start"
-                  sideOffset={8}
-                  initialFocus={false}
-                >
-                    {calendarOpen ? (
-                      <Calendar
-                        mode="single"
-                        locale={getDayPickerLocale(locale)}
-                        selected={resolvedDate}
-                        defaultMonth={resolvedDate}
-                        captionLayout="dropdown"
-                        onSelect={(date) => {
-                          if (!date) return;
-                          setForm((prev) => ({ ...prev, date: toISODate(date) }));
-                          setDateInput(formatDateDisplay(date, locale));
-                          setCalendarOpen(false);
-                        }}
-                      />
-                    ) : null}
-                </PopoverContent>
-              </Popover>
-            </InputGroup>
-            <FieldDescription>{t.dates.fields.dateHint}</FieldDescription>
-          </Field>
+          <NaturalDateField
+            id="nsk-dates-natural-date"
+            locale={locale}
+            label={t.dates.fields.date}
+            hint={t.dates.fields.dateHint}
+            placeholder={t.dates.fields.dateNaturalPlaceholder}
+            valueIso={form.date}
+            onChangeIso={(iso) => setForm((prev) => ({ ...prev, date: iso }))}
+            required
+          />
 
           <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
             <div>

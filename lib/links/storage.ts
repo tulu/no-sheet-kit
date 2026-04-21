@@ -43,6 +43,7 @@ function normalizeItems(rawItems: unknown): NSKLinkItem[] {
       auto_tags: normalizeTags(item.auto_tags),
       reviewed,
       reviewed_at: typeof item.reviewed_at === "string" ? item.reviewed_at : undefined,
+      review_due_date: typeof item.review_due_date === "string" ? item.review_due_date : undefined,
       status: typeof item.status === "string" && isLinkStatus(item.status) ? item.status : "pending",
       error_message:
         typeof item.error_message === "string" ? item.error_message.trim() || undefined : undefined,

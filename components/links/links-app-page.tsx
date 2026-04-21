@@ -3,6 +3,7 @@
 import {
   CheckCircle2,
   Circle,
+  CalendarClock,
   Hash,
   LayoutGrid,
   Link2,
@@ -70,12 +71,35 @@ const LINK_FILTER_ICONS: Record<LinkFilterId, LucideIcon> = {
   tags: Hash,
 };
 
+const LINK_FILTER_REVIEWED = "reviewed";
+const LINK_FILTER_NOT_REVIEWED = "not_reviewed";
+const LINK_FILTER_DUE_30 = "review_due_30";
+
+function parseLocalDateOnly(isoDate: string | undefined): Date | null {
+  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return null;
+  const d = new Date(`${isoDate}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return null;
+  return d;
+}
+
+function isReviewDueWithinDays(item: NSKLinkItem, days: number): boolean {
+  if (item.reviewed) return false;
+  const due = parseLocalDateOnly(item.review_due_date);
+  if (!due) return false;
+  const today = new Date();
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const end = new Date(start);
+  end.setDate(end.getDate() + days);
+  return due.getTime() >= start.getTime() && due.getTime() <= end.getTime();
+}
+
 function buildFilterItems(
-  labels: { all: string; reviewed: string; notReviewed: string },
+  labels: { all: string; reviewed: string; notReviewed: string; dueSoon: string },
   allCount: number,
   tagCounts: { tag: string; count: number }[],
   reviewedCount: number,
-  notReviewedCount: number
+  notReviewedCount: number,
+  dueSoonCount: number
 ): FilterSidebarItem<string>[] {
   const out: FilterSidebarItem<string>[] = [
     { id: "all", label: labels.all, icon: LINK_FILTER_ICONS.all, count: allCount },
@@ -93,17 +117,24 @@ function buildFilterItems(
   }
   out.push(
     {
-      id: "reviewed",
+      id: LINK_FILTER_REVIEWED,
       label: labels.reviewed,
       icon: CheckCircle2,
       count: reviewedCount,
       dividerBefore: true,
     },
     {
-      id: "not_reviewed",
+      id: LINK_FILTER_NOT_REVIEWED,
       label: labels.notReviewed,
       icon: Circle,
       count: notReviewedCount,
+    },
+    {
+      id: LINK_FILTER_DUE_30,
+      label: labels.dueSoon,
+      icon: CalendarClock,
+      count: dueSoonCount,
+      tone: "accent",
     }
   );
   return out;
@@ -133,13 +164,17 @@ export function LinksAppPage() {
   const tagCounts = tagsWithCount(store.items).filter((row) => row.count > 1);
   const reviewedCount = store.items.filter((item) => item.reviewed).length;
   const notReviewedCount = allCount - reviewedCount;
+  const dueSoonCount = store.items.filter((item) => isReviewDueWithinDays(item, 30)).length;
   const activeTag =
-    activeFilter !== "reviewed" && activeFilter !== "not_reviewed"
+    activeFilter !== LINK_FILTER_REVIEWED &&
+    activeFilter !== LINK_FILTER_NOT_REVIEWED &&
+    activeFilter !== LINK_FILTER_DUE_30
       ? decodeTagFilter(activeFilter)
       : null;
   const filteredItems = store.items.filter((item) => {
-    if (activeFilter === "reviewed") return item.reviewed;
-    if (activeFilter === "not_reviewed") return !item.reviewed;
+    if (activeFilter === LINK_FILTER_REVIEWED) return item.reviewed;
+    if (activeFilter === LINK_FILTER_NOT_REVIEWED) return !item.reviewed;
+    if (activeFilter === LINK_FILTER_DUE_30) return isReviewDueWithinDays(item, 30);
     if (activeTag) return itemHasTag(item, activeTag);
     return true;
   });
@@ -150,7 +185,8 @@ export function LinksAppPage() {
     allCount,
     tagCounts,
     reviewedCount,
-    notReviewedCount
+    notReviewedCount,
+    dueSoonCount
   );
 
   function updateStoreItems(mutator: (items: NSKLinkItem[]) => NSKLinkItem[]) {
@@ -224,7 +260,12 @@ export function LinksAppPage() {
     }
   }
 
-  function handleCreateOrUpdate(values: { url: string; manualTags: string[]; reviewed: boolean }) {
+  function handleCreateOrUpdate(values: {
+    url: string;
+    manualTags: string[];
+    reviewed: boolean;
+    reviewDueDate?: string;
+  }) {
     const now = new Date().toISOString();
     if (!editingItem) {
       const newItem: NSKLinkItem = {
@@ -234,6 +275,7 @@ export function LinksAppPage() {
         auto_tags: [],
         reviewed: values.reviewed,
         reviewed_at: values.reviewed ? now : undefined,
+        review_due_date: values.reviewDueDate,
         status: "pending",
         created_at: now,
         updated_at: now,
@@ -256,6 +298,7 @@ export function LinksAppPage() {
               manual_tags: values.manualTags,
               reviewed: values.reviewed,
               reviewed_at: values.reviewed ? item.reviewed_at ?? now : undefined,
+              review_due_date: values.reviewDueDate,
               status: values.url !== previousUrl ? "pending" : item.status,
               updated_at: now,
             }
