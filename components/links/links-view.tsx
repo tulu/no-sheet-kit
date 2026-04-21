@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ExternalLink, Image as ImageIcon, Pencil, RefreshCcw, Trash2, Undo2 } from "lucide-react";
+import { CalendarClock, Check, ExternalLink, Image as ImageIcon, Pencil, RefreshCcw, Trash2, Undo2 } from "lucide-react";
 import { useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,11 +28,11 @@ const LINK_CARD_HERO_H = "h-36";
 function ReviewedCornerBadge({ reviewedLabel }: { reviewedLabel: string }) {
   return (
     <span
-      className="pointer-events-none absolute right-2 top-2 flex size-8 items-center justify-center rounded-full border border-emerald-600/55 bg-emerald-500/50 text-emerald-600 shadow-sm"
+      className="pointer-events-none absolute right-2 top-2 inline-flex items-center justify-center rounded-full border border-emerald-300/70 bg-emerald-900/90 p-1 text-emerald-50 shadow-md backdrop-blur-sm"
       title={reviewedLabel}
       aria-label={reviewedLabel}
     >
-      <Check className="size-4" strokeWidth={2.5} aria-hidden />
+          <Check className="size-3.5" strokeWidth={2.5} aria-hidden />
     </span>
   );
 }
@@ -42,10 +42,12 @@ function LinkCardHero({
   imageUrl,
   reviewed,
   reviewedLabel,
+  reviewDueLabel,
 }: {
   imageUrl?: string;
   reviewed: boolean;
   reviewedLabel: string;
+  reviewDueLabel?: string;
 }) {
   const [failed, setFailed] = useState(false);
   const showImage = Boolean(imageUrl?.trim()) && !failed;
@@ -75,6 +77,12 @@ function LinkCardHero({
         </div>
       )}
       {reviewed ? <ReviewedCornerBadge reviewedLabel={reviewedLabel} /> : null}
+      {!reviewed && reviewDueLabel ? (
+        <span className="pointer-events-none absolute right-2 top-2 inline-flex items-center gap-1 rounded-full border border-emerald-300/70 bg-emerald-900/90 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-50 shadow-md backdrop-blur-sm">
+          <CalendarClock className="size-3" aria-hidden />
+          <span>{reviewDueLabel}</span>
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -165,6 +173,11 @@ export function LinksView({
                   imageUrl={item.image_url}
                   reviewed={item.reviewed}
                   reviewedLabel={t.links.reviewedBadge}
+                  reviewDueLabel={
+                    !item.reviewed && item.review_due_date
+                      ? `${t.links.cardReviewOn}: ${formatDateShort(`${item.review_due_date}T00:00:00`, locale)}`
+                      : undefined
+                  }
                 />
                 <CardHeader className="gap-2 rounded-none px-4 pt-4">
                   <div className="flex items-start justify-between gap-3">
@@ -198,12 +211,14 @@ export function LinksView({
                   {item.description ? (
                     <p className="line-clamp-3 text-sm text-muted-foreground">{item.description}</p>
                   ) : null}
-                  <p
-                    className="min-w-0 truncate text-xs text-muted-foreground"
-                    title={`${linkCardSourceTitle(item)} · ${formatDateShort(item.created_at, locale)}`}
-                  >
-                    {`${linkCardSiteLabel(item) || "—"} · ${formatDateShort(item.created_at, locale)}`}
-                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p
+                      className="min-w-0 truncate text-xs text-muted-foreground"
+                      title={`${linkCardSourceTitle(item)} · ${t.links.cardAddedOn}: ${formatDateShort(item.created_at, locale)}`}
+                    >
+                      {`${linkCardSiteLabel(item) || "—"} · ${t.links.cardAddedOn}: ${formatDateShort(item.created_at, locale)}`}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </li>

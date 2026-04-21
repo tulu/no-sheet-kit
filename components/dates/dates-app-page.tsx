@@ -9,6 +9,7 @@ import {
   CalendarRange,
   CalendarX2,
   CircleEllipsis,
+  FileText,
   Flag,
   Flower2,
   HeartHandshake,
@@ -18,6 +19,9 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { useAppLocalHydration } from "@/lib/apps/use-app-local-hydration";
+import { filterItemsBySearch } from "@/lib/apps/filter-items-by-search";
+import { appCrudToast } from "@/lib/app-toasts";
 import {
   createEmptyNSKDatesSchema,
   type DateFilterId,
@@ -26,12 +30,8 @@ import {
   type NSKDateItem,
 } from "@/lib/dates/schema";
 import { readNSKDatesStorage, writeNSKDatesStorage } from "@/lib/dates/storage";
-import {
-  DATES_VIEW_COOKIE_NAME,
-  persistAppViewCookie,
-  readAppViewCookie,
-} from "@/lib/apps/view-persistence";
-import { isUpcomingWithin30Days } from "@/lib/dates/dates-helpers";
+import { persistAppViewBundle } from "@/lib/apps/view-persistence";
+import { dateMatchesSearch, isUpcomingWithin30Days } from "@/lib/dates/dates-helpers";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
 import { AppListToolbar } from "@/components/common/app-list-toolbar";
 import {
@@ -49,8 +49,10 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { ListSearchEmptyState } from "@/components/common/list-search-empty";
 import { AddDateSheet } from "./add-date-sheet";
 import { DatesView } from "./dates-view";
+import { DatesViewSkeleton } from "./dates-view-skeleton";
 
 const DATE_FILTER_BASE_ORDER: Exclude<DateFilterId, "upcoming_30">[] = [
   "all",
@@ -59,6 +61,7 @@ const DATE_FILTER_BASE_ORDER: Exclude<DateFilterId, "upcoming_30">[] = [
   "reminder",
   "milestone",
   "memorial",
+  "document_expiration",
   "other",
 ];
 
@@ -69,6 +72,7 @@ const DATE_FILTER_ICONS: Record<DateFilterId, LucideIcon> = {
   reminder: Bell,
   milestone: Flag,
   memorial: Flower2,
+  document_expiration: FileText,
   other: CircleEllipsis,
   upcoming_30: CalendarClock,
 };
@@ -101,20 +105,20 @@ export function DatesAppPage() {
   const [activeFilter, setActiveFilter] = useState<DateFilterId>("all");
   const [viewMode, setViewMode] = useState<DatesViewMode>("grid");
   const [store, setStore] = useState(createEmptyNSKDatesSchema);
+  const [isStoreHydrated, setIsStoreHydrated] = useState(false);
+  const [dateSearch, setDateSearch] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<NSKDateItem | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(new Date()));
   const [itemPendingDelete, setItemPendingDelete] = useState<NSKDateItem | null>(null);
 
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      setStore(readNSKDatesStorage());
-      const fromCookie = readAppViewCookie(DATES_VIEW_COOKIE_NAME, DATES_VIEW_MODES);
-      if (fromCookie) setViewMode(fromCookie);
-    });
-    return () => cancelAnimationFrame(id);
-  }, []);
+  useAppLocalHydration(readNSKDatesStorage, setStore, setIsStoreHydrated, {
+    appViewKey: "dates",
+    validModes: DATES_VIEW_MODES,
+    defaultView: "grid",
+    setViewMode,
+  });
 
   const categoryCounts: Record<DateFilterId, number> = {
     all: store.items.length,
@@ -123,6 +127,7 @@ export function DatesAppPage() {
     reminder: 0,
     milestone: 0,
     memorial: 0,
+    document_expiration: 0,
     other: 0,
     upcoming_30: 0,
   };
@@ -148,7 +153,8 @@ export function DatesAppPage() {
         ? store.items.filter((item) => isUpcomingWithin30Days(item))
         : store.items.filter((item) => item.type_id === activeFilter);
 
-  const sortedItems = [...filteredItems].sort((a, b) => a.date.localeCompare(b.date));
+  const searchFilteredItems = filterItemsBySearch(filteredItems, dateSearch, dateMatchesSearch);
+  const sortedItems = [...searchFilteredItems].sort((a, b) => a.date.localeCompare(b.date));
 
   const datesFilterItems = buildDatesFilterItems(t.dates.types, categoryCounts);
 
@@ -181,6 +187,7 @@ export function DatesAppPage() {
         updated_at: now,
       };
       updateStore([...store.items, newItem]);
+      appCrudToast(t, "dates", "created");
     } else {
       const nextItems = store.items.map((item) =>
         item.id === editingItem.id
@@ -196,6 +203,7 @@ export function DatesAppPage() {
           : item
       );
       updateStore(nextItems);
+      appCrudToast(t, "dates", "updated");
     }
 
     setEditingItem(null);
@@ -209,6 +217,7 @@ export function DatesAppPage() {
   function handleConfirmDelete() {
     if (!itemPendingDelete) return;
     updateStore(store.items.filter((entry) => entry.id !== itemPendingDelete.id));
+    appCrudToast(t, "dates", "deleted");
     setItemPendingDelete(null);
   }
 
@@ -224,7 +233,7 @@ export function DatesAppPage() {
 
   function handleViewModeChange(next: DatesViewMode) {
     setViewMode(next);
-    persistAppViewCookie(DATES_VIEW_COOKIE_NAME, next);
+    persistAppViewBundle("dates", next);
     if (next === "calendar") {
       setCalendarMonth(startOfMonth(new Date()));
     }
@@ -268,7 +277,7 @@ export function DatesAppPage() {
           />
           <div className="min-h-0 flex-1 overflow-auto px-6 py-6">
             <AppListToolbar<DatesViewMode>
-              totalLabel={t.dates.totalLabel.replace("{count}", String(filteredItems.length))}
+              totalLabel={t.dates.totalLabel.replace("{count}", String(searchFilteredItems.length))}
               viewModes={[
                 { id: "grid", icon: LayoutGrid, ariaLabel: t.dates.viewGrid },
                 { id: "list", icon: List, ariaLabel: t.dates.viewList },
@@ -278,9 +287,17 @@ export function DatesAppPage() {
               onViewModeChange={handleViewModeChange}
               addButtonLabel={t.dates.addNew}
               onAdd={openCreateSheet}
+              search={{
+                value: dateSearch,
+                onChange: setDateSearch,
+                placeholder: t.dates.searchPlaceholder,
+                "aria-label": t.dates.searchAriaLabel,
+              }}
             />
 
-            {sortedItems.length === 0 ? (
+            {!isStoreHydrated ? (
+              <DatesViewSkeleton viewMode={viewMode} />
+            ) : store.items.length === 0 ? (
               <Empty className="border border-border p-10">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
@@ -297,6 +314,39 @@ export function DatesAppPage() {
                 </EmptyHeader>
                 <EmptyContent>
                   <Button onClick={openCreateSheet}>{t.dates.addNew}</Button>
+                </EmptyContent>
+              </Empty>
+            ) : sortedItems.length === 0 && dateSearch.trim() ? (
+              <ListSearchEmptyState
+                labels={{
+                  title: t.dates.searchEmptyTitle,
+                  body: t.dates.searchEmptyBody,
+                  clear: t.dates.searchClear,
+                }}
+                onClear={() => setDateSearch("")}
+              />
+            ) : sortedItems.length === 0 ? (
+              <Empty className="border border-border p-10">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <CalendarX2 />
+                  </EmptyMedia>
+                  <EmptyTitle className="text-xl font-semibold text-foreground">
+                    {t.dates.emptyTitle}
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    {activeFilter === "upcoming_30"
+                      ? t.dates.upcomingEmpty
+                      : t.dates.emptyBody}
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button type="button" variant="outline" onClick={() => setActiveFilter("all")}>
+                    {t.dates.types.all}
+                  </Button>
+                  <Button className="ml-2" onClick={openCreateSheet}>
+                    {t.dates.addNew}
+                  </Button>
                 </EmptyContent>
               </Empty>
             ) : (

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { PanelLeft, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,8 @@ export type FilterSidebarItem<T extends string = string> = {
   label: string;
   icon: LucideIcon;
   count: number;
+  /** When true, no trailing count is shown (e.g. dashboard overview). */
+  hideCount?: boolean;
   tone?: FilterSidebarTone;
   /** Draw a divider above this row (e.g. before dynamically appended filters). */
   dividerBefore?: boolean;
@@ -83,19 +86,21 @@ export function FilterSidebarNav<T extends string>({
                 aria-hidden
               />
               <span className="min-w-0 flex-1 truncate">{item.label}</span>
-              <span
-                className={cn(
-                  "tabular-nums",
-                  destructive && "text-destructive/80",
-                  accent &&
-                    (isActive
-                      ? "text-teal-900/80 dark:text-teal-100/85"
-                      : "text-teal-700/90 dark:text-teal-400/90"),
-                  tone === "default" && "text-muted-foreground"
-                )}
-              >
-                {item.count}
-              </span>
+              {item.hideCount ? null : (
+                <span
+                  className={cn(
+                    "tabular-nums",
+                    destructive && "text-destructive/80",
+                    accent &&
+                      (isActive
+                        ? "text-teal-900/80 dark:text-teal-100/85"
+                        : "text-teal-700/90 dark:text-teal-400/90"),
+                    tone === "default" && "text-muted-foreground"
+                  )}
+                >
+                  {item.count}
+                </span>
+              )}
             </button>
           </li>
         );
@@ -107,27 +112,34 @@ export function FilterSidebarNav<T extends string>({
 export type FilterSidebarDesktopAsideProps<T extends string> = {
   title: string;
   navAriaLabel?: string;
+  /** e.g. “Manage spaces” pinned under the scrollable nav */
+  footer?: ReactNode;
 } & FilterSidebarNavProps<T>;
 
 export function FilterSidebarDesktopAside<T extends string>({
   title,
   navAriaLabel,
+  footer,
   items,
   activeId,
   onFilterChange,
 }: FilterSidebarDesktopAsideProps<T>) {
   const aria = navAriaLabel ?? title;
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-background/90 backdrop-blur-md md:flex">
-      <div className="sticky top-0 flex flex-col gap-3 p-4">
-        <h2 className="text-sm font-semibold tracking-tight text-foreground">{title}</h2>
-        <nav aria-label={aria}>
+    <aside className="hidden min-h-0 w-75 shrink-0 flex-col border-r border-border bg-background/90 backdrop-blur-md md:flex">
+      <div className="flex h-full min-h-0 flex-1 flex-col gap-3 p-4">
+        <h2 className="shrink-0 text-sm font-semibold tracking-tight text-foreground">{title}</h2>
+        <nav
+          className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden"
+          aria-label={aria}
+        >
           <FilterSidebarNav
             items={items}
             activeId={activeId}
             onFilterChange={onFilterChange}
           />
         </nav>
+        {footer ? <div className="shrink-0">{footer}</div> : null}
       </div>
     </aside>
   );
@@ -138,6 +150,7 @@ export type FilterSidebarMobileSheetProps<T extends string> = {
   onOpenChange: (open: boolean) => void;
   title: string;
   navAriaLabel?: string;
+  footer?: ReactNode;
 } & FilterSidebarNavProps<T>;
 
 export function FilterSidebarMobileSheet<T extends string>({
@@ -145,6 +158,7 @@ export function FilterSidebarMobileSheet<T extends string>({
   onOpenChange,
   title,
   navAriaLabel,
+  footer,
   items,
   activeId,
   onFilterChange,
@@ -154,12 +168,12 @@ export function FilterSidebarMobileSheet<T extends string>({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="left"
-        className="w-[min(100%,22rem)] bg-background/90 backdrop-blur-md sm:max-w-[22rem]"
+        className="flex w-[min(100%,22rem)] flex-col bg-background/90 backdrop-blur-md sm:max-w-[22rem]"
       >
         <SheetHeader>
           <SheetTitle>{title}</SheetTitle>
         </SheetHeader>
-        <nav className="px-4 pb-4" aria-label={aria}>
+        <nav className="min-h-0 flex-1 overflow-auto px-4 pb-2" aria-label={aria}>
           <FilterSidebarNav
             items={items}
             activeId={activeId}
@@ -167,6 +181,9 @@ export function FilterSidebarMobileSheet<T extends string>({
             onAfterSelect={() => onOpenChange(false)}
           />
         </nav>
+        {footer ? (
+          <div className="shrink-0 border-t border-border px-4 py-3">{footer}</div>
+        ) : null}
       </SheetContent>
     </Sheet>
   );
@@ -176,12 +193,15 @@ export type FilterSidebarMobileBarProps = {
   title: string;
   onOpen: () => void;
   openButtonAriaLabel: string;
+  /** Right-aligned actions (e.g. settings) */
+  endSlot?: ReactNode;
 };
 
 export function FilterSidebarMobileBar({
   title,
   onOpen,
   openButtonAriaLabel,
+  endSlot,
 }: FilterSidebarMobileBarProps) {
   return (
     <div className="flex items-center gap-2 border-b border-border bg-background/90 px-4 py-2 backdrop-blur-md md:hidden">
@@ -194,7 +214,8 @@ export function FilterSidebarMobileBar({
       >
         <PanelLeft className="size-4 rtl:rotate-180" aria-hidden />
       </Button>
-      <span className="text-sm font-medium text-foreground">{title}</span>
+      <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{title}</span>
+      {endSlot ? <div className="shrink-0">{endSlot}</div> : null}
     </div>
   );
 }

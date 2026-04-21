@@ -3,15 +3,15 @@
 import {
   CheckCircle2,
   Circle,
+  CalendarClock,
   Hash,
   LayoutGrid,
   Link2,
   List,
-  Search,
   Tags,
   type LucideIcon,
 } from "lucide-react";
-import { useLayoutEffect, useState } from "react";
+import { useState } from "react";
 import { AppListToolbar } from "@/components/common/app-list-toolbar";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
 import {
@@ -30,11 +30,10 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  LINKS_VIEW_COOKIE_NAME,
-  persistAppViewCookie,
-  readAppViewCookie,
-} from "@/lib/apps/view-persistence";
+import { useAppLocalHydration } from "@/lib/apps/use-app-local-hydration";
+import { filterItemsBySearch } from "@/lib/apps/filter-items-by-search";
+import { persistAppViewBundle } from "@/lib/apps/view-persistence";
+import { appCrudToast } from "@/lib/app-toasts";
 import {
   createEmptyNSKLinksSchema,
   LINKS_VIEW_MODES,
@@ -50,6 +49,7 @@ import {
   tagsWithCount,
 } from "@/lib/links/links-helpers";
 import { readNSKLinksStorage, writeNSKLinksStorage } from "@/lib/links/storage";
+import { ListSearchEmptyState } from "@/components/common/list-search-empty";
 import { AddLinkSheet } from "./add-link-sheet";
 import { LinksView } from "./links-view";
 import { LinksViewSkeleton } from "./links-view-skeleton";
@@ -71,12 +71,35 @@ const LINK_FILTER_ICONS: Record<LinkFilterId, LucideIcon> = {
   tags: Hash,
 };
 
+const LINK_FILTER_REVIEWED = "reviewed";
+const LINK_FILTER_NOT_REVIEWED = "not_reviewed";
+const LINK_FILTER_DUE_30 = "review_due_30";
+
+function parseLocalDateOnly(isoDate: string | undefined): Date | null {
+  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return null;
+  const d = new Date(`${isoDate}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return null;
+  return d;
+}
+
+function isReviewDueWithinDays(item: NSKLinkItem, days: number): boolean {
+  if (item.reviewed) return false;
+  const due = parseLocalDateOnly(item.review_due_date);
+  if (!due) return false;
+  const today = new Date();
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const end = new Date(start);
+  end.setDate(end.getDate() + days);
+  return due.getTime() >= start.getTime() && due.getTime() <= end.getTime();
+}
+
 function buildFilterItems(
-  labels: { all: string; reviewed: string; notReviewed: string },
+  labels: { all: string; reviewed: string; notReviewed: string; dueSoon: string },
   allCount: number,
   tagCounts: { tag: string; count: number }[],
   reviewedCount: number,
-  notReviewedCount: number
+  notReviewedCount: number,
+  dueSoonCount: number
 ): FilterSidebarItem<string>[] {
   const out: FilterSidebarItem<string>[] = [
     { id: "all", label: labels.all, icon: LINK_FILTER_ICONS.all, count: allCount },
@@ -94,17 +117,24 @@ function buildFilterItems(
   }
   out.push(
     {
-      id: "reviewed",
+      id: LINK_FILTER_REVIEWED,
       label: labels.reviewed,
       icon: CheckCircle2,
       count: reviewedCount,
       dividerBefore: true,
     },
     {
-      id: "not_reviewed",
+      id: LINK_FILTER_NOT_REVIEWED,
       label: labels.notReviewed,
       icon: Circle,
       count: notReviewedCount,
+    },
+    {
+      id: LINK_FILTER_DUE_30,
+      label: labels.dueSoon,
+      icon: CalendarClock,
+      count: dueSoonCount,
+      tone: "accent",
     }
   );
   return out;
@@ -113,7 +143,7 @@ function buildFilterItems(
 export function LinksAppPage() {
   const { locale, t } = useI18n();
   const [activeFilter, setActiveFilter] = useState<string>("all");
-  const [viewMode, setViewMode] = useState<LinksViewMode | null>(null);
+  const [viewMode, setViewMode] = useState<LinksViewMode>("grid");
   const [isStoreHydrated, setIsStoreHydrated] = useState(false);
   const [store, setStore] = useState(createEmptyNSKLinksSchema);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -122,39 +152,41 @@ export function LinksAppPage() {
   const [itemPendingDelete, setItemPendingDelete] = useState<NSKLinkItem | null>(null);
   const [linkSearch, setLinkSearch] = useState("");
 
-  useLayoutEffect(() => {
-    const fromCookie = readAppViewCookie(LINKS_VIEW_COOKIE_NAME, LINKS_VIEW_MODES);
-    const nextStore = readNSKLinksStorage();
-    queueMicrotask(() => {
-      setViewMode(fromCookie ?? "grid");
-        setStore(nextStore);
-        setIsStoreHydrated(true);
-    });
-  }, []);
+  useAppLocalHydration(readNSKLinksStorage, setStore, setIsStoreHydrated, {
+    appViewKey: "links",
+    validModes: LINKS_VIEW_MODES,
+    defaultView: "grid",
+    setViewMode,
+  });
 
   const allCount = store.items.length;
   /** Tags with a single link are hidden from the sidebar (no useful filter). */
   const tagCounts = tagsWithCount(store.items).filter((row) => row.count > 1);
   const reviewedCount = store.items.filter((item) => item.reviewed).length;
   const notReviewedCount = allCount - reviewedCount;
+  const dueSoonCount = store.items.filter((item) => isReviewDueWithinDays(item, 30)).length;
   const activeTag =
-    activeFilter !== "reviewed" && activeFilter !== "not_reviewed"
+    activeFilter !== LINK_FILTER_REVIEWED &&
+    activeFilter !== LINK_FILTER_NOT_REVIEWED &&
+    activeFilter !== LINK_FILTER_DUE_30
       ? decodeTagFilter(activeFilter)
       : null;
   const filteredItems = store.items.filter((item) => {
-    if (activeFilter === "reviewed") return item.reviewed;
-    if (activeFilter === "not_reviewed") return !item.reviewed;
+    if (activeFilter === LINK_FILTER_REVIEWED) return item.reviewed;
+    if (activeFilter === LINK_FILTER_NOT_REVIEWED) return !item.reviewed;
+    if (activeFilter === LINK_FILTER_DUE_30) return isReviewDueWithinDays(item, 30);
     if (activeTag) return itemHasTag(item, activeTag);
     return true;
   });
-  const searchFilteredItems = filteredItems.filter((item) => linkMatchesSearch(item, linkSearch));
+  const searchFilteredItems = filterItemsBySearch(filteredItems, linkSearch, linkMatchesSearch);
   const sortedItems = [...searchFilteredItems].sort((a, b) => b.created_at.localeCompare(a.created_at));
   const sidebarItems = buildFilterItems(
     t.links.filters,
     allCount,
     tagCounts,
     reviewedCount,
-    notReviewedCount
+    notReviewedCount,
+    dueSoonCount
   );
 
   function updateStoreItems(mutator: (items: NSKLinkItem[]) => NSKLinkItem[]) {
@@ -228,7 +260,12 @@ export function LinksAppPage() {
     }
   }
 
-  function handleCreateOrUpdate(values: { url: string; manualTags: string[]; reviewed: boolean }) {
+  function handleCreateOrUpdate(values: {
+    url: string;
+    manualTags: string[];
+    reviewed: boolean;
+    reviewDueDate?: string;
+  }) {
     const now = new Date().toISOString();
     if (!editingItem) {
       const newItem: NSKLinkItem = {
@@ -238,11 +275,13 @@ export function LinksAppPage() {
         auto_tags: [],
         reviewed: values.reviewed,
         reviewed_at: values.reviewed ? now : undefined,
+        review_due_date: values.reviewDueDate,
         status: "pending",
         created_at: now,
         updated_at: now,
       };
       updateStoreItems((items) => [...items, newItem]);
+      appCrudToast(t, "links", "created");
       setSheetOpen(false);
       void enrichLink(newItem.id, values.url);
       return;
@@ -259,12 +298,14 @@ export function LinksAppPage() {
               manual_tags: values.manualTags,
               reviewed: values.reviewed,
               reviewed_at: values.reviewed ? item.reviewed_at ?? now : undefined,
+              review_due_date: values.reviewDueDate,
               status: values.url !== previousUrl ? "pending" : item.status,
               updated_at: now,
             }
           : item
       )
     );
+    appCrudToast(t, "links", "updated");
     setSheetOpen(false);
     setEditingItem(null);
     if (values.url !== previousUrl) {
@@ -289,6 +330,7 @@ export function LinksAppPage() {
   function handleConfirmDelete() {
     if (!itemPendingDelete) return;
     updateStoreItems((items) => items.filter((item) => item.id !== itemPendingDelete.id));
+    appCrudToast(t, "links", "deleted");
     setItemPendingDelete(null);
   }
 
@@ -310,7 +352,7 @@ export function LinksAppPage() {
 
   function handleViewModeChange(next: LinksViewMode) {
     setViewMode(next);
-    persistAppViewCookie(LINKS_VIEW_COOKIE_NAME, next);
+    persistAppViewBundle("links", next);
   }
 
   function handleRefreshMetadata(item: NSKLinkItem) {
@@ -368,7 +410,7 @@ export function LinksAppPage() {
                 { id: "grid", icon: LayoutGrid, ariaLabel: t.links.viewGrid },
                 { id: "list", icon: List, ariaLabel: t.links.viewList },
               ]}
-              viewMode={isStoreHydrated ? viewMode : null}
+              viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
               addButtonLabel={t.links.addNew}
               onAdd={openCreateSheet}
@@ -381,7 +423,7 @@ export function LinksAppPage() {
             />
 
             {!isStoreHydrated ? (
-              <LinksViewSkeleton viewMode={viewMode ?? "grid"} />
+              <LinksViewSkeleton viewMode={viewMode} />
             ) : store.items.length === 0 ? (
               <Empty className="border border-border p-10">
                 <EmptyHeader>
@@ -397,11 +439,20 @@ export function LinksAppPage() {
                   <Button onClick={openCreateSheet}>{t.links.addNew}</Button>
                 </EmptyContent>
               </Empty>
+            ) : sortedItems.length === 0 && linkSearch.trim() ? (
+              <ListSearchEmptyState
+                labels={{
+                  title: t.links.searchEmptyTitle,
+                  body: t.links.searchEmptyBody,
+                  clear: t.links.searchClear,
+                }}
+                onClear={() => setLinkSearch("")}
+              />
             ) : sortedItems.length === 0 ? (
               <Empty className="border border-border p-10">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
-                    <Search />
+                    <Link2 />
                   </EmptyMedia>
                   <EmptyTitle className="text-xl font-semibold text-foreground">
                     {t.links.searchEmptyTitle}
@@ -409,17 +460,15 @@ export function LinksAppPage() {
                   <EmptyDescription>{t.links.searchEmptyBody}</EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>
-                  {linkSearch.trim() ? (
-                    <Button type="button" variant="outline" onClick={() => setLinkSearch("")}>
-                      {t.links.searchClear}
-                    </Button>
-                  ) : null}
+                  <Button type="button" variant="outline" onClick={() => setActiveFilter("all")}>
+                    {t.links.filters.all}
+                  </Button>
                 </EmptyContent>
               </Empty>
             ) : (
               <LinksView
                 items={sortedItems}
-                viewMode={viewMode ?? "grid"}
+                viewMode={viewMode}
                 locale={locale}
                 onEdit={openEditSheet}
                 onDelete={handleRequestDelete}

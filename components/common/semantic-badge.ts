@@ -25,9 +25,15 @@ const SEMANTIC_TO_TONE: Record<string, BadgeTone> = {
   reminder: "amber",
   milestone: "violet",
   memorial: "slate",
+  document_expiration: "rose",
   other: "teal",
   loan_active: "emerald",
   loan_settled: "neutral",
+  /** Collections item possession */
+  owned: "emerald",
+  lent_out: "amber",
+  borrowed: "blue",
+  wanted: "violet",
 };
 
 const DEFAULT_TONE: BadgeTone = "slate";

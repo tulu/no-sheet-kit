@@ -19,7 +19,11 @@ import {
   type CardActionsMenuItem,
 } from "@/components/common/card-actions-menu";
 import { MonthGridCalendar } from "@/components/common/month-grid-calendar";
-import { semanticBadgeOutlineClass } from "@/components/common/semantic-badge";
+import {
+  semanticBadgeOutlineClass,
+  semanticToTone,
+  type BadgeTone,
+} from "@/components/common/semantic-badge";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -57,6 +61,18 @@ function DomainFaviconImage({
     />
   );
 }
+
+const TONE_TOP_ACCENT: Record<BadgeTone, string> = {
+  emerald: "bg-emerald-500",
+  neutral: "bg-muted-foreground/45",
+  amber: "bg-amber-500",
+  rose: "bg-rose-500",
+  blue: "bg-blue-500",
+  pink: "bg-pink-500",
+  violet: "bg-violet-500",
+  slate: "bg-slate-500",
+  teal: "bg-teal-500",
+};
 
 function domainCardMenuActions(
   item: NSKDomainItem,
@@ -144,76 +160,82 @@ export function DomainsView({
             <li
               key={item.id}
               className={cn(
-                "flex flex-col rounded-xl border bg-card p-4 shadow-sm",
-                urgentFooter ? "border-destructive" : "border-border"
+                "flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm"
               )}
             >
-              <div className="flex gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center" aria-hidden>
-                  <DomainFaviconImage domainName={item.domain_name} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold leading-tight text-foreground">
-                        {item.domain_name}
-                      </p>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {item.registrar.trim() || "—"}
-                      </p>
-                    </div>
-                    <CardActionsMenu
-                      ariaLabel={t.domains.cardActionsMenu}
-                      actions={domainCardMenuActions(item, t.domains, () => onEdit(item), () =>
-                        onDelete(item)
-                      )}
-                    />
+              <div
+                className={cn("h-1 w-full shrink-0", TONE_TOP_ACCENT[semanticToTone(item.status_id)])}
+                aria-hidden
+              />
+
+              <div className="flex flex-1 flex-col p-4">
+                <div className="flex gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center" aria-hidden>
+                    <DomainFaviconImage domainName={item.domain_name} />
                   </div>
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                    <Badge
-                      variant="outline"
-                      className={cn("font-medium", semanticBadgeOutlineClass(item.status_id))}
-                    >
-                      {t.domains.types[item.status_id]}
-                    </Badge>
-                    {item.auto_renew ? (
-                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                        <RefreshCw className="size-3.5 shrink-0" aria-hidden />
-                        {t.domains.cardAuto}
-                      </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold leading-tight text-foreground">
+                          {item.domain_name}
+                        </p>
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                          {item.registrar.trim() || "—"}
+                        </p>
+                      </div>
+                      <CardActionsMenu
+                        ariaLabel={t.domains.cardActionsMenu}
+                        actions={domainCardMenuActions(item, t.domains, () => onEdit(item), () =>
+                          onDelete(item)
+                        )}
+                      />
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                      <Badge
+                        variant="outline"
+                        className={cn("font-medium", semanticBadgeOutlineClass(item.status_id))}
+                      >
+                        {t.domains.types[item.status_id]}
+                      </Badge>
+                      {item.auto_renew ? (
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                          <RefreshCw className="size-3.5 shrink-0" aria-hidden />
+                          {t.domains.cardAuto}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 flex items-end justify-between gap-3 pt-3 text-sm">
+                  <p className="min-w-0 text-muted-foreground">
+                    <span>{t.domains.cardExpiresLabel}:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      {formatDateShort(item.expires_on, locale)}
+                    </span>
+                  </p>
+                  <p
+                    className={cn(
+                      "shrink-0 tabular-nums",
+                      urgentFooter ? "font-medium text-destructive" : "text-muted-foreground"
+                    )}
+                  >
+                    {countdownLabel}
+                  </p>
+                </div>
+                {item.price.trim() || item.notes?.trim() ? (
+                  <div className="mt-3 space-y-1 pt-3 text-xs text-muted-foreground">
+                    {item.price.trim() ? (
+                      <p className="truncate">
+                        <span className="text-foreground/80">{t.domains.fields.price}:</span>{" "}
+                        {item.price.trim()}
+                      </p>
+                    ) : null}
+                    {item.notes?.trim() ? (
+                      <p className="line-clamp-2 whitespace-pre-wrap">{item.notes}</p>
                     ) : null}
                   </div>
-                </div>
+                ) : null}
               </div>
-              <div className="mt-4 flex items-end justify-between gap-3 pt-3 text-sm">
-                <p className="min-w-0 text-muted-foreground">
-                  <span>{t.domains.cardExpiresLabel}:</span>{" "}
-                  <span className="font-medium text-foreground">
-                    {formatDateShort(item.expires_on, locale)}
-                  </span>
-                </p>
-                <p
-                  className={cn(
-                    "shrink-0 tabular-nums",
-                    urgentFooter ? "font-medium text-destructive" : "text-muted-foreground"
-                  )}
-                >
-                  {countdownLabel}
-                </p>
-              </div>
-              {item.price.trim() || item.notes?.trim() ? (
-                <div className="mt-3 space-y-1 pt-3 text-xs text-muted-foreground">
-                  {item.price.trim() ? (
-                    <p className="truncate">
-                      <span className="text-foreground/80">{t.domains.fields.price}:</span>{" "}
-                      {item.price.trim()}
-                    </p>
-                  ) : null}
-                  {item.notes?.trim() ? (
-                    <p className="line-clamp-2 whitespace-pre-wrap">{item.notes}</p>
-                  ) : null}
-                </div>
-              ) : null}
             </li>
           );
         })}

@@ -7,6 +7,7 @@ export const DATE_TYPE_IDS = [
   "reminder",
   "milestone",
   "memorial",
+  "document_expiration",
   "other",
 ] as const;
 
@@ -29,6 +30,7 @@ export type NSKDateItem = {
 
 export type NSKDatesSchema = {
   version: number;
+  /** ISO timestamp of last successful Google Drive sync for this app payload, if any. */
   last_google_sync_at: string | null;
   items: NSKDateItem[];
 };

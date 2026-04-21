@@ -13,7 +13,11 @@ import {
 } from "@/components/ui/table";
 import { CardActionsMenu, type CardActionsMenuItem } from "@/components/common/card-actions-menu";
 import { MonthGridCalendar } from "@/components/common/month-grid-calendar";
-import { semanticBadgeOutlineClass } from "@/components/common/semantic-badge";
+import {
+  semanticBadgeOutlineClass,
+  semanticToTone,
+  type BadgeTone,
+} from "@/components/common/semantic-badge";
 import {
   getItemsForDay as getDateItemsForCalendarDay,
   isOccurrenceStrictlyPast,
@@ -26,6 +30,18 @@ import type { Locale } from "@/lib/i18n/types";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { cn } from "@/lib/utils";
+
+const TONE_TOP_ACCENT: Record<BadgeTone, string> = {
+  emerald: "bg-emerald-500",
+  neutral: "bg-muted-foreground/45",
+  amber: "bg-amber-500",
+  rose: "bg-rose-500",
+  blue: "bg-blue-500",
+  pink: "bg-pink-500",
+  violet: "bg-violet-500",
+  slate: "bg-slate-500",
+  teal: "bg-teal-500",
+};
 
 function dateCardMenuActions(
   td: { edit: string; delete: string },
@@ -46,6 +62,18 @@ function monthName(locale: Locale, monthIndex: number): string {
   );
 }
 
+/** Within a named calendar month block, order by day-of-month (recurring-friendly), then full ISO date. */
+function compareByDayOfMonthThenIsoDate(a: NSKDateItem, b: NSKDateItem): number {
+  const da = parseItemLocalDate(a);
+  const db = parseItemLocalDate(b);
+  if (!da && !db) return 0;
+  if (!da) return 1;
+  if (!db) return -1;
+  const byDom = da.getDate() - db.getDate();
+  if (byDom !== 0) return byDom;
+  return a.date.localeCompare(b.date);
+}
+
 function groupByCalendarMonth(items: NSKDateItem[]): Map<number, NSKDateItem[]> {
   const map = new Map<number, NSKDateItem[]>();
   for (const item of items) {
@@ -56,7 +84,7 @@ function groupByCalendarMonth(items: NSKDateItem[]): Map<number, NSKDateItem[]> 
     map.get(m)!.push(item);
   }
   for (const list of map.values()) {
-    list.sort((a, b) => a.date.localeCompare(b.date));
+    list.sort(compareByDayOfMonthThenIsoDate);
   }
   return map;
 }
@@ -210,42 +238,48 @@ function MonthBlock({
         ) : null}
       </h3>
 
-      <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-md:grid-cols-1">
+      <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {monthItems.map((item) => {
           const { dayMonth, year } = formatDayMonthYear(locale, item);
           return (
-            <Card key={item.id}>
-              <CardHeader className="gap-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <CardTitle className="leading-tight">{item.label}</CardTitle>
-                    <div className="flex flex-wrap items-end gap-x-2 gap-y-0.5">
-                      <span className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">
-                        {dayMonth}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{year}</span>
+            <li key={item.id}>
+              <Card className="h-full overflow-hidden border border-border/70 gap-0 py-0 pb-4">
+                <div
+                  className={cn("h-1 w-full shrink-0", TONE_TOP_ACCENT[semanticToTone(item.type_id)])}
+                  aria-hidden
+                />
+                <CardHeader className="gap-3 rounded-none px-4 pb-0 pt-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <CardTitle className="leading-tight">{item.label}</CardTitle>
+                      <div className="flex flex-wrap items-end gap-x-2 gap-y-0.5">
+                        <span className="text-xl font-semibold tabular-nums tracking-tight text-foreground">
+                          {dayMonth}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{year}</span>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={cn("font-medium", semanticBadgeOutlineClass(item.type_id))}
+                      >
+                        {t.dates.types[item.type_id]}
+                      </Badge>
+                      <CardActionsMenu
+                        ariaLabel={t.dates.cardActionsMenu}
+                        actions={dateCardMenuActions(t.dates, () => onEdit(item), () =>
+                          onDelete(item)
+                        )}
+                      />
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className={cn("font-medium", semanticBadgeOutlineClass(item.type_id))}
-                    >
-                      {t.dates.types[item.type_id]}
-                    </Badge>
-                    <CardActionsMenu
-                      ariaLabel={t.dates.cardActionsMenu}
-                      actions={dateCardMenuActions(t.dates, () => onEdit(item), () =>
-                        onDelete(item)
-                      )}
-                    />
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
+                </CardHeader>
+              </Card>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </section>
   );
 }

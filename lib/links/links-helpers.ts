@@ -305,6 +305,7 @@ export function linkSearchHaystack(item: NSKLinkItem): string {
     item.created_at,
     item.updated_at,
     item.reviewed_at,
+    item.review_due_date,
     ...item.manual_tags,
     ...item.auto_tags,
   ];

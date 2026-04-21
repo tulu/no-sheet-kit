@@ -43,6 +43,7 @@ function normalizeItems(rawItems: unknown): NSKLinkItem[] {
       auto_tags: normalizeTags(item.auto_tags),
       reviewed,
       reviewed_at: typeof item.reviewed_at === "string" ? item.reviewed_at : undefined,
+      review_due_date: typeof item.review_due_date === "string" ? item.review_due_date : undefined,
       status: typeof item.status === "string" && isLinkStatus(item.status) ? item.status : "pending",
       error_message:
         typeof item.error_message === "string" ? item.error_message.trim() || undefined : undefined,
@@ -62,6 +63,8 @@ export function readNSKLinksStorage(): NSKLinksSchema {
     const parsed = JSON.parse(raw) as Partial<NSKLinksSchema> & { items?: unknown };
     return {
       version: NSKLINKS_SCHEMA_VERSION,
+      last_google_sync_at:
+        typeof parsed.last_google_sync_at === "string" ? parsed.last_google_sync_at : null,
       items: normalizeItems(parsed.items),
     };
   } catch {
@@ -73,6 +76,7 @@ export function writeNSKLinksStorage(next: NSKLinksSchema): void {
   if (typeof window === "undefined") return;
   const toPersist: NSKLinksSchema = {
     version: NSKLINKS_SCHEMA_VERSION,
+    last_google_sync_at: next.last_google_sync_at ?? null,
     items: normalizeItems(next.items),
   };
   window.localStorage.setItem(NSKLINKS_STORAGE_KEY, JSON.stringify(toPersist));

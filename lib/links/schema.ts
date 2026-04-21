@@ -21,6 +21,7 @@ export type NSKLinkItem = {
   auto_tags: string[];
   reviewed: boolean;
   reviewed_at?: string;
+  review_due_date?: string; // YYYY-MM-DD
   status: LinkStatus;
   error_message?: string;
   created_at: string;
@@ -29,12 +30,15 @@ export type NSKLinkItem = {
 
 export type NSKLinksSchema = {
   version: number;
+  /** ISO timestamp of last successful Google Drive sync for this app payload, if any. */
+  last_google_sync_at: string | null;
   items: NSKLinkItem[];
 };
 
 export function createEmptyNSKLinksSchema(): NSKLinksSchema {
   return {
     version: NSKLINKS_SCHEMA_VERSION,
+    last_google_sync_at: null,
     items: [],
   };
 }

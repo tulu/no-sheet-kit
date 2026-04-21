@@ -1,3 +1,4 @@
+import { tokensMatchHaystack } from "@/lib/apps/filter-items-by-search";
 import type { NSKDateItem } from "./schema";
 
 // --- Month grid (6×7 cells) ---
@@ -160,4 +161,14 @@ export function isUpcomingWithin30Days(item: NSKDateItem, now: Date = new Date()
   const delta = next.getTime() - start.getTime();
   const thirtyDays = 30 * 24 * 60 * 60 * 1000;
   return delta >= 0 && delta <= thirtyDays;
+}
+
+function dateSearchHaystack(item: NSKDateItem): string {
+  return [item.label, item.date, item.type_id, item.notes ?? "", item.is_recurring ? "recurring" : ""]
+    .join(" ")
+    .toLowerCase();
+}
+
+export function dateMatchesSearch(item: NSKDateItem, rawQuery: string): boolean {
+  return tokensMatchHaystack(rawQuery, dateSearchHaystack(item));
 }

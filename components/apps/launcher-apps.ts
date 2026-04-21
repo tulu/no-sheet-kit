@@ -2,7 +2,9 @@ import {
   Banknote,
   CalendarHeart,
   Globe,
+  Layers,
   Link2,
+  ListTodo,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -17,6 +19,8 @@ const ICONS: Record<AppId, LucideIcon> = {
   dates: CalendarHeart,
   links: Link2,
   domains: Globe,
+  tasks: ListTodo,
+  collections: Layers,
 };
 
 /** Product names (not translated). */
@@ -25,6 +29,8 @@ const DISPLAY_NAMES: Record<AppId, string> = {
   dates: "NSKDates",
   links: "NSKLinks",
   domains: "NSKDomains",
+  tasks: "NSKTasks",
+  collections: "NSKCollections",
 };
 
 export type LauncherApp = {

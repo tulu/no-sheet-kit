@@ -27,6 +27,7 @@ export type NSKDomainItem = {
 
 export type NSKDomainsSchema = {
   version: number;
+  /** ISO timestamp of last successful Google Drive sync for this app payload, if any. */
   last_google_sync_at: string | null;
   items: NSKDomainItem[];
 };

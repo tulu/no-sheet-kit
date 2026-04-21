@@ -1,3 +1,4 @@
+import { tokensMatchHaystack } from "@/lib/apps/filter-items-by-search";
 import { getIntlLocaleTag } from "@/lib/i18n/locale-display";
 import type { Locale } from "@/lib/i18n/types";
 import type { LoanFilterId, LoanDirection, NSKLoanItem } from "./schema";
@@ -124,4 +125,23 @@ export function directionSemantic(direction: LoanDirection): string {
 
 export function statusSemantic(loan: NSKLoanItem): string {
   return isLoanActive(loan) ? "loan_active" : "loan_settled";
+}
+
+function loanSearchHaystack(item: NSKLoanItem): string {
+  const pay = item.payments.map((p) => `${p.amount} ${p.date}`).join(" ");
+  return [
+    item.counterparty_name,
+    item.currency,
+    item.amount,
+    item.date,
+    item.direction,
+    item.notes ?? "",
+    pay,
+  ]
+    .join(" ")
+    .toLowerCase();
+}
+
+export function loanMatchesSearch(item: NSKLoanItem, rawQuery: string): boolean {
+  return tokensMatchHaystack(rawQuery, loanSearchHaystack(item));
 }

@@ -12,6 +12,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { NaturalDateField } from "@/components/common/natural-date-field";
 import { useI18n } from "@/components/providers/i18n-provider";
 import type { NSKLinkItem } from "@/lib/links/schema";
 import { parseTagsInput, tagsInputValue, toValidHttpUrl } from "@/lib/links/links-helpers";
@@ -26,6 +27,7 @@ type LinkFormValues = {
   url: string;
   manualTags: string[];
   reviewed: boolean;
+  reviewDueDate?: string;
 };
 
 type AddLinkSheetProps = {
@@ -39,16 +41,18 @@ type FormState = {
   url: string;
   tags: string;
   reviewed: boolean;
+  reviewDueDate: string;
 };
 
 const DEFAULT_FORM: FormState = {
   url: "",
   tags: "",
   reviewed: false,
+  reviewDueDate: "",
 };
 
 export function AddLinkSheet({ open, editingItem, onClose, onSubmit }: AddLinkSheetProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const baseId = useId();
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [error, setError] = useState<string | null>(null);
@@ -63,6 +67,7 @@ export function AddLinkSheet({ open, editingItem, onClose, onSubmit }: AddLinkSh
           url: editingItem.url,
           tags: tagsInputValue(editingItem.manual_tags),
           reviewed: editingItem.reviewed,
+          reviewDueDate: editingItem.review_due_date ?? "",
         });
       }
       setError(null);
@@ -82,6 +87,7 @@ export function AddLinkSheet({ open, editingItem, onClose, onSubmit }: AddLinkSh
       url: parsed.toString(),
       manualTags: parseTagsInput(form.tags),
       reviewed: form.reviewed,
+      reviewDueDate: form.reviewDueDate || undefined,
     });
   }
 
@@ -121,6 +127,16 @@ export function AddLinkSheet({ open, editingItem, onClose, onSubmit }: AddLinkSh
               placeholder={t.links.fields.tagsPlaceholder}
             />
           </Field>
+
+          <NaturalDateField
+            id={`${baseId}-review-due-date`}
+            locale={locale}
+            label={t.links.fields.reviewDueDate}
+            hint={t.links.fields.reviewDueDateHint}
+            placeholder={t.links.fields.reviewDueDatePlaceholder}
+            valueIso={form.reviewDueDate}
+            onChangeIso={(iso) => setForm((prev) => ({ ...prev, reviewDueDate: iso }))}
+          />
 
           <Field>
             <div className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2">
