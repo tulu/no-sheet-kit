@@ -1,4 +1,4 @@
-export const NSKDATES_STORAGE_KEY = "nskdates";
+export { NSKDATES_STORAGE_KEY } from "@/lib/storage/anonymous-storage-keys";
 export const NSKDATES_SCHEMA_VERSION = 1;
 
 export const DATE_TYPE_IDS = [

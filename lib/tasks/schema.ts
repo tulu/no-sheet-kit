@@ -1,4 +1,4 @@
-export const NSKTASKS_STORAGE_KEY = "nsktasks";
+export { NSKTASKS_STORAGE_KEY } from "@/lib/storage/anonymous-storage-keys";
 export const NSKTASKS_SCHEMA_VERSION = 1;
 
 export const TASK_STATUSES = ["todo", "in_progress", "done"] as const;

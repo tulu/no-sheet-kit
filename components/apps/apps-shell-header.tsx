@@ -4,8 +4,9 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { resolveAvailableAppFromPath } from "@/lib/apps/catalog";
 import { getAppDisplayName } from "@/components/apps/launcher-apps";
-import { UserMenuPlaceholder } from "./user-menu-placeholder";
+import { AppsUserMenu } from "./apps-user-menu";
 import { AppsSwitcher } from "./apps-switcher";
+import { GuestDataRestoreButton } from "./guest-data-restore-button";
 import { useI18n } from "@/components/providers/i18n-provider";
 
 type AppsShellHeaderProps = {
@@ -26,15 +27,16 @@ export function AppsShellHeader({ title: titleProp }: AppsShellHeaderProps) {
         : "NoSheetKit");
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-background/90 px-6 backdrop-blur-md">
+    <header className="flex h-16 items-center justify-between px-6">
       <div className="flex select-none items-center gap-2.5 text-xl font-semibold text-foreground">
         <Image src="/nsk-iso.png" alt="NoSheetKit" width={28} height={28} className="rounded-[6px]" />
         {title}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
+        <GuestDataRestoreButton />
         <AppsSwitcher />
-        <UserMenuPlaceholder />
+        <AppsUserMenu />
       </div>
     </header>
   );

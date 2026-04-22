@@ -59,6 +59,10 @@ pnpm dev
 
 Then open [http://localhost:3000](http://localhost:3000). For a production check: `pnpm build` and `pnpm start`. Lint: `pnpm lint`.
 
+### Guest session (`/apps`)
+
+The `/apps` area is gated by a signed **httpOnly** cookie. Set `NSK_AUTH_SECRET` in the environment to a **string of at least 32 characters** before deploying to production (used to sign the JWT). In local development, a built-in fallback secret is used when this variable is unset so `pnpm dev` still works.
+
 ## Contributing
 
 Issues and pull requests are welcome. If you change user-visible copy, keep the tone **plain, honest, and product-first**—the same voice as the in-app experience.

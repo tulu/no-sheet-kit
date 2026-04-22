@@ -199,7 +199,7 @@ export const esMessages = {
     description:
       "Inicia sesión para sincronizar datos entre dispositivos con Google Drive, o continúa de forma privada solo con almacenamiento local.",
     continueWithGoogle: "Continuar con Google",
-    continueAnonymously: "Continuar sin iniciar sesión",
+    continueAnonymously: "Continuar como invitado",
     legalPrefix: "Al continuar aceptas nuestros",
     legalConnector: "y la",
   },
@@ -219,8 +219,37 @@ export const esMessages = {
       tasks: "Tareas en espacios con Kanban y listas.",
       collections: "Colecciones de cosas que tienes, prestaste o quieres.",
     },
+    anonymousBanner: {
+      title: "Sesión de invitado",
+      description:
+        "Los datos solo están en este dispositivo. Quien comparta esta computadora podría verlos, y se pueden perder si no hacés un respaldo.",
+    },
+    logoutDialog: {
+      title: "Cerrar sesión",
+      description: "Elegí qué hacer con los datos guardados en este navegador para tu sesión de invitado.",
+      noDataDescription:
+        "No hay datos de apps guardados en este navegador para tu sesión de invitado. Cerrar sesión solo termina la sesión.",
+      keepData: "Mantener los datos en este navegador",
+      deleteData: "Borrar los datos de este navegador",
+      downloadAndDelete: "Descargar copia de seguridad y borrar datos",
+      exportFailed: "No se pudo crear el archivo de copia. No se borró nada y seguís con la sesión iniciada.",
+      signOutOnly: "Cerrar sesión",
+      cancel: "Cancelar",
+    },
+    guestRestore: {
+      button: "Restaurar copia",
+      buttonShort: "Restaurar",
+      tooltip: "Subí una copia de seguridad desde tu computadora.",
+      successToast: "Copia restaurada. Recargando…",
+      errorInvalidZip: "No se pudo leer ese archivo como ZIP de copia válido.",
+      errorNoFiles: "No se encontraron archivos JSON de apps reconocidos en el ZIP.",
+      errorBadJson: "Un archivo del ZIP no es JSON válido.",
+      errorTooLarge: "El archivo es demasiado grande (máximo 32 MB).",
+    },
     userMenu: {
       label: "Usuario",
+      guestLabel: "Invitado",
+      openAccountMenu: "Abrir menú de la cuenta",
       settings: "Ajustes",
       logout: "Cerrar sesión",
     },

@@ -199,7 +199,7 @@ export const enMessages = {
     description:
       "Sign in to sync your data across devices via Google Drive, or continue privately with local storage only.",
     continueWithGoogle: "Continue with Google",
-    continueAnonymously: "Continue without signing in",
+    continueAnonymously: "Continue as guest",
     legalPrefix: "By continuing you agree to our",
     legalConnector: "and",
   },
@@ -219,8 +219,37 @@ export const enMessages = {
       tasks: "Tasks in spaces with Kanban and lists.",
       collections: "Collections of things you own, lent, or want.",
     },
+    anonymousBanner: {
+      title: "Guest session",
+      description:
+        "Data is only on this device. Others who use this computer may see it, and it can be lost if you do not back it up.",
+    },
+    logoutDialog: {
+      title: "Sign out",
+      description: "Choose what to do with data stored in this browser for your guest session.",
+      noDataDescription:
+        "There is no app data stored in this browser for your guest session. Signing out only ends your session.",
+      keepData: "Keep data in this browser",
+      deleteData: "Delete data from this browser",
+      downloadAndDelete: "Download backup and delete data",
+      exportFailed: "Could not create the backup file. Your data was not removed and you are still signed in.",
+      signOutOnly: "Sign out",
+      cancel: "Cancel",
+    },
+    guestRestore: {
+      button: "Restore backup",
+      buttonShort: "Restore",
+      tooltip: "Upload a backup from your computer.",
+      successToast: "Backup restored. Reloading…",
+      errorInvalidZip: "That file could not be read as a valid backup ZIP.",
+      errorNoFiles: "No recognized app JSON files were found in the ZIP.",
+      errorBadJson: "A file in the ZIP is not valid JSON.",
+      errorTooLarge: "That file is too large (maximum 32 MB).",
+    },
     userMenu: {
       label: "User",
+      guestLabel: "Guest",
+      openAccountMenu: "Open account menu",
       settings: "Settings",
       logout: "Log out",
     },

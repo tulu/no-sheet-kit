@@ -41,13 +41,13 @@ export function AppsSwitcher() {
         onClick={() => setOpen((current) => !current)}
         aria-label={t.apps.switcherTitle}
         aria-expanded={open}
-        className="inline-flex items-center justify-center rounded-md border border-border bg-background size-9 text-foreground"
+        className="inline-flex size-12 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-muted/60"
       >
-        <Grid3X3 className="w-4 h-4 text-muted-foreground" />
+        <Grid3X3 className="size-6 text-muted-foreground" />
       </button>
 
       {open && (
-        <div className="fixed right-6 top-[4.5rem] w-[360px] rounded-[28px] border border-border bg-popover p-4 shadow-xl z-50 origin-top-right">
+        <div className="fixed right-6 top-[5.25rem] z-50 w-[min(360px,calc(100vw-3rem))] origin-top-right rounded-[28px] border border-border bg-popover p-4 shadow-xl">
           <div className="mb-4">
             <p className="text-base font-semibold text-foreground text-center">
               {t.apps.switcherTitle}

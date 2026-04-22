@@ -199,7 +199,7 @@ export const ptMessages = {
     description:
       "Entre para sincronizar seus dados entre dispositivos com Google Drive, ou continue em modo privado com armazenamento local.",
     continueWithGoogle: "Continuar com Google",
-    continueAnonymously: "Continuar sem login",
+    continueAnonymously: "Continuar como convidado",
     legalPrefix: "Ao continuar você aceita nossos",
     legalConnector: "e a",
   },
@@ -219,8 +219,37 @@ export const ptMessages = {
       tasks: "Tarefas em espaços com Kanban e listas.",
       collections: "Coleções de coisas que você tem, emprestou ou quer.",
     },
+    anonymousBanner: {
+      title: "Sessão de convidado",
+      description:
+        "Os dados ficam só neste dispositivo. Quem compartilhar este computador pode vê-los, e eles podem ser perdidos se você não fizer backup.",
+    },
+    logoutDialog: {
+      title: "Sair",
+      description: "Escolha o que fazer com os dados salvos neste navegador na sessão de convidado.",
+      noDataDescription:
+        "Não há dados dos apps salvos neste navegador para a sessão de convidado. Sair encerra apenas a sessão.",
+      keepData: "Manter os dados neste navegador",
+      deleteData: "Apagar os dados deste navegador",
+      downloadAndDelete: "Baixar backup e apagar dados",
+      exportFailed: "Não foi possível criar o arquivo de cópia. Nada foi apagado e você continua conectado.",
+      signOutOnly: "Sair",
+      cancel: "Cancelar",
+    },
+    guestRestore: {
+      button: "Restaurar cópia",
+      buttonShort: "Restaurar",
+      tooltip: "Envie um backup do seu computador.",
+      successToast: "Cópia restaurada. Recarregando…",
+      errorInvalidZip: "Não foi possível ler esse arquivo como ZIP de backup válido.",
+      errorNoFiles: "Nenhum arquivo JSON de app reconhecido foi encontrado no ZIP.",
+      errorBadJson: "Um arquivo no ZIP não é JSON válido.",
+      errorTooLarge: "O arquivo é grande demais (máximo 32 MB).",
+    },
     userMenu: {
       label: "Usuário",
+      guestLabel: "Convidado",
+      openAccountMenu: "Abrir menu da conta",
       settings: "Configurações",
       logout: "Sair",
     },
