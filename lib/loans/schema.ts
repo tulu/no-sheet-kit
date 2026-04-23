@@ -1,4 +1,4 @@
-export const NSKLOANS_STORAGE_KEY = "nskloans";
+export { NSKLOANS_STORAGE_KEY } from "@/lib/storage/anonymous-storage-keys";
 export const NSKLOANS_SCHEMA_VERSION = 1;
 
 export type LoanDirection = "lent" | "borrowed";

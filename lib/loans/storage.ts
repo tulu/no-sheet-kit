@@ -1,10 +1,11 @@
 "use client";
 
+import { markPendingDriveSync } from "@/lib/storage/pending-drive-sync";
+import { buildNskListAppStorageKey } from "@/lib/storage/session-storage-keys";
 import {
   createEmptyNSKLoansSchema,
   isLoanDirection,
   NSKLOANS_SCHEMA_VERSION,
-  NSKLOANS_STORAGE_KEY,
   type LoanPayment,
   type NSKLoanItem,
   type NSKLoansSchema,
@@ -77,10 +78,11 @@ function normalizeItems(rawItems: unknown): NSKLoanItem[] {
   }, []);
 }
 
-export function readNSKLoansStorage(): NSKLoansSchema {
+export function readNSKLoansStorage(sessionSuffix: string): NSKLoansSchema {
   if (typeof window === "undefined") return createEmptyNSKLoansSchema();
 
-  const raw = window.localStorage.getItem(NSKLOANS_STORAGE_KEY);
+  const key = buildNskListAppStorageKey("loans", sessionSuffix);
+  const raw = window.localStorage.getItem(key);
   if (!raw) return createEmptyNSKLoansSchema();
 
   try {
@@ -96,12 +98,18 @@ export function readNSKLoansStorage(): NSKLoansSchema {
   }
 }
 
-export function writeNSKLoansStorage(next: NSKLoansSchema) {
+export function writeNSKLoansStorage(
+  sessionSuffix: string,
+  next: NSKLoansSchema,
+  opts?: { skipPendingDriveMark?: boolean }
+) {
   if (typeof window === "undefined") return;
+  const key = buildNskListAppStorageKey("loans", sessionSuffix);
   const toPersist: NSKLoansSchema = {
     version: NSKLOANS_SCHEMA_VERSION,
     last_google_sync_at: next.last_google_sync_at ?? null,
     items: normalizeItems(next.items),
   };
-  window.localStorage.setItem(NSKLOANS_STORAGE_KEY, JSON.stringify(toPersist));
+  window.localStorage.setItem(key, JSON.stringify(toPersist));
+  if (!opts?.skipPendingDriveMark) markPendingDriveSync(sessionSuffix);
 }

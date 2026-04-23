@@ -64,7 +64,9 @@ export function LoginPageContent() {
           <p className="text-muted-foreground text-sm leading-relaxed">{t.login.description}</p>
         </div>
 
-        <LoginOptions />
+        <Suspense fallback={null}>
+          <LoginOptions />
+        </Suspense>
 
         <Suspense
           fallback={

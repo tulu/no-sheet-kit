@@ -199,14 +199,20 @@ export const ptMessages = {
     description:
       "Entre para sincronizar seus dados entre dispositivos com Google Drive, ou continue em modo privado com armazenamento local.",
     continueWithGoogle: "Continuar com Google",
-    continueAnonymously: "Continuar sem login",
+    continueAnonymously: "Continuar como convidado",
     legalPrefix: "Ao continuar você aceita nossos",
     legalConnector: "e a",
+    googleError:
+      "O login com Google não foi concluído. Verifique as configurações de OAuth no Google Cloud e tente de novo.",
   },
   apps: {
     title: "Aplicações",
     subtitle: "Escolha uma das ferramentas disponíveis. Este launcher será sua base de produtividade pessoal.",
     comingSoon: "Em breve",
+    launcherSavedEmptyBadge: "Sem registros",
+    launcherSavedEmptyTitle: "Não há registros salvos — abra o app para adicionar dados.",
+    launcherSavedCountOne: "{count} registro",
+    launcherSavedCountMany: "{count} registros",
     openApp: "Abrir {name}",
     switcherTitle: "Aplicações",
     switcherViewAll: "Ver todas",
@@ -219,8 +225,71 @@ export const ptMessages = {
       tasks: "Tarefas em espaços com Kanban e listas.",
       collections: "Coleções de coisas que você tem, emprestou ou quer.",
     },
+    anonymousBanner: {
+      title: "Sessão de convidado",
+      description:
+        "Os dados ficam só neste dispositivo. Quem compartilhar este computador pode vê-los, e eles podem ser perdidos se você não fizer backup.",
+    },
+    logoutDialog: {
+      title: "Sair",
+      description: "Escolha o que fazer com os dados salvos neste navegador na sessão de convidado.",
+      noDataDescription:
+        "Não há dados dos apps salvos neste navegador para a sessão de convidado. Sair encerra apenas a sessão.",
+      keepData: "Manter os dados neste navegador",
+      deleteData: "Apagar os dados deste navegador",
+      downloadAndDelete: "Baixar backup e apagar dados",
+      exportFailed: "Não foi possível criar o arquivo de cópia. Nada foi apagado e você continua conectado.",
+      signOutOnly: "Sair",
+      cancel: "Cancelar",
+    },
+    driveSave: {
+      labelSynced: "Tudo salvo",
+      labelDirty: "Salvar alterações pendentes",
+      labelSaving: "Salvando...",
+      ariaLabelDirty: "Salvar no Google Drive — há alterações locais não enviadas",
+      ariaLabelSynced: "O backup no Google Drive está em dia — nada a salvar",
+      success: "Salvo no Google Drive.",
+      error: "Não foi possível salvar no Google Drive.",
+      tooltipDirty: "Alterações locais não salvas — clique para enviar ao Drive.",
+      tooltipSynced: "Tudo está salvo no Drive.",
+    },
+    driveRestore: {
+      overlayTitle: "Restaurando do Google Drive…",
+      overlayDescription: "Aguarde enquanto o backup é aplicado neste navegador.",
+      devButton: "Restaurar do Drive",
+      devLoading: "Restaurando...",
+      devTooltip: "Somente desenvolvimento: restaura todos os dados dos apps a partir do backup no Google Drive.",
+      devConfirmTitle: "Restaurar do Drive?",
+      devConfirmDescription:
+        "Isso vai substituir todos os dados locais dos apps neste navegador pelo backup do Google Drive.",
+      devConfirmCancel: "Cancelar",
+      devConfirmAccept: "Restaurar agora",
+    },
+    googleLogout: {
+      pendingTitle: "Alterações não salvas no Drive",
+      pendingDescription:
+        "Há alterações locais que ainda não foram enviadas ao Google Drive com o botão Salvar do cabeçalho. Ao sair, os dados dos apps desta conta serão removidos deste navegador e essas alterações não enviadas serão perdidas.",
+      noPendingDescription:
+        "Você vai sair. Os dados dos apps desta conta serão removidos deste navegador. O que você já salvou no Google Drive continua na sua conta Google.",
+      saveFirstHint:
+        "Use Salvar no cabeçalho para enviar o backup; depois você pode sair se quiser tudo no Drive.",
+      signOutAnyway: "Sair sem salvar",
+    },
+    guestRestore: {
+      button: "Restaurar cópia",
+      buttonShort: "Restaurar",
+      tooltip: "Envie um backup do seu computador.",
+      successToast: "Cópia restaurada. Recarregando…",
+      errorInvalidZip: "Não foi possível ler esse arquivo como ZIP de backup válido.",
+      errorNoFiles: "Nenhum arquivo JSON de app reconhecido foi encontrado no ZIP.",
+      errorBadJson: "Um arquivo no ZIP não é JSON válido.",
+      errorTooLarge: "O arquivo é grande demais (máximo 32 MB).",
+    },
     userMenu: {
       label: "Usuário",
+      guestLabel: "Convidado",
+      googleLabel: "Conta Google",
+      openAccountMenu: "Abrir menu da conta",
       settings: "Configurações",
       logout: "Sair",
     },
@@ -230,6 +299,19 @@ export const ptMessages = {
       language: "Idioma",
       theme: "Tema",
       back: "← Voltar",
+      googleCalendar: {
+        title: "Google Agenda",
+        description:
+          "Cria um calendário dedicado “NoSheetKit” na sua conta Google e permite testar criar, atualizar e excluir eventos.",
+        setup: "Configurar calendário",
+        setupBusy: "Processando…",
+        setupDone: "Calendário pronto.",
+        testCreate: "Criar evento de teste",
+        testEdit: "Atualizar título do último evento de teste",
+        testDelete: "Excluir último evento de teste",
+        noGoogle: "Entre com o Google para usar a integração com a Agenda.",
+        error: "Algo deu errado. Tente novamente.",
+      },
     },
   },
   dates: {

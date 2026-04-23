@@ -30,6 +30,7 @@ import {
   type NSKDateItem,
 } from "@/lib/dates/schema";
 import { readNSKDatesStorage, writeNSKDatesStorage } from "@/lib/dates/storage";
+import { useSessionStorageSuffix } from "@/lib/storage/session-storage-context";
 import { persistAppViewBundle } from "@/lib/apps/view-persistence";
 import { dateMatchesSearch, isUpcomingWithin30Days } from "@/lib/dates/dates-helpers";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
@@ -101,6 +102,7 @@ function buildDatesFilterItems(
 }
 
 export function DatesAppPage() {
+  const sessionSuffix = useSessionStorageSuffix();
   const { locale, t } = useI18n();
   const [activeFilter, setActiveFilter] = useState<DateFilterId>("all");
   const [viewMode, setViewMode] = useState<DatesViewMode>("grid");
@@ -113,7 +115,7 @@ export function DatesAppPage() {
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(new Date()));
   const [itemPendingDelete, setItemPendingDelete] = useState<NSKDateItem | null>(null);
 
-  useAppLocalHydration(readNSKDatesStorage, setStore, setIsStoreHydrated, {
+  useAppLocalHydration(() => readNSKDatesStorage(sessionSuffix), setStore, setIsStoreHydrated, {
     appViewKey: "dates",
     validModes: DATES_VIEW_MODES,
     defaultView: "grid",
@@ -164,7 +166,7 @@ export function DatesAppPage() {
       items: nextItems,
     };
     setStore(nextStore);
-    writeNSKDatesStorage(nextStore);
+    writeNSKDatesStorage(sessionSuffix, nextStore);
   }
 
   function handleCreateOrUpdate(values: {

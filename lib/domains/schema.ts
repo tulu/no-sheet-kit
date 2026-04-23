@@ -1,4 +1,4 @@
-export const NSKDOMAINS_STORAGE_KEY = "nskdomains";
+export { NSKDOMAINS_STORAGE_KEY } from "@/lib/storage/anonymous-storage-keys";
 export const NSKDOMAINS_SCHEMA_VERSION = 1;
 
 export const DOMAIN_STATUS_IDS = ["active", "parked", "for_sale", "abandoned"] as const;

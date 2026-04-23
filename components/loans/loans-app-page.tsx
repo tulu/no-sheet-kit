@@ -37,6 +37,7 @@ import {
   mapToSortedEntries,
 } from "@/lib/loans/loans-helpers";
 import { readNSKLoansStorage, writeNSKLoansStorage } from "@/lib/loans/storage";
+import { useSessionStorageSuffix } from "@/lib/storage/session-storage-context";
 import { persistAppViewBundle } from "@/lib/apps/view-persistence";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
 import { kpiStatIconGlyphClass, kpiStatIconWrapClass } from "@/components/common/semantic-badge";
@@ -136,6 +137,7 @@ type LoanFormSubmit = {
 };
 
 export function LoansAppPage() {
+  const sessionSuffix = useSessionStorageSuffix();
   const { locale, t } = useI18n();
   const [activeFilter, setActiveFilter] = useState<LoanFilterId>("all");
   const [viewMode, setViewMode] = useState<LoansViewMode>("grid");
@@ -156,7 +158,7 @@ export function LoansAppPage() {
       ? (store.items.find((i) => i.id === paymentsListLoanId) ?? null)
       : null;
 
-  useAppLocalHydration(readNSKLoansStorage, setStore, setIsStoreHydrated, {
+  useAppLocalHydration(() => readNSKLoansStorage(sessionSuffix), setStore, setIsStoreHydrated, {
     appViewKey: "loans",
     validModes: LOANS_VIEW_MODES,
     defaultView: "grid",
@@ -200,7 +202,7 @@ export function LoansAppPage() {
   function updateStore(nextItems: NSKLoanItem[]) {
     const nextStore = { ...store, items: nextItems };
     setStore(nextStore);
-    writeNSKLoansStorage(nextStore);
+    writeNSKLoansStorage(sessionSuffix, nextStore);
   }
 
   function handleCreateOrUpdate(values: LoanFormSubmit) {

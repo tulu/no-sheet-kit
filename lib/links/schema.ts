@@ -1,4 +1,4 @@
-export const NSKLINKS_STORAGE_KEY = "nsklinks";
+export { NSKLINKS_STORAGE_KEY } from "@/lib/storage/anonymous-storage-keys";
 export const NSKLINKS_SCHEMA_VERSION = 1;
 
 export type LinkStatus = "pending" | "ready" | "error";
