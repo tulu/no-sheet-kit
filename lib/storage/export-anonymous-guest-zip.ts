@@ -1,22 +1,12 @@
 import JSZip from "jszip";
 import {
-  ALL_ANONYMOUS_APP_STORAGE_KEYS,
-  NSKCOLLECTIONS_STORAGE_KEY,
-  NSKDATES_STORAGE_KEY,
-  NSKDOMAINS_STORAGE_KEY,
-  NSKLINKS_STORAGE_KEY,
-  NSKLOANS_STORAGE_KEY,
-  NSKTASKS_STORAGE_KEY,
-} from "./anonymous-storage-keys";
-
-const STORAGE_KEY_TO_FILENAME: Record<(typeof ALL_ANONYMOUS_APP_STORAGE_KEYS)[number], string> = {
-  [NSKLOANS_STORAGE_KEY]: "loans.json",
-  [NSKDATES_STORAGE_KEY]: "dates.json",
-  [NSKLINKS_STORAGE_KEY]: "links.json",
-  [NSKDOMAINS_STORAGE_KEY]: "domains.json",
-  [NSKTASKS_STORAGE_KEY]: "tasks.json",
-  [NSKCOLLECTIONS_STORAGE_KEY]: "collections.json",
-};
+  buildNskListAppStorageKey,
+  GUEST_BACKUP_FILENAME_TO_SLUG,
+  NSK_LIST_APP_SLUGS,
+  SESSION_SUFFIX_ANONYMOUS,
+  type NskListAppSlug,
+  ZIP_FILENAME_BY_SLUG,
+} from "./session-storage-keys";
 
 function prettyJsonOrRaw(raw: string): string {
   try {
@@ -26,28 +16,29 @@ function prettyJsonOrRaw(raw: string): string {
   }
 }
 
-export type AnonymousGuestExportEntry = {
-  storageKey: (typeof ALL_ANONYMOUS_APP_STORAGE_KEYS)[number];
+export type SessionGuestExportEntry = {
+  storageKey: string;
   filename: string;
   body: string;
 };
 
-export function collectAnonymousGuestExportEntries(): AnonymousGuestExportEntry[] {
+export function collectSessionGuestExportEntries(sessionSuffix: string): SessionGuestExportEntry[] {
   if (typeof window === "undefined") return [];
-  const out: AnonymousGuestExportEntry[] = [];
-  for (const key of ALL_ANONYMOUS_APP_STORAGE_KEYS) {
-    const raw = window.localStorage.getItem(key);
+  const out: SessionGuestExportEntry[] = [];
+  for (const slug of NSK_LIST_APP_SLUGS) {
+    const storageKey = buildNskListAppStorageKey(slug, sessionSuffix);
+    const raw = window.localStorage.getItem(storageKey);
     if (raw == null || raw.trim() === "") continue;
     out.push({
-      storageKey: key,
-      filename: STORAGE_KEY_TO_FILENAME[key],
+      storageKey,
+      filename: ZIP_FILENAME_BY_SLUG[slug],
       body: prettyJsonOrRaw(raw),
     });
   }
   return out;
 }
 
-export async function buildAnonymousGuestDataZipBlob(entries: AnonymousGuestExportEntry[]): Promise<Blob> {
+export async function buildSessionGuestDataZipBlob(entries: SessionGuestExportEntry[]): Promise<Blob> {
   const zip = new JSZip();
   for (const { filename, body } of entries) {
     zip.file(filename, body);
@@ -75,19 +66,6 @@ export function guestBackupZipFilename(): string {
   return `nosheetkit-guest-${y}-${m}-${day}.zip`;
 }
 
-/** Basenames produced by guest export; values are localStorage keys. */
-export const GUEST_BACKUP_FILENAME_TO_STORAGE_KEY: Record<
-  string,
-  (typeof ALL_ANONYMOUS_APP_STORAGE_KEYS)[number]
-> = {
-  [STORAGE_KEY_TO_FILENAME[NSKLOANS_STORAGE_KEY].toLowerCase()]: NSKLOANS_STORAGE_KEY,
-  [STORAGE_KEY_TO_FILENAME[NSKDATES_STORAGE_KEY].toLowerCase()]: NSKDATES_STORAGE_KEY,
-  [STORAGE_KEY_TO_FILENAME[NSKLINKS_STORAGE_KEY].toLowerCase()]: NSKLINKS_STORAGE_KEY,
-  [STORAGE_KEY_TO_FILENAME[NSKDOMAINS_STORAGE_KEY].toLowerCase()]: NSKDOMAINS_STORAGE_KEY,
-  [STORAGE_KEY_TO_FILENAME[NSKTASKS_STORAGE_KEY].toLowerCase()]: NSKTASKS_STORAGE_KEY,
-  [STORAGE_KEY_TO_FILENAME[NSKCOLLECTIONS_STORAGE_KEY].toLowerCase()]: NSKCOLLECTIONS_STORAGE_KEY,
-};
-
 const MAX_RESTORE_ZIP_BYTES = 32 * 1024 * 1024;
 
 export class GuestBackupRestoreError extends Error {
@@ -102,9 +80,12 @@ export class GuestBackupRestoreError extends Error {
 
 /**
  * Reads a ZIP from our guest export (or compatible layout: `*.json` at any depth).
- * Overwrites matching keys in localStorage. Returns how many apps were written.
+ * Overwrites matching keys in localStorage for the given session suffix.
  */
-export async function restoreAnonymousGuestDataFromZipFile(file: File): Promise<number> {
+export async function restoreSessionGuestDataFromZipFile(
+  file: File,
+  sessionSuffix: string
+): Promise<number> {
   if (typeof window === "undefined") {
     throw new GuestBackupRestoreError("Not available on server.", "INVALID_ZIP");
   }
@@ -119,7 +100,7 @@ export async function restoreAnonymousGuestDataFromZipFile(file: File): Promise<
     throw new GuestBackupRestoreError("Could not read ZIP.", "INVALID_ZIP");
   }
 
-  const touched = new Set<(typeof ALL_ANONYMOUS_APP_STORAGE_KEYS)[number]>();
+  const touched = new Set<string>();
 
   for (const relativePath of Object.keys(zip.files)) {
     const entry = zip.files[relativePath];
@@ -127,8 +108,8 @@ export async function restoreAnonymousGuestDataFromZipFile(file: File): Promise<
     const segments = relativePath.replace(/\\/g, "/").split("/");
     const base = segments[segments.length - 1]?.trim().toLowerCase() ?? "";
     if (!base.endsWith(".json")) continue;
-    const storageKey = GUEST_BACKUP_FILENAME_TO_STORAGE_KEY[base];
-    if (!storageKey) continue;
+    const slug = GUEST_BACKUP_FILENAME_TO_SLUG[base];
+    if (!slug) continue;
 
     let text: string;
     try {
@@ -143,6 +124,7 @@ export async function restoreAnonymousGuestDataFromZipFile(file: File): Promise<
     } catch {
       throw new GuestBackupRestoreError(`Invalid JSON: ${base}`, "BAD_JSON");
     }
+    const storageKey = buildNskListAppStorageKey(slug as NskListAppSlug, sessionSuffix);
     window.localStorage.setItem(storageKey, trimmed);
     touched.add(storageKey);
   }
@@ -152,4 +134,18 @@ export async function restoreAnonymousGuestDataFromZipFile(file: File): Promise<
   }
 
   return touched.size;
+}
+
+export function collectAnonymousGuestExportEntries(): SessionGuestExportEntry[] {
+  return collectSessionGuestExportEntries(SESSION_SUFFIX_ANONYMOUS);
+}
+
+export async function buildAnonymousGuestDataZipBlob(
+  entries: SessionGuestExportEntry[]
+): Promise<Blob> {
+  return buildSessionGuestDataZipBlob(entries);
+}
+
+export async function restoreAnonymousGuestDataFromZipFile(file: File): Promise<number> {
+  return restoreSessionGuestDataFromZipFile(file, SESSION_SUFFIX_ANONYMOUS);
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { AppsShellHeader } from "./apps-shell-header";
+import { AppsShellHeader, type AppsShellHeaderProps } from "./apps-shell-header";
 
-export function AppsHeader() {
-  return <AppsShellHeader />;
+export function AppsHeader(props: AppsShellHeaderProps) {
+  return <AppsShellHeader {...props} />;
 }

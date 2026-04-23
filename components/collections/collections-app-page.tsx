@@ -50,6 +50,7 @@ import {
   type PossessionStatus,
 } from "@/lib/collections/schema";
 import { readNSKCollectionsStorage, writeNSKCollectionsStorage } from "@/lib/collections/storage";
+import { useSessionStorageSuffix } from "@/lib/storage/session-storage-context";
 import {
   countItemsByPossession,
   itemLinkHref,
@@ -76,6 +77,7 @@ const POSSESSION_SIDEBAR_ICONS: Record<CollectionsSidebarPossessionStatus, Lucid
 };
 
 export function CollectionsAppPage() {
+  const sessionSuffix = useSessionStorageSuffix();
   const { locale, t } = useI18n();
   const [activeNav, setActiveNav] = useState<NavId>(COLLECTIONS_DASHBOARD_NAV_ID);
   const [viewMode, setViewMode] = useState<CollectionsViewMode>("grid");
@@ -101,7 +103,7 @@ export function CollectionsAppPage() {
     null
   );
 
-  useAppLocalHydration(readNSKCollectionsStorage, setStore, setIsStoreHydrated, {
+  useAppLocalHydration(() => readNSKCollectionsStorage(sessionSuffix), setStore, setIsStoreHydrated, {
     appViewKey: "collections",
     validModes: COLLECTIONS_VIEW_MODES,
     defaultView: "grid",
@@ -112,13 +114,16 @@ export function CollectionsAppPage() {
     setActiveNav(next);
   }
 
-  const commit = useCallback((updater: (prev: NSKCollectionsSchema) => NSKCollectionsSchema) => {
-    setStore((prev) => {
-      const next = updater(prev);
-      writeNSKCollectionsStorage(next);
-      return next;
-    });
-  }, []);
+  const commit = useCallback(
+    (updater: (prev: NSKCollectionsSchema) => NSKCollectionsSchema) => {
+      setStore((prev) => {
+        const next = updater(prev);
+        writeNSKCollectionsStorage(sessionSuffix, next);
+        return next;
+      });
+    },
+    [sessionSuffix]
+  );
 
   const collectionsSorted = useMemo(() => sortCollections(store.collections), [store.collections]);
 

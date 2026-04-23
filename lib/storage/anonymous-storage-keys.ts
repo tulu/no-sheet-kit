@@ -1,13 +1,20 @@
 /**
- * Anonymous-session localStorage keys: existing app prefix + `Anonym`.
- * Keep this list in sync with all NSK list apps.
+ * Anonymous-session localStorage keys (legacy names re-exported).
+ * Dynamic keys use {@link buildNskListAppStorageKey} with {@link SESSION_SUFFIX_ANONYMOUS} or `Google_<sub>`.
  */
-export const NSKLOANS_STORAGE_KEY = "nskloansAnonym" as const;
-export const NSKDATES_STORAGE_KEY = "nskdatesAnonym" as const;
-export const NSKLINKS_STORAGE_KEY = "nsklinksAnonym" as const;
-export const NSKDOMAINS_STORAGE_KEY = "nskdomainsAnonym" as const;
-export const NSKTASKS_STORAGE_KEY = "nsktasksAnonym" as const;
-export const NSKCOLLECTIONS_STORAGE_KEY = "nskcollectionsAnonym" as const;
+import {
+  buildNskListAppStorageKey,
+  SESSION_SUFFIX_ANONYMOUS,
+} from "@/lib/storage/session-storage-keys";
+
+export { SESSION_SUFFIX_ANONYMOUS } from "@/lib/storage/session-storage-keys";
+
+export const NSKLOANS_STORAGE_KEY = buildNskListAppStorageKey("loans", SESSION_SUFFIX_ANONYMOUS);
+export const NSKDATES_STORAGE_KEY = buildNskListAppStorageKey("dates", SESSION_SUFFIX_ANONYMOUS);
+export const NSKLINKS_STORAGE_KEY = buildNskListAppStorageKey("links", SESSION_SUFFIX_ANONYMOUS);
+export const NSKDOMAINS_STORAGE_KEY = buildNskListAppStorageKey("domains", SESSION_SUFFIX_ANONYMOUS);
+export const NSKTASKS_STORAGE_KEY = buildNskListAppStorageKey("tasks", SESSION_SUFFIX_ANONYMOUS);
+export const NSKCOLLECTIONS_STORAGE_KEY = buildNskListAppStorageKey("collections", SESSION_SUFFIX_ANONYMOUS);
 
 export const ALL_ANONYMOUS_APP_STORAGE_KEYS = [
   NSKLOANS_STORAGE_KEY,

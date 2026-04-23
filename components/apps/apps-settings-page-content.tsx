@@ -8,6 +8,7 @@ import { useI18n } from "@/components/providers/i18n-provider";
 import { buttonVariants } from "@/components/ui/button";
 import { safeSettingsReturnTo } from "@/lib/apps/settings-return";
 import { cn } from "@/lib/utils";
+import { AppsSettingsGoogleCalendar } from "@/components/apps/apps-settings-google-calendar";
 
 export function AppsSettingsPageContent() {
   const { t } = useI18n();
@@ -37,6 +38,8 @@ export function AppsSettingsPageContent() {
           <ThemeToggle />
         </div>
       </div>
+
+      <AppsSettingsGoogleCalendar />
     </div>
   );
 }

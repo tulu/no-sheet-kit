@@ -27,6 +27,7 @@ import {
 } from "@/lib/domains/schema";
 import { domainMatchesSearch, isExpiringSoon } from "@/lib/domains/domains-helpers";
 import { readNSKDomainsStorage, writeNSKDomainsStorage } from "@/lib/domains/storage";
+import { useSessionStorageSuffix } from "@/lib/storage/session-storage-context";
 import { persistAppViewBundle } from "@/lib/apps/view-persistence";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
 import { AppListToolbar } from "@/components/common/app-list-toolbar";
@@ -128,6 +129,7 @@ function buildDomainsFilterItems(
 }
 
 export function DomainsAppPage() {
+  const sessionSuffix = useSessionStorageSuffix();
   const { locale, t } = useI18n();
   const [activeFilter, setActiveFilter] = useState<DomainFilterId>("all");
   const [viewMode, setViewMode] = useState<DomainsViewMode>("grid");
@@ -140,7 +142,7 @@ export function DomainsAppPage() {
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(new Date()));
   const [itemPendingDelete, setItemPendingDelete] = useState<NSKDomainItem | null>(null);
 
-  useAppLocalHydration(readNSKDomainsStorage, setStore, setIsStoreHydrated, {
+  useAppLocalHydration(() => readNSKDomainsStorage(sessionSuffix), setStore, setIsStoreHydrated, {
     appViewKey: "domains",
     validModes: DOMAINS_VIEW_MODES,
     defaultView: "grid",
@@ -192,7 +194,7 @@ export function DomainsAppPage() {
       items: nextItems,
     };
     setStore(nextStore);
-    writeNSKDomainsStorage(nextStore);
+    writeNSKDomainsStorage(sessionSuffix, nextStore);
   }
 
   function handleCreateOrUpdate(values: DomainSubmitValues) {

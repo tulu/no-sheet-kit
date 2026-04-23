@@ -7,13 +7,29 @@ import { getAppDisplayName } from "@/components/apps/launcher-apps";
 import { AppsUserMenu } from "./apps-user-menu";
 import { AppsSwitcher } from "./apps-switcher";
 import { GuestDataRestoreButton } from "./guest-data-restore-button";
+import { AppsDriveSaveButton } from "./apps-drive-save-button";
+import { AppsDriveRestoreDevButton } from "./apps-drive-restore-dev-button";
 import { useI18n } from "@/components/providers/i18n-provider";
 
-type AppsShellHeaderProps = {
+export type AppsShellHeaderProps = {
   title?: string;
+  sessionKind: "anonymous" | "google";
+  storageSuffix: string;
+  googleEmail?: string;
+  googleSub?: string;
+  googleName?: string;
+  googlePicture?: string;
 };
 
-export function AppsShellHeader({ title: titleProp }: AppsShellHeaderProps) {
+export function AppsShellHeader({
+  title: titleProp,
+  sessionKind,
+  storageSuffix,
+  googleEmail,
+  googleSub,
+  googleName,
+  googlePicture,
+}: AppsShellHeaderProps) {
   const pathname = usePathname();
   const { t } = useI18n();
 
@@ -34,9 +50,20 @@ export function AppsShellHeader({ title: titleProp }: AppsShellHeaderProps) {
       </div>
 
       <div className="flex items-center gap-3">
-        <GuestDataRestoreButton />
+        {sessionKind === "google" ? <AppsDriveSaveButton /> : null}
+        {sessionKind === "google" && process.env.NODE_ENV !== "production" ? (
+          <AppsDriveRestoreDevButton />
+        ) : null}
+        <GuestDataRestoreButton allowLocalZipRestore={sessionKind === "anonymous"} />
         <AppsSwitcher />
-        <AppsUserMenu />
+        <AppsUserMenu
+          sessionKind={sessionKind}
+          storageSuffix={storageSuffix}
+          googleEmail={googleEmail}
+          googleSub={googleSub}
+          googleName={googleName}
+          googlePicture={googlePicture}
+        />
       </div>
     </header>
   );

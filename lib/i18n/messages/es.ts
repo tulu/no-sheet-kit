@@ -202,6 +202,8 @@ export const esMessages = {
     continueAnonymously: "Continuar como invitado",
     legalPrefix: "Al continuar aceptas nuestros",
     legalConnector: "y la",
+    googleError:
+      "No se completó el inicio de sesión con Google. Revisá la configuración de OAuth en Google Cloud y probá de nuevo.",
   },
   apps: {
     title: "Aplicaciones",
@@ -236,6 +238,39 @@ export const esMessages = {
       signOutOnly: "Cerrar sesión",
       cancel: "Cancelar",
     },
+    driveSave: {
+      labelSynced: "Todo guardado",
+      labelDirty: "Guardar cambios pendientes",
+      labelSaving: "Guardando...",
+      ariaLabelDirty: "Guardar en Google Drive — tenés cambios locales sin subir",
+      ariaLabelSynced: "La copia en Google Drive está al día — no hay nada que guardar",
+      success: "Guardado en Google Drive.",
+      error: "No se pudo guardar en Google Drive.",
+      tooltipDirty: "Hay cambios sin guardar en Drive — tocá para subir.",
+      tooltipSynced: "Todo está guardado en Drive.",
+    },
+    driveRestore: {
+      overlayTitle: "Restaurando desde Google Drive…",
+      overlayDescription: "Esperá un momento mientras se aplica la copia en este navegador.",
+      devButton: "Restaurar desde Drive",
+      devLoading: "Restaurando...",
+      devTooltip: "Solo desarrollo: restaura todos los datos de apps desde la copia en Google Drive.",
+      devConfirmTitle: "¿Restaurar desde Drive?",
+      devConfirmDescription:
+        "Esto va a reemplazar todos los datos locales de apps en este navegador por tu copia de Google Drive.",
+      devConfirmCancel: "Cancelar",
+      devConfirmAccept: "Restaurar ahora",
+    },
+    googleLogout: {
+      pendingTitle: "Cambios sin guardar en Drive",
+      pendingDescription:
+        "Tenés cambios locales que todavía no subiste a Google Drive con el botón Guardar del encabezado. Al cerrar sesión se borran los datos de las apps de esta cuenta en este navegador y esos cambios sin subir se pierden.",
+      noPendingDescription:
+        "Vas a cerrar sesión. Los datos de las apps de esta cuenta se eliminan de este navegador. Lo que ya guardaste en Google Drive sigue en tu cuenta de Google.",
+      saveFirstHint:
+        "Usá Guardar en el encabezado para subir la copia de seguridad; después podés cerrar sesión si querés todo en Drive.",
+      signOutAnyway: "Cerrar sesión sin guardar",
+    },
     guestRestore: {
       button: "Restaurar copia",
       buttonShort: "Restaurar",
@@ -249,6 +284,7 @@ export const esMessages = {
     userMenu: {
       label: "Usuario",
       guestLabel: "Invitado",
+      googleLabel: "Cuenta de Google",
       openAccountMenu: "Abrir menú de la cuenta",
       settings: "Ajustes",
       logout: "Cerrar sesión",
@@ -259,6 +295,19 @@ export const esMessages = {
       language: "Idioma",
       theme: "Tema",
       back: "← Volver",
+      googleCalendar: {
+        title: "Google Calendar",
+        description:
+          "Crea un calendario dedicado “NoSheetKit” en tu cuenta de Google y probá crear, actualizar y borrar eventos.",
+        setup: "Configurar calendario",
+        setupBusy: "Trabajando…",
+        setupDone: "Calendario listo.",
+        testCreate: "Crear evento de prueba",
+        testEdit: "Actualizar título del último evento de prueba",
+        testDelete: "Borrar último evento de prueba",
+        noGoogle: "Iniciá sesión con Google para usar la integración con Calendar.",
+        error: "Algo salió mal. Probá de nuevo.",
+      },
     },
   },
   dates: {

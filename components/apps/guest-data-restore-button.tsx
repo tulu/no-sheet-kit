@@ -13,7 +13,12 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-export function GuestDataRestoreButton() {
+type GuestDataRestoreButtonProps = {
+  /** When false (e.g. Google session), ZIP restore from disk is hidden — Drive handles backup. */
+  allowLocalZipRestore?: boolean;
+};
+
+export function GuestDataRestoreButton({ allowLocalZipRestore = true }: GuestDataRestoreButtonProps) {
   const { t } = useI18n();
   const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,6 +41,8 @@ export function GuestDataRestoreButton() {
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, [refreshHasData]);
+
+  if (!allowLocalZipRestore) return null;
 
   if (hasGuestData) return null;
 

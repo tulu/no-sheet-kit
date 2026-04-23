@@ -202,6 +202,7 @@ export const enMessages = {
     continueAnonymously: "Continue as guest",
     legalPrefix: "By continuing you agree to our",
     legalConnector: "and",
+    googleError: "Google sign-in did not complete. Check Google OAuth settings and try again.",
   },
   apps: {
     title: "Applications",
@@ -236,6 +237,38 @@ export const enMessages = {
       signOutOnly: "Sign out",
       cancel: "Cancel",
     },
+    driveSave: {
+      labelSynced: "All saved",
+      labelDirty: "Save pending changes",
+      labelSaving: "Saving...",
+      ariaLabelDirty: "Save to Google Drive — you have unsaved local changes",
+      ariaLabelSynced: "Google Drive backup is up to date — nothing to save",
+      success: "Saved to Google Drive.",
+      error: "Could not save to Google Drive.",
+      tooltipDirty: "Unsaved local changes — click to upload to Drive.",
+      tooltipSynced: "Everything is saved to Drive.",
+    },
+    driveRestore: {
+      overlayTitle: "Restoring from Google Drive…",
+      overlayDescription: "Hang tight while your backup is applied to this browser.",
+      devButton: "Restore from Drive",
+      devLoading: "Restoring...",
+      devTooltip: "Development-only: restore all app data from Google Drive backup.",
+      devConfirmTitle: "Restore from Drive?",
+      devConfirmDescription:
+        "This will replace all local app data in this browser with your Google Drive backup.",
+      devConfirmCancel: "Cancel",
+      devConfirmAccept: "Restore now",
+    },
+    googleLogout: {
+      pendingTitle: "Changes not saved to Drive",
+      pendingDescription:
+        "You have local changes that have not been uploaded to Google Drive with the Save button yet. Signing out will remove this account’s app data from this browser, and those unsaved changes will be lost.",
+      noPendingDescription:
+        "You will sign out. App data for this account will be removed from this browser. Anything you already saved to Google Drive stays in your Google account.",
+      saveFirstHint: "Use Save in the header to upload your backup, then sign out if you want everything in Drive.",
+      signOutAnyway: "Sign out without saving",
+    },
     guestRestore: {
       button: "Restore backup",
       buttonShort: "Restore",
@@ -249,6 +282,7 @@ export const enMessages = {
     userMenu: {
       label: "User",
       guestLabel: "Guest",
+      googleLabel: "Google account",
       openAccountMenu: "Open account menu",
       settings: "Settings",
       logout: "Log out",
@@ -259,6 +293,19 @@ export const enMessages = {
       language: "Language",
       theme: "Theme",
       back: "← Back",
+      googleCalendar: {
+        title: "Google Calendar",
+        description:
+          "Creates a dedicated “NoSheetKit” calendar in your Google account and lets you try create, update, and delete events.",
+        setup: "Set up calendar",
+        setupBusy: "Working…",
+        setupDone: "Calendar is ready.",
+        testCreate: "Create test event",
+        testEdit: "Update last test event title",
+        testDelete: "Delete last test event",
+        noGoogle: "Sign in with Google to use Calendar integration.",
+        error: "Something went wrong. Try again.",
+      },
     },
   },
   dates: {

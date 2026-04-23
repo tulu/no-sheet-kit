@@ -42,6 +42,7 @@ import {
   type TasksViewMode,
 } from "@/lib/tasks/schema";
 import { readNSKTasksStorage, writeNSKTasksStorage } from "@/lib/tasks/storage";
+import { useSessionStorageSuffix } from "@/lib/storage/session-storage-context";
 import {
   nextOrderForColumn,
   sortSpaces,
@@ -60,6 +61,7 @@ import { TasksViewSkeleton } from "./tasks-view-skeleton";
 type NavId = typeof TASKS_DASHBOARD_NAV_ID | string;
 
 export function TasksAppPage() {
+  const sessionSuffix = useSessionStorageSuffix();
   const { locale, t } = useI18n();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -90,7 +92,7 @@ export function TasksAppPage() {
     commentId: string;
   } | null>(null);
 
-  useAppLocalHydration(readNSKTasksStorage, setStore, setIsStoreHydrated, {
+  useAppLocalHydration(() => readNSKTasksStorage(sessionSuffix), setStore, setIsStoreHydrated, {
     appViewKey: "tasks",
     validModes: TASKS_VIEW_MODES,
     defaultView: "kanban",
@@ -161,13 +163,16 @@ export function TasksAppPage() {
     };
   }, [highlightTaskId, isStoreHydrated]);
 
-  const commit = useCallback((updater: (prev: NSKTasksSchema) => NSKTasksSchema) => {
-    setStore((prev) => {
-      const next = updater(prev);
-      writeNSKTasksStorage(next);
-      return next;
-    });
-  }, []);
+  const commit = useCallback(
+    (updater: (prev: NSKTasksSchema) => NSKTasksSchema) => {
+      setStore((prev) => {
+        const next = updater(prev);
+        writeNSKTasksStorage(sessionSuffix, next);
+        return next;
+      });
+    },
+    [sessionSuffix]
+  );
 
   /** Keep task sheet in sync with store (comments, status from Kanban, etc.). */
   const editingTaskLive = useMemo(() => {

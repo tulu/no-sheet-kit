@@ -49,6 +49,7 @@ import {
   tagsWithCount,
 } from "@/lib/links/links-helpers";
 import { readNSKLinksStorage, writeNSKLinksStorage } from "@/lib/links/storage";
+import { useSessionStorageSuffix } from "@/lib/storage/session-storage-context";
 import { ListSearchEmptyState } from "@/components/common/list-search-empty";
 import { AddLinkSheet } from "./add-link-sheet";
 import { LinksView } from "./links-view";
@@ -141,6 +142,7 @@ function buildFilterItems(
 }
 
 export function LinksAppPage() {
+  const sessionSuffix = useSessionStorageSuffix();
   const { locale, t } = useI18n();
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<LinksViewMode>("grid");
@@ -152,7 +154,7 @@ export function LinksAppPage() {
   const [itemPendingDelete, setItemPendingDelete] = useState<NSKLinkItem | null>(null);
   const [linkSearch, setLinkSearch] = useState("");
 
-  useAppLocalHydration(readNSKLinksStorage, setStore, setIsStoreHydrated, {
+  useAppLocalHydration(() => readNSKLinksStorage(sessionSuffix), setStore, setIsStoreHydrated, {
     appViewKey: "links",
     validModes: LINKS_VIEW_MODES,
     defaultView: "grid",
@@ -192,7 +194,7 @@ export function LinksAppPage() {
   function updateStoreItems(mutator: (items: NSKLinkItem[]) => NSKLinkItem[]) {
     setStore((prev) => {
       const nextStore = { ...prev, items: mutator(prev.items) };
-      writeNSKLinksStorage(nextStore);
+      writeNSKLinksStorage(sessionSuffix, nextStore);
       return nextStore;
     });
   }
