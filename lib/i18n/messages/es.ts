@@ -203,12 +203,17 @@ export const esMessages = {
     legalPrefix: "Al continuar aceptas nuestros",
     legalConnector: "y la",
     googleError:
-      "No se completó el inicio de sesión con Google. Revisá la configuración de OAuth en Google Cloud y probá de nuevo.",
+      "No se completó el inicio de sesión con Google. Revisa la configuración de OAuth en Google Cloud y prueba de nuevo.",
   },
   apps: {
     title: "Aplicaciones",
     subtitle: "Elige una de las herramientas disponibles. Este launcher va a ser tu espacio principal de productividad.",
     comingSoon: "Próximamente",
+    launcherSavedEmptyBadge: "Sin registros",
+    launcherSavedEmptyTitle:
+      "No hay registros guardados. Abre la aplicación para añadir datos.",
+    launcherSavedCountOne: "{count} registro",
+    launcherSavedCountMany: "{count} registros",
     openApp: "Abrir {name}",
     switcherTitle: "Aplicaciones",
     switcherViewAll: "Ver todas",
@@ -224,17 +229,17 @@ export const esMessages = {
     anonymousBanner: {
       title: "Sesión de invitado",
       description:
-        "Los datos solo están en este dispositivo. Quien comparta esta computadora podría verlos, y se pueden perder si no hacés un respaldo.",
+        "Los datos solo están en este dispositivo. Quien comparta este equipo podría verlos, y se pueden perder si no haces una copia de seguridad.",
     },
     logoutDialog: {
       title: "Cerrar sesión",
-      description: "Elegí qué hacer con los datos guardados en este navegador para tu sesión de invitado.",
+      description: "Elige qué hacer con los datos guardados en este navegador para tu sesión de invitado.",
       noDataDescription:
         "No hay datos de apps guardados en este navegador para tu sesión de invitado. Cerrar sesión solo termina la sesión.",
       keepData: "Mantener los datos en este navegador",
       deleteData: "Borrar los datos de este navegador",
       downloadAndDelete: "Descargar copia de seguridad y borrar datos",
-      exportFailed: "No se pudo crear el archivo de copia. No se borró nada y seguís con la sesión iniciada.",
+      exportFailed: "No se pudo crear el archivo de copia. No se borró nada y sigues con la sesión iniciada.",
       signOutOnly: "Cerrar sesión",
       cancel: "Cancelar",
     },
@@ -242,16 +247,16 @@ export const esMessages = {
       labelSynced: "Todo guardado",
       labelDirty: "Guardar cambios pendientes",
       labelSaving: "Guardando...",
-      ariaLabelDirty: "Guardar en Google Drive — tenés cambios locales sin subir",
+      ariaLabelDirty: "Guardar en Google Drive — tienes cambios locales sin subir",
       ariaLabelSynced: "La copia en Google Drive está al día — no hay nada que guardar",
       success: "Guardado en Google Drive.",
       error: "No se pudo guardar en Google Drive.",
-      tooltipDirty: "Hay cambios sin guardar en Drive — tocá para subir.",
+      tooltipDirty: "Hay cambios sin guardar en Drive — haz clic para subir.",
       tooltipSynced: "Todo está guardado en Drive.",
     },
     driveRestore: {
       overlayTitle: "Restaurando desde Google Drive…",
-      overlayDescription: "Esperá un momento mientras se aplica la copia en este navegador.",
+      overlayDescription: "Espera un momento mientras se aplica la copia en este navegador.",
       devButton: "Restaurar desde Drive",
       devLoading: "Restaurando...",
       devTooltip: "Solo desarrollo: restaura todos los datos de apps desde la copia en Google Drive.",
@@ -264,17 +269,17 @@ export const esMessages = {
     googleLogout: {
       pendingTitle: "Cambios sin guardar en Drive",
       pendingDescription:
-        "Tenés cambios locales que todavía no subiste a Google Drive con el botón Guardar del encabezado. Al cerrar sesión se borran los datos de las apps de esta cuenta en este navegador y esos cambios sin subir se pierden.",
+        "Tienes cambios locales que aún no has subido a Google Drive con el botón Guardar del encabezado. Al cerrar sesión se borran los datos de las apps de esta cuenta en este navegador y esos cambios sin subir se pierden.",
       noPendingDescription:
         "Vas a cerrar sesión. Los datos de las apps de esta cuenta se eliminan de este navegador. Lo que ya guardaste en Google Drive sigue en tu cuenta de Google.",
       saveFirstHint:
-        "Usá Guardar en el encabezado para subir la copia de seguridad; después podés cerrar sesión si querés todo en Drive.",
+        "Usa Guardar en el encabezado para subir la copia de seguridad; después puedes cerrar la sesión si quieres tener todo en Drive.",
       signOutAnyway: "Cerrar sesión sin guardar",
     },
     guestRestore: {
       button: "Restaurar copia",
       buttonShort: "Restaurar",
-      tooltip: "Subí una copia de seguridad desde tu computadora.",
+      tooltip: "Sube una copia de seguridad desde tu equipo.",
       successToast: "Copia restaurada. Recargando…",
       errorInvalidZip: "No se pudo leer ese archivo como ZIP de copia válido.",
       errorNoFiles: "No se encontraron archivos JSON de apps reconocidos en el ZIP.",
@@ -298,15 +303,15 @@ export const esMessages = {
       googleCalendar: {
         title: "Google Calendar",
         description:
-          "Crea un calendario dedicado “NoSheetKit” en tu cuenta de Google y probá crear, actualizar y borrar eventos.",
+          "Crea un calendario dedicado “NoSheetKit” en tu cuenta de Google y prueba crear, actualizar y borrar eventos.",
         setup: "Configurar calendario",
         setupBusy: "Trabajando…",
         setupDone: "Calendario listo.",
         testCreate: "Crear evento de prueba",
         testEdit: "Actualizar título del último evento de prueba",
         testDelete: "Borrar último evento de prueba",
-        noGoogle: "Iniciá sesión con Google para usar la integración con Calendar.",
-        error: "Algo salió mal. Probá de nuevo.",
+        noGoogle: "Inicia sesión con Google para usar la integración con Calendar.",
+        error: "Algo salió mal. Prueba de nuevo.",
       },
     },
   },
