@@ -26,7 +26,12 @@ export async function GET(request: Request) {
   const nonce = randomPart();
   const state = `${nonce}.${Buffer.from(returnTo, "utf8").toString("base64url")}`;
 
-  const redirectUri = googleRedirectUriFromRequest(request);
+  let redirectUri: string;
+  try {
+    redirectUri = googleRedirectUriFromRequest(request);
+  } catch {
+    return NextResponse.json({ error: "app_url_not_configured" }, { status: 503 });
+  }
 
   const auth = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   auth.searchParams.set("client_id", clientId);

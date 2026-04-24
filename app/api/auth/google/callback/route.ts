@@ -61,7 +61,12 @@ export async function GET(request: Request) {
     return failRedirect("not_configured");
   }
 
-  const redirectUri = googleRedirectUriFromRequest(request);
+  let redirectUri: string;
+  try {
+    redirectUri = googleRedirectUriFromRequest(request);
+  } catch {
+    return failRedirect("app_url_not_configured");
+  }
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
