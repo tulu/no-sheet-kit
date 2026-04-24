@@ -1,3 +1,4 @@
+import Script from "next/script";
 import { seoCopy } from "@/lib/seo/copy";
 import { getMetadataBase, siteLogoPath, siteName } from "@/lib/seo/site";
 
@@ -28,8 +29,10 @@ export function HomeJsonLd() {
   };
 
   return (
-    <script
+    <Script
+      id="nsk-home-jsonld"
       type="application/ld+json"
+      strategy="afterInteractive"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );

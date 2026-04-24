@@ -927,6 +927,149 @@ export const ptMessages = {
       actions: "Ações",
     },
   },
+  docs: {
+    brandTitle: "NSKDocs",
+    navTitle: "Documentação",
+    openNav: "Abrir seções da documentação",
+    applications: {
+      imagePlaceholderTitle: "Marcador de captura de tela",
+      imagePlaceholderHint:
+        "Adicione um PNG em public/docs/applications/{id}.png — será servido em /docs/applications/{id}.png",
+    },
+    nav: {
+      groups: {
+        welcome: "Boas-vindas",
+        applications: "Aplicativos",
+        googleAndData: "Google e seus dados",
+      },
+      welcomeWhy: "Por que NoSheetKit",
+      welcomeFeatures: "Recursos principais",
+      welcomeQuickstart: "Início rápido",
+      applicationNames: {
+        collections: "NSKCollections",
+        dates: "NSKDates",
+        domains: "NSKDomains",
+        links: "NSKLinks",
+        loans: "NSKLoans",
+        tasks: "NSKTasks",
+      },
+      dataGoogleCalendar: "Google Calendar",
+      dataImportExport: "Importar e exportar",
+      dataDrive: "Sincronização com o Drive",
+    },
+    pages: {
+      welcomeWhy: {
+        title: "Por que NoSheetKit",
+        intro:
+          "O NoSheetKit existe para acompanhar o dia a dia sem transformar sua vida em uma planilha. A seguir, a história do produto em quatro ideias—alinhadas ao site de apresentação.",
+      },
+      welcomeFeatures: {
+        title: "Recursos principais",
+        intro: "O que você ganha em todo o kit:",
+        bullets: [
+          "Mini-apps no navegador para empréstimos, datas, links, domínios, tarefas e coleções.",
+          "Armazenamento local por padrão; login opcional com Google para backups no Drive e Calendar quando houver suporte.",
+          "Interface direta e rápida, e o mesmo design system em todos os apps.",
+          "Sem banco hospedado para seus dados pessoais: fique só no dispositivo até optar por sincronizar na nuvem.",
+        ],
+      },
+      welcomeQuickstart: {
+        title: "Início rápido",
+        intro:
+          "Você pode começar a usar o NoSheetKit de dois jeitos—escolha conforme onde quer manter seus dados.",
+        guestTitle: "Continuar como convidado",
+        guestBody:
+          "Na página de login, escolha o caminho local sem Google. Você recebe uma sessão assinada no navegador e os dados ficam no localStorage deste aparelho até limpar os dados do site ou usar outro perfil do navegador.",
+        googleTitle: "Entrar com Google",
+        googleBody:
+          "Use “Continuar com Google” quando quiser backups opcionais no Drive e o Google Calendar onde um app suportar lembretes. O trabalho continua no navegador; a sincronização acontece ao salvar ou restaurar.",
+        cta: "Abrir página de login",
+      },
+      applications: {
+        collections: {
+          title: "NSKCollections",
+          body: "Agrupe jogos, livros, equipamento ou qualquer coisa em coleções e veja num relance o que você tem, emprestou, tomou emprestado ou ainda quer.",
+          cta: "Abrir NSKCollections",
+        },
+        dates: {
+          title: "NSKDates",
+          body: "Não esqueça aniversários e marcos. Guarde datas importantes e deixe o Google Calendar lembrar você a tempo.",
+          cta: "Abrir NSKDates",
+        },
+        domains: {
+          title: "NSKDomains",
+          body: "Acompanhe todos os seus domínios num só lugar: registrador, renovações, notas de DNS e menos risco de perder um vencimento.",
+          cta: "Abrir NSKDomains",
+        },
+        links: {
+          title: "NSKLinks",
+          body: "Guarde e organize links importantes num só lugar para sempre achá-los fácil.",
+          cta: "Abrir NSKLinks",
+        },
+        loans: {
+          title: "NSKLoans",
+          body: "Registre dinheiro que você empresta e que deve. Saiba quem deve o quê, quando vence e mantenha um histórico limpo.",
+          cta: "Abrir NSKLoans",
+        },
+        tasks: {
+          title: "NSKTasks",
+          body: "Divida o trabalho em espaços (pessoal, trabalho, projetos) e acompanhe tarefas num Kanban simples com prazos e comentários.",
+          cta: "Abrir NSKTasks",
+        },
+      },
+      dataGoogleCalendar: {
+        title: "Google Calendar",
+        sections: [
+          {
+            heading: "Quando se aplica",
+            body: "Os recursos de Calendar aparecem depois que você entra com Google e concede o escopo do Calendar. Sessões só como convidado não usam o Google Calendar.",
+          },
+          {
+            heading: "Para que os apps usam",
+            body: "Apps como Datas, Empréstimos ou Domínios podem criar ou atualizar eventos para que você receba lembretes por e-mail do Google Calendar (por exemplo renovações ou revisões). Cada app explica na interface o que sincroniza.",
+          },
+          {
+            heading: "Sua agenda, sua conta",
+            body: "Os eventos são criados na conta do Google com a qual você entrou. O NoSheetKit não envia lembretes próprios — o Google usa as configurações que você já tem no Calendar.",
+          },
+        ],
+      },
+      dataImportExport: {
+        title: "Importar e exportar",
+        sections: [
+          {
+            heading: "Exportar backup local",
+            body: "Em Apps → Configurações → Gerenciamento de dados, em Importar / Exportar, use Baixar backup para salvar um `.zip` com os dados das mini-apps da sessão atual (convidado ou Google). Trate o arquivo como sensível: quem tiver o arquivo pode importá-lo em um perfil de navegador compatível.",
+          },
+          {
+            heading: "Restaurar de um arquivo",
+            body: "Na mesma tela de gerenciamento de dados, em Importar / Exportar, use Restaurar de arquivo e selecione um `.zip` exportado antes (ou outro backup compatível). O kit pede confirmação porque a restauração substitui os dados locais dessa sessão. Convidados e usuários com sessão Google usam os mesmos botões; o que muda é em qual armazenamento da sessão o backup é aplicado.",
+          },
+          {
+            heading: "Como isso se relaciona ao Drive",
+            body: "Exportar e restaurar por arquivo acontecem só no seu aparelho: ao baixar ou escolher um backup local nada é enviado à nuvem. Envios opcionais ao Google Drive estão na documentação de sincronização com o Drive.",
+          },
+        ],
+      },
+      dataDrive: {
+        title: "Sincronização com o Google Drive",
+        sections: [
+          {
+            heading: "Salvar no Drive",
+            body: "Com sessão Google, use Salvar no cabeçalho dos apps para enviar o backup empacotado mais recente para a área de dados do app no seu Drive. Somente sua conta Google pode ler esse arquivo; o NoSheetKit não armazena seus dados em servidores próprios.",
+          },
+          {
+            heading: "Restaurar após o login",
+            body: "Logo depois de entrar com Google o kit pode buscar o backup mais recente no Drive e aplicá-lo localmente para que todos os apps fiquem alinhados com o que você salvou por último. Você ainda pode trabalhar offline até salvar de novo.",
+          },
+          {
+            heading: "Gerenciar backups",
+            body: "Em Apps → Configurações → Gerenciamento de dados você pode iniciar uma restauração a partir do Drive, remover o backup remoto ou continuar usando exportações junto com o Drive. Apagar dados locais do navegador não remove automaticamente cópias no Drive.",
+          },
+        ],
+      },
+    },
+  },
   legal: {
     privacy: {
       title: "Política de Privacidade",

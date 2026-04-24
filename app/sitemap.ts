@@ -1,27 +1,31 @@
 import type { MetadataRoute } from "next";
 import { getMetadataBase } from "@/lib/seo/site";
+import { PUBLIC_SITEMAP_PATHS } from "@/lib/seo/sitemap-paths";
 
-const routes: Array<{
+type ChangeFrequency = NonNullable<MetadataRoute.Sitemap[0]["changeFrequency"]>;
+
+function entryFor(path: string): {
   path: string;
   priority: number;
-  changeFrequency: NonNullable<MetadataRoute.Sitemap[0]["changeFrequency"]>;
-}> = [
-  { path: "/", priority: 1, changeFrequency: "weekly" },
-  { path: "/apps", priority: 0.9, changeFrequency: "weekly" },
-  { path: "/apps/dates", priority: 0.85, changeFrequency: "weekly" },
-  { path: "/apps/domains", priority: 0.85, changeFrequency: "weekly" },
-  { path: "/apps/settings", priority: 0.7, changeFrequency: "monthly" },
-  { path: "/login", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/privacy", priority: 0.5, changeFrequency: "yearly" },
-  { path: "/terms", priority: 0.5, changeFrequency: "yearly" },
-];
+  changeFrequency: ChangeFrequency;
+} {
+  if (path === "/") return { path, priority: 1, changeFrequency: "weekly" };
+  if (path === "/login") return { path, priority: 0.9, changeFrequency: "monthly" };
+  if (path === "/privacy" || path === "/terms") return { path, priority: 0.4, changeFrequency: "yearly" };
+  if (path.startsWith("/docs/")) return { path, priority: 0.85, changeFrequency: "weekly" };
+  return { path, priority: 0.5, changeFrequency: "monthly" };
+}
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const origin = getMetadataBase().origin;
-  return routes.map(({ path, priority, changeFrequency }) => ({
-    url: path === "/" ? `${origin}/` : `${origin}${path}`,
-    lastModified: new Date(),
-    changeFrequency,
-    priority,
-  }));
+  const origin = getMetadataBase().origin.replace(/\/$/, "");
+  return PUBLIC_SITEMAP_PATHS.map((path) => {
+    const { priority, changeFrequency } = entryFor(path);
+    const url = path === "/" ? `${origin}/` : `${origin}${path}`;
+    return {
+      url,
+      lastModified: new Date(),
+      changeFrequency,
+      priority,
+    };
+  });
 }
