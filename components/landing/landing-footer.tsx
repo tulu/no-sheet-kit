@@ -41,6 +41,12 @@ export function LandingFooter() {
         >
           {t.common.home}
         </Link>
+        <Link
+          href="/docs"
+          className="text-sm text-muted-foreground no-underline transition-colors duration-150 hover:text-foreground"
+        >
+          {t.docs.navTitle}
+        </Link>
         <a
           href="https://github.com/tulu/no-sheet-kit"
           target="_blank"

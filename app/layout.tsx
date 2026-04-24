@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { I18nProvider } from "@/components/providers/i18n-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { seoCopy } from "@/lib/seo/copy";
 import { getMetadataBase, siteName } from "@/lib/seo/site";
 const instrumentSerif = Instrument_Serif({
   variable: "--font-display",
@@ -35,8 +36,7 @@ export const metadata: Metadata = {
     default: siteName,
     template: `%s | ${siteName}`,
   },
-  description:
-    "A suite of simple, private mini-apps that replace the spreadsheets you use for daily tracking.",
+  description: seoCopy.home.description,
   applicationName: siteName,
   referrer: "origin-when-cross-origin",
   robots: {

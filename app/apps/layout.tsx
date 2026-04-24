@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { AppsShellLayout } from "@/components/apps/apps-shell-layout";
 import { NSK_SESSION_COOKIE_NAME, verifySessionJwt } from "@/lib/auth/session-token";
@@ -6,6 +7,10 @@ import {
   SESSION_SUFFIX_ANONYMOUS,
   googleSessionSuffixFromSub,
 } from "@/lib/storage/session-storage-keys";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function AppsLayout({ children }: { children: ReactNode }) {
   const token = (await cookies()).get(NSK_SESSION_COOKIE_NAME)?.value;
