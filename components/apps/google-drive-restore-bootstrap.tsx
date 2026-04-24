@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { restoreSessionGuestDataFromZipFile } from "@/lib/storage/export-anonymous-guest-zip";
@@ -16,9 +16,15 @@ export function GoogleDriveRestoreBootstrap({ isGoogleSession }: { isGoogleSessi
   const sessionSuffix = useSessionStorageSuffix();
   const ranRef = useRef(false);
   const profileRef = useRef(false);
+  const [mounted, setMounted] = useState(false);
 
   const driveRestoreRequested =
     isGoogleSession && searchParams.get("drive_restore") === "1";
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   useEffect(() => {
     if (!driveRestoreRequested) return;
@@ -84,8 +90,12 @@ export function GoogleDriveRestoreBootstrap({ isGoogleSession }: { isGoogleSessi
       aria-busy="true"
     >
       <Loader2 className="size-9 shrink-0 animate-spin text-muted-foreground" aria-hidden />
-      <p className="text-lg font-medium text-foreground">{t.apps.driveRestore.overlayTitle}</p>
-      <p className="max-w-sm text-sm text-muted-foreground">{t.apps.driveRestore.overlayDescription}</p>
+      <p className="text-lg font-medium text-foreground">
+        {mounted ? t.apps.driveRestore.overlayTitle : ""}
+      </p>
+      <p className="max-w-sm text-sm text-muted-foreground">
+        {mounted ? t.apps.driveRestore.overlayDescription : ""}
+      </p>
     </div>
   );
 }

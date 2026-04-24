@@ -21,6 +21,10 @@ export type DriveZipUploadResult =
       detail: string;
     };
 
+export type DriveBackupDeleteResult =
+  | { ok: true; deletedCount: number }
+  | { ok: false; step: "list_backups" | "delete_backup"; status: number; detail: string };
+
 function appDataBackupListQuery(filename: string): string {
   const escaped = filename.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
   return encodeURIComponent(`name='${escaped}' and 'appDataFolder' in parents and trashed=false`);
@@ -162,4 +166,27 @@ export async function uploadAppDataZip(
   }
 
   return { ok: true };
+}
+
+export async function deleteAppDataBackups(
+  accessToken: string,
+  filename: string = DRIVE_BACKUP_FILENAME
+): Promise<DriveBackupDeleteResult> {
+  const listed = await listBackupFileIds(accessToken, filename);
+  if (!listed.ok) {
+    return { ok: false, step: "list_backups", status: listed.status, detail: listed.detail };
+  }
+
+  let deletedCount = 0;
+  for (const id of listed.data) {
+    const deleted = await driveRawRequest(accessToken, `${DRIVE_FILES}/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    if (!deleted.ok && deleted.status !== 404) {
+      return { ok: false, step: "delete_backup", status: deleted.status, detail: deleted.detail };
+    }
+    deletedCount += 1;
+  }
+
+  return { ok: true, deletedCount };
 }

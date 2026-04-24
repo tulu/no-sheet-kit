@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CircleUserRound } from "lucide-react";
 import { useI18n } from "@/components/providers/i18n-provider";
@@ -53,7 +53,6 @@ export function AppsUserMenu({
 }: AppsUserMenuProps) {
   const { t } = useI18n();
   const router = useRouter();
-  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [logoutBusy, setLogoutBusy] = useState(false);
@@ -72,11 +71,6 @@ export function AppsUserMenu({
 
   const googlePendingSync =
     logoutOpen && sessionKind === "google" && hasPendingDriveSync(storageSuffix);
-
-  const settingsHref =
-    pathname.startsWith("/apps") && !pathname.startsWith("/apps/settings")
-      ? `/apps/settings?returnTo=${encodeURIComponent(pathname)}`
-      : "/apps/settings";
 
   type LogoutChoice = "keep" | "delete" | "downloadDelete" | "sessionOnly";
 
@@ -196,7 +190,7 @@ export function AppsUserMenu({
           </div>
           <nav className="flex flex-col p-1.5" aria-label={t.apps.userMenu.label}>
             <Link
-              href={settingsHref}
+              href="/apps/settings"
               onClick={() => setMenuOpen(false)}
               className="rounded-md px-3 py-2.5 text-left text-sm text-foreground hover:bg-muted"
             >

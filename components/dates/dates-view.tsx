@@ -327,9 +327,11 @@ export function DatesView({
       return itemsStillUpcoming(grouped.get(m)!).length > 0;
     });
 
-    const pastMonthIndices = monthIndices.filter((m) => m < currentMonth);
-    const pastMonthIndicesWithContent = pastMonthIndices.filter(
-      (m) => itemsAlreadyPastThisYear(grouped.get(m)!).length > 0
+    // Include any month (except current month handled separately) that has past items.
+    // This avoids hiding non-recurring historical dates whose month is still ahead
+    // of the current month (e.g. 1990-12-01 while today is April).
+    const pastMonthIndicesWithContent = monthIndices.filter(
+      (m) => m !== currentMonth && itemsAlreadyPastThisYear(grouped.get(m)!).length > 0
     );
     const pastInCurrentMonth = itemsAlreadyPastThisYear(grouped.get(currentMonth) ?? []);
 

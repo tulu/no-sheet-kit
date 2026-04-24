@@ -8,7 +8,6 @@ import { AppsUserMenu } from "./apps-user-menu";
 import { AppsSwitcher } from "./apps-switcher";
 import { GuestDataRestoreButton } from "./guest-data-restore-button";
 import { AppsDriveSaveButton } from "./apps-drive-save-button";
-import { AppsDriveRestoreDevButton } from "./apps-drive-restore-dev-button";
 import { useI18n } from "@/components/providers/i18n-provider";
 
 export type AppsShellHeaderProps = {
@@ -51,9 +50,6 @@ export function AppsShellHeader({
 
       <div className="flex items-center gap-3">
         {sessionKind === "google" ? <AppsDriveSaveButton /> : null}
-        {sessionKind === "google" && process.env.NODE_ENV !== "production" ? (
-          <AppsDriveRestoreDevButton />
-        ) : null}
         <GuestDataRestoreButton allowLocalZipRestore={sessionKind === "anonymous"} />
         <AppsSwitcher />
         <AppsUserMenu
