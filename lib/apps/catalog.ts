@@ -2,7 +2,7 @@
  * Single source of truth: which apps exist, order, availability, and launch path.
  * UI (landing, /apps, switcher) should not hardcode per-app ids — use `APP_ORDER`, `isAppAvailable`, `getAppHref`.
  */
-export const APP_ORDER = ["loans", "dates", "links", "domains", "tasks", "collections"] as const;
+export const APP_ORDER = ["collections", "dates", "domains", "links", "loans", "tasks"] as const;
 export type AppId = (typeof APP_ORDER)[number];
 
 type AppCatalogEntry = {

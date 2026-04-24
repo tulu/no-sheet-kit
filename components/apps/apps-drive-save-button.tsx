@@ -22,21 +22,23 @@ export function AppsDriveSaveButton() {
   const sessionSuffix = useSessionStorageSuffix();
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState(false);
+  const [hasLocalData, setHasLocalData] = useState(false);
 
-  const refreshPending = useCallback(() => {
+  const refreshState = useCallback(() => {
     setPending(hasPendingDriveSync(sessionSuffix));
+    setHasLocalData(collectSessionGuestExportEntries(sessionSuffix).length > 0);
   }, [sessionSuffix]);
 
   useEffect(() => {
-    refreshPending();
-  }, [refreshPending]);
+    refreshState();
+  }, [refreshState]);
 
   useEffect(() => {
-    const onChanged = () => refreshPending();
+    const onChanged = () => refreshState();
     window.addEventListener(PENDING_DRIVE_SYNC_CHANGED_EVENT, onChanged);
     const onStorage = (ev: StorageEvent) => {
       if (ev.key === getPendingDriveSyncStorageKey(sessionSuffix)) {
-        refreshPending();
+        refreshState();
       }
     };
     window.addEventListener("storage", onStorage);
@@ -44,10 +46,10 @@ export function AppsDriveSaveButton() {
       window.removeEventListener(PENDING_DRIVE_SYNC_CHANGED_EVENT, onChanged);
       window.removeEventListener("storage", onStorage);
     };
-  }, [sessionSuffix, refreshPending]);
+  }, [sessionSuffix, refreshState]);
 
   async function onSave() {
-    if (busy || !hasPendingDriveSync(sessionSuffix)) return;
+    if (busy || !hasLocalData || !hasPendingDriveSync(sessionSuffix)) return;
     setBusy(true);
     try {
       const entries = collectSessionGuestExportEntries(sessionSuffix);
@@ -83,12 +85,24 @@ export function AppsDriveSaveButton() {
     }
   }
 
-  const canSave = pending && !busy;
+  const canSave = hasLocalData && pending && !busy;
   const label = busy
     ? t.apps.driveSave.labelSaving
-    : pending
+    : !hasLocalData
+      ? t.apps.driveSave.labelNothing
+      : pending
       ? t.apps.driveSave.labelDirty
       : t.apps.driveSave.labelSynced;
+  const tooltip = !hasLocalData
+    ? t.apps.driveSave.tooltipNothing
+    : pending
+      ? t.apps.driveSave.tooltipDirty
+      : t.apps.driveSave.tooltipSynced;
+  const ariaLabel = !hasLocalData
+    ? t.apps.driveSave.ariaLabelNothing
+    : pending
+      ? t.apps.driveSave.ariaLabelDirty
+      : t.apps.driveSave.ariaLabelSynced;
 
   return (
     <Button
@@ -97,15 +111,19 @@ export function AppsDriveSaveButton() {
       variant="secondary"
       disabled={!canSave}
       className={cn("h-10 shrink-0 rounded-full px-4")}
-      title={pending ? t.apps.driveSave.tooltipDirty : t.apps.driveSave.tooltipSynced}
-      aria-label={pending ? t.apps.driveSave.ariaLabelDirty : t.apps.driveSave.ariaLabelSynced}
+      title={tooltip}
+      aria-label={ariaLabel}
       onClick={() => void onSave()}
     >
       <span className="flex items-center gap-2">
         <span
           className={cn(
             "size-2 shrink-0 rounded-full",
-            pending ? "bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.85)]" : "bg-emerald-500"
+            !hasLocalData
+              ? "bg-muted-foreground/60"
+              : pending
+                ? "bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.85)]"
+                : "bg-emerald-500"
           )}
           aria-hidden
         />

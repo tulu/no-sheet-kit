@@ -1,14 +1,23 @@
 const CAL_BASE = "https://www.googleapis.com/calendar/v3";
 const NSK_CALENDAR_SUMMARY = "NoSheetKit";
 
-export async function ensureNoSheetKitCalendarId(accessToken: string): Promise<string | null> {
+async function findNoSheetKitCalendarId(accessToken: string): Promise<string | null> {
   const listUrl = `${CAL_BASE}/users/me/calendarList`;
   const listRes = await fetch(listUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
   if (!listRes.ok) return null;
   const listJson = (await listRes.json()) as { items?: { id?: string; summary?: string }[] };
   const items = listJson.items ?? [];
   const existing = items.find((i) => i.summary === NSK_CALENDAR_SUMMARY);
-  if (existing?.id) return existing.id;
+  return existing?.id ?? null;
+}
+
+export async function getNoSheetKitCalendarId(accessToken: string): Promise<string | null> {
+  return findNoSheetKitCalendarId(accessToken);
+}
+
+export async function ensureNoSheetKitCalendarId(accessToken: string): Promise<string | null> {
+  const existingId = await findNoSheetKitCalendarId(accessToken);
+  if (existingId) return existingId;
 
   const createRes = await fetch(`${CAL_BASE}/calendars`, {
     method: "POST",
@@ -21,6 +30,19 @@ export async function ensureNoSheetKitCalendarId(accessToken: string): Promise<s
   if (!createRes.ok) return null;
   const created = (await createRes.json()) as { id?: string };
   return typeof created.id === "string" ? created.id : null;
+}
+
+export async function deleteNoSheetKitCalendar(
+  accessToken: string,
+  explicitCalendarId?: string
+): Promise<boolean> {
+  const calendarId = explicitCalendarId ?? (await findNoSheetKitCalendarId(accessToken));
+  if (!calendarId) return true;
+  const res = await fetch(`${CAL_BASE}/calendars/${encodeURIComponent(calendarId)}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  return res.ok || res.status === 404;
 }
 
 export type NskCalendarEventInput = {
