@@ -71,9 +71,9 @@ To enable **Continue with Google**, create an OAuth 2.0 **Web application** clie
 | --- | --- |
 | `GOOGLE_CLIENT_ID` | OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | OAuth client secret |
-| `NEXT_PUBLIC_APP_URL` | **Recommended in production:** canonical site origin (no trailing slash), e.g. `https://your-domain.com`. Used to build the OAuth redirect URI `…/api/auth/google/callback`. If unset, the app derives the callback from request headers (works for local `pnpm dev`). |
+| `NEXT_PUBLIC_APP_URL` | **Required in production** when Google sign-in is enabled: canonical site origin (no trailing slash), e.g. `https://your-domain.com`. Used to build the OAuth redirect URI `…/api/auth/google/callback`. In development, if unset, the app derives the callback from request headers (typical for `pnpm dev`). |
 
-Authorized redirect URI in Google Cloud must match exactly: `{NEXT_PUBLIC_APP_URL or your origin}/api/auth/google/callback`.
+Authorized redirect URI in Google Cloud must match exactly: `{NEXT_PUBLIC_APP_URL}` in production, or your dev origin when testing locally without that variable.
 
 **Behaviour:** After Google login, the app pulls your latest backup ZIP from Drive **app data** (hidden app folder) when present and restores it into browser storage for that Google account. **Save** in the apps header uploads a fresh ZIP and updates each app’s `last_google_sync_at`. Sign-out warns if changes were not saved yet. OAuth **refresh** tokens are kept in an **httpOnly** encrypted cookie; profile metadata for each Google `sub` can be cached in `localStorage` under `nsk_google_profile_*`.
 

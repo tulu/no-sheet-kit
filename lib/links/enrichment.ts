@@ -1,4 +1,5 @@
 import { load, type CheerioAPI } from "cheerio";
+import { assertPublicResolvableHost } from "@/lib/security/assert-public-dns";
 import {
   generateAutoTags,
   isPrivateHostname,
@@ -375,6 +376,7 @@ export async function enrichUrl(inputUrl: string): Promise<EnrichedLinkData> {
   if (isPrivateHostname(parsed.hostname)) {
     throw new Error("Private hosts are not allowed");
   }
+  await assertPublicResolvableHost(parsed.hostname);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -405,6 +407,7 @@ export async function enrichUrl(inputUrl: string): Promise<EnrichedLinkData> {
     if (isPrivateHostname(finalParsed.hostname)) {
       throw new Error("Private hosts are not allowed");
     }
+    await assertPublicResolvableHost(finalParsed.hostname);
     const html = await readResponseTextWithByteCap(response, MAX_RESPONSE_BYTES, controller.signal);
     return extractMetadata(html, finalUrl);
   } finally {

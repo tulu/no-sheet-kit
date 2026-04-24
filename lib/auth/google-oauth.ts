@@ -30,6 +30,9 @@ export function googleRedirectUriFromRequest(request: Request): string {
     const base = env.replace(/\/$/, "");
     return `${base}/api/auth/google/callback`;
   }
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("NEXT_PUBLIC_APP_URL must be set in production for Google OAuth.");
+  }
   const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
   const proto = request.headers.get("x-forwarded-proto") ?? "http";
   if (!host) return "http://localhost:3000/api/auth/google/callback";
