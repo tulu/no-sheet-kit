@@ -15,6 +15,7 @@ import {
 } from "@/lib/storage/pending-drive-sync";
 import { useSessionStorageSuffix } from "@/lib/storage/session-storage-context";
 import { cn } from "@/lib/utils";
+import { trackGoogleDriveSyncCompleted } from "@/lib/analytics/events";
 import { toast } from "sonner";
 
 export function AppsDriveSaveButton() {
@@ -77,6 +78,7 @@ export function AppsDriveSaveButton() {
       }
       const syncedAt = typeof data.syncedAt === "string" ? data.syncedAt : new Date().toISOString();
       applyDriveSyncTimestampToAllListApps(sessionSuffix, syncedAt);
+      trackGoogleDriveSyncCompleted();
       toast.success(t.apps.driveSave.success);
     } catch {
       toast.error(t.apps.driveSave.error);

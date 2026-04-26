@@ -9,6 +9,12 @@ import { clearPendingDriveSync } from "@/lib/storage/pending-drive-sync";
 import { writeGoogleProfileLocal } from "@/lib/storage/google-profile-local";
 import { useSessionStorageSuffix } from "@/lib/storage/session-storage-context";
 import { cn } from "@/lib/utils";
+import {
+  NSK_LOGIN_PENDING_GOOGLE_VALUE,
+  NSK_LOGIN_PENDING_SESSION_KEY,
+  trackGoogleDriveRestoreCompleted,
+  trackLoginCompleted,
+} from "@/lib/analytics/events";
 
 export function GoogleDriveRestoreBootstrap({ isGoogleSession }: { isGoogleSession: boolean }) {
   const { t } = useI18n();
@@ -25,6 +31,18 @@ export function GoogleDriveRestoreBootstrap({ isGoogleSession }: { isGoogleSessi
     const id = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(id);
   }, []);
+
+  useEffect(() => {
+    if (!isGoogleSession) return;
+    try {
+      if (sessionStorage.getItem(NSK_LOGIN_PENDING_SESSION_KEY) === NSK_LOGIN_PENDING_GOOGLE_VALUE) {
+        sessionStorage.removeItem(NSK_LOGIN_PENDING_SESSION_KEY);
+        trackLoginCompleted("google");
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [isGoogleSession]);
 
   useEffect(() => {
     if (!driveRestoreRequested) return;
@@ -57,16 +75,19 @@ export function GoogleDriveRestoreBootstrap({ isGoogleSession }: { isGoogleSessi
     ranRef.current = true;
 
     void (async () => {
+      let restoreSuccess = false;
       try {
         const res = await fetch("/api/google/drive/backup");
         if (res.ok) {
           const blob = await res.blob();
           const file = new File([blob], "backup.zip", { type: "application/zip" });
           await restoreSessionGuestDataFromZipFile(file, sessionSuffix);
+          restoreSuccess = true;
         }
       } catch {
         /* ignore */
       } finally {
+        trackGoogleDriveRestoreCompleted(restoreSuccess);
         clearPendingDriveSync(sessionSuffix);
         const path = window.location.pathname + window.location.search;
         const u = new URL(path, window.location.origin);

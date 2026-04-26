@@ -14,6 +14,13 @@ export const enMessages = {
     terms: "Terms",
     github: "GitHub",
     or: "or",
+    tracking: {
+      title: "Allow anonymous usage analytics?",
+      body: "NoSheetKit can use Google Analytics to understand aggregate usage and improve the product. Tracking is disabled by default until you choose.",
+      privacyLink: "Read privacy details",
+      reject: "Reject",
+      accept: "Accept analytics",
+    },
     appToasts: {
       links: {
         created: { title: "Link added" },
@@ -85,8 +92,8 @@ export const enMessages = {
           body: "100% client-side. No subscriptions, no accounts to manage, no vendor lock-in. Deploy it yourself in minutes.",
         },
         {
-          title: "Reminders that work",
-          body: "Instead of push notifications that need a server, NoSheetKit creates events in your Google Calendar with email reminders built in.",
+          title: "Google Calendar, when you want it",
+          body: "With optional Google sign-in, date-based items from supported apps can show up as events in your Google Calendar—no push notifications from us.",
         },
         {
           title: "Modular by design",
@@ -100,57 +107,51 @@ export const enMessages = {
       titleEnd: "coherent kit.",
       cards: {
         loans: {
-          desc: "Track money you lend to friends and money you borrow. Know who owes what, when it's due, and keep a clean history.",
+          desc: "Track money you lend and borrow, partial repayments, and due dates. If you sign in with Google (optional), you can mirror due dates as events in Google Calendar.",
           features: [
-            "Log loans you give and receive",
-            "Track partial repayments",
-            "Due date reminders via Google Calendar",
-            "Full repayment history",
+            "Loans you give and receive with a clear running balance",
+            "Partial repayments and full payoff history",
+            "Optional with Google sign-in: due dates as events in Google Calendar",
           ],
         },
         dates: {
-          desc: "Never forget a birthday or anniversary again. Store important dates and let Google Calendar remind you before it's too late.",
+          desc: "Store birthdays, anniversaries, and other important dates. If you sign in with Google (optional), you can add matching events in Google Calendar.",
           features: [
-            "Birthdays, anniversaries, and more",
-            "Recurring annual reminders",
-            "Email alerts via Google Calendar",
-            "Days-until countdown",
+            "One-off and recurring dates, with list, grid, and month views",
+            "See what is coming up next at a glance",
+            "Optional with Google sign-in: mirror dates as events in Google Calendar",
           ],
         },
         links: {
           desc: "Save and organize your important links in one place so they are always easy to find.",
           features: [
-            "Store useful links with titles",
-            "Group links by topic",
-            "Quick search and filtering",
-            "Keep your resources tidy",
+            "Save URLs with titles, tags, and optional preview metadata",
+            "Group and slice your library with tags",
+            "Search with filters such as reviewed or due for a revisit",
           ],
         },
         domains: {
-          desc: "Keep tabs on all your domains in one place. Track registrars, renewal dates, DNS notes, and never lose a domain to expiry.",
+          desc: "Track domains, registrars, renewal dates, and notes in one place. If you sign in with Google (optional), you can mirror renewal dates as events in Google Calendar.",
           features: [
-            "Domain + registrar registry",
-            "Renewal date tracking",
-            "Expiry alerts via Google Calendar",
-            "DNS and hosting notes",
+            "Domain and registrar fields with list, grid, and month views",
+            "Renewal and expiry tracking",
+            "Optional with Google sign-in: renewal dates as events in Google Calendar",
           ],
         },
         tasks: {
-          desc: "Split work across spaces—personal, work, or side projects—and track tasks on a simple Kanban with due dates and comments.",
+          desc: "Split work across spaces and track tasks on a Kanban or list with due dates and comments.",
           features: [
-            "Spaces for different contexts",
-            "Kanban and list views",
-            "Due dates and comments",
-            "Archive finished work",
+            "Spaces for different areas of life or work",
+            "Kanban and list views with drag-and-drop",
+            "Due dates, comments, and archive when done",
           ],
         },
         collections: {
-          desc: "Group games, books, gear, or anything else into collections and see at a glance what you have, lent, borrowed, or still want.",
+          desc: "Group items into collections and track what you own, lent, borrowed, or still want.",
           features: [
-            "Named collections like mini spreadsheets",
-            "Status: have it, lent, borrowed, want",
-            "Optional loan date and person",
-            "Optional price per collection",
+            "Named collections with list or grid view",
+            "Per-item possession: owned, lent out, borrowed, or wanted",
+            "Optional person, date, notes, price, and link when the collection enables it",
           ],
         },
       },
@@ -169,7 +170,7 @@ export const enMessages = {
         {
           n: "2",
           title: "Optionally sign in with Google",
-          body: "If you want backups or reminders, sign in with Google. This unlocks Google Drive sync and Google Calendar integration — but it's never required.",
+          body: "If you want Drive backup or calendar events for date-based items, sign in with Google. It unlocks Google Drive sync and Google Calendar where supported — and it is never required.",
         },
         {
           n: "3",
@@ -178,8 +179,8 @@ export const enMessages = {
         },
         {
           n: "4",
-          title: "Get reminders via Google Calendar",
-          body: "Due dates and important events create calendar entries in a dedicated NoSheetKit calendar. Requires Google sign-in.",
+          title: "Optional events in Google Calendar",
+          body: "Supported apps can mirror due dates and similar fields as events in a dedicated NoSheetKit calendar. Only after Google sign-in and setup—no separate notifications from us.",
         },
       ],
     },
@@ -217,12 +218,12 @@ export const enMessages = {
     switcherViewAll: "View all",
     switcherEditLabel: "Edit favorites",
     shortDescriptions: {
-      loans: "Track money lent and borrowed.",
-      dates: "Remember important dates and events.",
-      links: "Save and organize your bookmarks.",
-      domains: "Manage your domain portfolio.",
-      tasks: "Tasks in spaces with Kanban and lists.",
-      collections: "Collections of things you own, lent, or want.",
+      loans: "Track loans.",
+      dates: "Remember dates.",
+      links: "Save links.",
+      domains: "Manage domains.",
+      tasks: "Organize tasks.",
+      collections: "Track collections.",
     },
     anonymousBanner: {
       title: "Guest session",

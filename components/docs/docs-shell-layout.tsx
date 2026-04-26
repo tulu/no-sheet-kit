@@ -19,7 +19,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   FilterSidebarDesktopAside,
   FilterSidebarMobileBar,
@@ -115,67 +115,64 @@ export function DocsShellLayout({ children }: { children: ReactNode }) {
   const ga = t.docs.nav.groups.applications;
   const gd = t.docs.nav.groups.googleAndData;
 
-  const items: FilterSidebarItem<DocNavId>[] = useMemo(
-    () => [
-      {
-        id: "welcomeWhy",
-        label: t.docs.nav.welcomeWhy,
-        icon: HelpCircle,
-        count: 0,
-        hideCount: true,
-        navGroupLabel: gw,
-      },
-      {
-        id: "welcomeFeatures",
-        label: t.docs.nav.welcomeFeatures,
-        icon: Sparkles,
-        count: 0,
-        hideCount: true,
-        navGroupLabel: gw,
-      },
-      {
-        id: "welcomeQuickstart",
-        label: t.docs.nav.welcomeQuickstart,
-        icon: Rocket,
-        count: 0,
-        hideCount: true,
-        navGroupLabel: gw,
-      },
-      ...APP_ORDER.map((appId) => ({
-        id: appId,
-        label: t.docs.nav.applicationNames[appId],
-        icon: APP_DOC_ICONS[appId],
-        count: 0,
-        hideCount: true,
-        navGroupLabel: ga,
-      })),
-      {
-        id: "dataGoogleCalendar",
-        label: t.docs.nav.dataGoogleCalendar,
-        icon: CalendarDays,
-        count: 0,
-        hideCount: true,
-        navGroupLabel: gd,
-      },
-      {
-        id: "dataImportExport",
-        label: t.docs.nav.dataImportExport,
-        icon: FolderInput,
-        count: 0,
-        hideCount: true,
-        navGroupLabel: gd,
-      },
-      {
-        id: "dataDrive",
-        label: t.docs.nav.dataDrive,
-        icon: Cloud,
-        count: 0,
-        hideCount: true,
-        navGroupLabel: gd,
-      },
-    ],
-    [ga, gd, gw, t.docs.nav]
-  );
+  const items: FilterSidebarItem<DocNavId>[] = [
+    {
+      id: "welcomeWhy",
+      label: t.docs.nav.welcomeWhy,
+      icon: HelpCircle,
+      count: 0,
+      hideCount: true,
+      navGroupLabel: gw,
+    },
+    {
+      id: "welcomeFeatures",
+      label: t.docs.nav.welcomeFeatures,
+      icon: Sparkles,
+      count: 0,
+      hideCount: true,
+      navGroupLabel: gw,
+    },
+    {
+      id: "welcomeQuickstart",
+      label: t.docs.nav.welcomeQuickstart,
+      icon: Rocket,
+      count: 0,
+      hideCount: true,
+      navGroupLabel: gw,
+    },
+    ...APP_ORDER.map((appId) => ({
+      id: appId,
+      label: t.docs.nav.applicationNames[appId],
+      icon: APP_DOC_ICONS[appId],
+      count: 0,
+      hideCount: true,
+      navGroupLabel: ga,
+    })),
+    {
+      id: "dataGoogleCalendar",
+      label: t.docs.nav.dataGoogleCalendar,
+      icon: CalendarDays,
+      count: 0,
+      hideCount: true,
+      navGroupLabel: gd,
+    },
+    {
+      id: "dataImportExport",
+      label: t.docs.nav.dataImportExport,
+      icon: FolderInput,
+      count: 0,
+      hideCount: true,
+      navGroupLabel: gd,
+    },
+    {
+      id: "dataDrive",
+      label: t.docs.nav.dataDrive,
+      icon: Cloud,
+      count: 0,
+      hideCount: true,
+      navGroupLabel: gd,
+    },
+  ];
 
   const sectionTitle = docNavSectionTitle(t, activeId);
 

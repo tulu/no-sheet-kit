@@ -14,6 +14,13 @@ export const ptMessages = {
     terms: "Termos",
     github: "GitHub",
     or: "ou",
+    tracking: {
+      title: "Permitir analytics de uso anônimo?",
+      body: "O NoSheetKit pode usar Google Analytics para entender o uso agregado e melhorar o produto. O rastreamento fica desativado por padrão até você escolher.",
+      privacyLink: "Ver detalhes de privacidade",
+      reject: "Recusar",
+      accept: "Aceitar analytics",
+    },
     appToasts: {
       links: {
         created: { title: "Link adicionado" },
@@ -85,8 +92,8 @@ export const ptMessages = {
           body: "100% client-side. Sem assinatura, sem contas para gerenciar e sem lock-in. Você publica em minutos.",
         },
         {
-          title: "Lembretes que funcionam",
-          body: "Em vez de push notifications que exigem servidor, o NoSheetKit cria eventos no seu Google Calendar com lembretes por e-mail.",
+          title: "Google Agenda, se você quiser",
+          body: "Com login opcional no Google, itens com data nos apps compatíveis podem aparecer como eventos na sua Google Agenda — sem notificações push do NoSheetKit.",
         },
         {
           title: "Modular por design",
@@ -100,57 +107,51 @@ export const ptMessages = {
       titleEnd: "kit coerente.",
       cards: {
         loans: {
-          desc: "Acompanhe dinheiro emprestado e dinheiro que você tomou emprestado. Saiba quem deve o quê, quando vence e mantenha um histórico limpo.",
+          desc: "Acompanhe valores que você empresta e toma emprestado, pagamentos parciais e vencimentos. Se fizer login com o Google (opcional), você pode espelhar vencimentos como eventos na Google Agenda.",
           features: [
-            "Registrar empréstimos dados e recebidos",
-            "Acompanhar pagamentos parciais",
-            "Lembretes de vencimento via Google Calendar",
-            "Histórico completo de quitação",
+            "Empréstimos dados e recebidos com saldo claro",
+            "Pagamentos parciais e histórico até quitar",
+            "Opcional com Google: vencimentos como eventos na Google Agenda",
           ],
         },
         dates: {
-          desc: "Nunca mais esqueça aniversários e datas especiais. Guarde datas importantes e receba lembretes no Google Calendar.",
+          desc: "Guarde aniversários, datas comemorativas e outras datas importantes. Se fizer login com o Google (opcional), você pode criar eventos equivalentes na Google Agenda.",
           features: [
-            "Aniversários, comemorações e mais",
-            "Lembretes anuais recorrentes",
-            "Alertas por e-mail via Google Calendar",
-            "Contagem regressiva de dias",
+            "Datas únicas e recorrentes; visualizações lista, grade e mês",
+            "Próximas datas visíveis num relance",
+            "Opcional com Google: as mesmas datas como eventos na Google Agenda",
           ],
         },
         links: {
           desc: "Salve e organize seus links importantes em um só lugar para encontrar tudo rapidamente.",
           features: [
-            "Salvar links úteis com título",
-            "Agrupar links por tema",
-            "Busca e filtros rápidos",
-            "Manter recursos organizados",
+            "URLs com título, tags e metadados opcionais de pré-visualização",
+            "Organize e filtre a biblioteca com tags",
+            "Busca e filtros (por exemplo revisados ou para revisitar)",
           ],
         },
         domains: {
-          desc: "Gerencie todos os seus domínios em um só lugar. Acompanhe registradores, renovações, notas de DNS e evite expiração.",
+          desc: "Centralize domínios, registradores, renovações e anotações. Se fizer login com o Google (opcional), você pode espelhar renovações como eventos na Google Agenda.",
           features: [
-            "Registro de domínio + registrador",
-            "Acompanhamento de renovação",
-            "Alertas de expiração via Google Calendar",
-            "Notas de DNS e hospedagem",
+            "Domínio e registrador com visualizações lista, grade e mês",
+            "Acompanhamento de renovação e expiração",
+            "Opcional com Google: datas de renovação como eventos na Google Agenda",
           ],
         },
         tasks: {
-          desc: "Separe o trabalho em espaços (pessoal, empresa ou outros) e acompanhe tarefas em um Kanban simples com prazos e comentários.",
+          desc: "Organize por espaços e acompanhe tarefas em Kanban ou lista com prazos e comentários.",
           features: [
-            "Espaços para contextos diferentes",
-            "Visualizações Kanban e lista",
-            "Prazos e comentários",
-            "Arquive o que já terminou",
+            "Espaços para diferentes áreas da vida ou do trabalho",
+            "Kanban e lista com arrastar e soltar",
+            "Prazos, comentários e arquivo ao concluir",
           ],
         },
         collections: {
-          desc: "Agrupe jogos, livros, equipamentos ou qualquer coisa em coleções e veja de relance o que você tem, emprestou, tomou emprestado ou ainda quer.",
+          desc: "Agrupe itens em coleções e veja o que você tem, emprestou, tomou emprestado ou ainda quer.",
           features: [
-            "Coleções nomeadas, tipo mini planilha",
-            "Status: tenho, emprestei, me emprestaram, quero",
-            "Data e pessoa opcionais para empréstimos",
-            "Preço opcional por coleção",
+            "Coleções nomeadas; visualização em lista ou grade",
+            "Por item: tenho, emprestei, me emprestaram ou quero",
+            "Pessoa, data, notas, preço e link opcionais quando a coleção permite",
           ],
         },
       },
@@ -169,7 +170,7 @@ export const ptMessages = {
         {
           n: "2",
           title: "Faça login com Google (opcional)",
-          body: "Se quiser backups ou lembretes, entre com Google. Isso habilita Drive e Calendar, mas nunca é obrigatório.",
+          body: "Se quiser backup no Drive ou eventos na Agenda para itens com data, entre com Google. Habilita Drive e Calendar onde houver suporte, e nunca é obrigatório.",
         },
         {
           n: "3",
@@ -178,8 +179,8 @@ export const ptMessages = {
         },
         {
           n: "4",
-          title: "Receba lembretes no Google Calendar",
-          body: "Vencimentos e eventos importantes criam entradas em um calendário dedicado do NoSheetKit. Requer login Google.",
+          title: "Eventos opcionais na Google Agenda",
+          body: "Apps compatíveis podem espelhar vencimentos e datas parecidas como eventos num calendário dedicado do NoSheetKit. Só após login Google e configuração — sem notificações extras do NoSheetKit.",
         },
       ],
     },
@@ -218,12 +219,12 @@ export const ptMessages = {
     switcherViewAll: "Ver todas",
     switcherEditLabel: "Editar favoritos",
     shortDescriptions: {
-      loans: "Acompanhe dinheiro emprestado e recebido.",
-      dates: "Lembre datas e eventos importantes.",
-      links: "Salve e organize seus bookmarks.",
-      domains: "Gerencie seu portfólio de domínios.",
-      tasks: "Tarefas em espaços com Kanban e listas.",
-      collections: "Coleções de coisas que você tem, emprestou ou quer.",
+      loans: "Controle empréstimos.",
+      dates: "Lembre datas.",
+      links: "Salve links.",
+      domains: "Gerencie domínios.",
+      tasks: "Organize tarefas.",
+      collections: "Controle coleções.",
     },
     anonymousBanner: {
       title: "Sessão de convidado",

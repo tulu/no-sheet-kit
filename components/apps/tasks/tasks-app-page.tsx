@@ -1,7 +1,7 @@
 "use client";
 
 import { Folder, LayoutDashboard, LayoutGrid, List, Settings2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { AppListToolbar } from "@/components/common/app-list-toolbar";
@@ -175,14 +175,14 @@ export function TasksAppPage() {
   );
 
   /** Keep task sheet in sync with store (comments, status from Kanban, etc.). */
-  const editingTaskLive = useMemo(() => {
+  const editingTaskLive = (() => {
     if (!editingTask) return null;
     return store.tasks.find((t) => t.id === editingTask.id) ?? editingTask;
-  }, [editingTask, store.tasks]);
+  })();
 
-  const spacesSorted = useMemo(() => sortSpaces(store.spaces), [store.spaces]);
+  const spacesSorted = sortSpaces(store.spaces);
 
-  const sidebarItems: FilterSidebarItem<NavId>[] = useMemo(() => {
+  const sidebarItems: FilterSidebarItem<NavId>[] = (() => {
     const rows: FilterSidebarItem<NavId>[] = [
       {
         id: TASKS_DASHBOARD_NAV_ID,
@@ -204,18 +204,15 @@ export function TasksAppPage() {
       });
     }
     return rows;
-  }, [store.tasks, spacesSorted, t.tasks.dashboardNav, showArchived]);
+  })();
 
   const activeSpaceId = activeNav === TASKS_DASHBOARD_NAV_ID ? null : activeNav;
-  const spaceTasksRaw = useMemo(() => {
+  const spaceTasksRaw = (() => {
     if (!activeSpaceId) return [];
     return tasksInSpace(store.tasks, activeSpaceId, { includeArchived: showArchived });
-  }, [store.tasks, activeSpaceId, showArchived]);
+  })();
 
-  const searchFilteredTasks = useMemo(
-    () => filterItemsBySearch(spaceTasksRaw, taskSearch, taskMatchesSearch),
-    [spaceTasksRaw, taskSearch]
-  );
+  const searchFilteredTasks = filterItemsBySearch(spaceTasksRaw, taskSearch, taskMatchesSearch);
 
   function handleViewModeChange(next: TasksViewMode) {
     setViewMode(next);

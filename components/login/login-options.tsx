@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { safeReturnTo } from "@/lib/auth/safe-return-to";
+import {
+  NSK_LOGIN_PENDING_GOOGLE_VALUE,
+  NSK_LOGIN_PENDING_SESSION_KEY,
+  trackLoginCompleted,
+} from "@/lib/analytics/events";
 
 function GoogleIcon() {
   return (
@@ -44,6 +49,11 @@ export function LoginOptions() {
   const googleError = searchParams.get("google_error");
 
   function handleGoogle() {
+    try {
+      sessionStorage.setItem(NSK_LOGIN_PENDING_SESSION_KEY, NSK_LOGIN_PENDING_GOOGLE_VALUE);
+    } catch {
+      /* ignore */
+    }
     const start = new URL("/api/auth/google/start", window.location.origin);
     start.searchParams.set("returnTo", returnTo);
     window.location.assign(start.toString());
@@ -55,6 +65,7 @@ export function LoginOptions() {
     try {
       const res = await fetch("/api/auth/anonymous", { method: "POST" });
       if (!res.ok) return;
+      trackLoginCompleted("guest");
       router.replace(returnTo);
     } finally {
       setAnonymousBusy(false);

@@ -32,6 +32,10 @@ import {
   PENDING_DRIVE_SYNC_CHANGED_EVENT,
 } from "@/lib/storage/pending-drive-sync";
 import { clearAllListAppLocalStorageForSuffix } from "@/lib/storage/session-storage-keys";
+import {
+  trackGoogleDriveBackupDeleted,
+  trackLocalDataCleared,
+} from "@/lib/analytics/events";
 import { toast } from "sonner";
 
 type SessionJson =
@@ -168,6 +172,7 @@ export function AppsSettingsDataManagementSection() {
         clearAllListAppLocalStorageForSuffix(sessionSuffix);
         clearPendingDriveSync(sessionSuffix);
         setHasLocalData(false);
+        trackLocalDataCleared("settings");
         toast.success(t.apps.settings.dataManagement.deleteLocalSuccess);
       } else if (action === "delete_drive") {
         const res = await fetch("/api/google/drive/backup", { method: "DELETE" });
@@ -176,6 +181,7 @@ export function AppsSettingsDataManagementSection() {
           return;
         }
         setHasDriveBackup(false);
+        trackGoogleDriveBackupDeleted();
         toast.success(t.apps.settings.dataManagement.deleteDriveSuccess);
       }
     } catch {
@@ -235,7 +241,7 @@ export function AppsSettingsDataManagementSection() {
                       )}
                       aria-disabled
                     >
-                        {t.apps.settings.dataManagement.downloadBackup}
+                      {t.apps.settings.dataManagement.downloadBackup}
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>{t.apps.settings.dataManagement.localDataMissingHint}</TooltipContent>
@@ -262,17 +268,17 @@ export function AppsSettingsDataManagementSection() {
                     {t.apps.settings.dataManagement.restoreFromDrive}
                   </Button>
                 ) : (
-              <TooltipProvider delay={150}>
+                  <TooltipProvider delay={150}>
                     <Tooltip>
-                  <TooltipTrigger>
-                    <span
-                      className={cn(
-                        buttonVariants({ variant: "outline" }),
-                        "pointer-events-none inline-flex cursor-help opacity-50"
-                      )}
-                      aria-disabled
-                    >
-                            {t.apps.settings.dataManagement.restoreFromDrive}
+                      <TooltipTrigger>
+                        <span
+                          className={cn(
+                            buttonVariants({ variant: "outline" }),
+                            "pointer-events-none inline-flex cursor-help opacity-50"
+                          )}
+                          aria-disabled
+                        >
+                          {t.apps.settings.dataManagement.restoreFromDrive}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>{t.apps.settings.dataManagement.driveBackupMissingHint}</TooltipContent>
@@ -316,7 +322,7 @@ export function AppsSettingsDataManagementSection() {
                       )}
                       aria-disabled
                     >
-                        {t.apps.settings.dataManagement.deleteLocalData}
+                      {t.apps.settings.dataManagement.deleteLocalData}
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>{t.apps.settings.dataManagement.localDataMissingHint}</TooltipContent>
@@ -335,17 +341,17 @@ export function AppsSettingsDataManagementSection() {
                     {t.apps.settings.dataManagement.deleteDriveBackup}
                   </Button>
                 ) : (
-              <TooltipProvider delay={150}>
+                  <TooltipProvider delay={150}>
                     <Tooltip>
-                  <TooltipTrigger>
-                    <span
-                      className={cn(
-                        buttonVariants({ variant: "destructive" }),
-                        "pointer-events-none inline-flex cursor-help opacity-50"
-                      )}
-                      aria-disabled
-                    >
-                            {t.apps.settings.dataManagement.deleteDriveBackup}
+                      <TooltipTrigger>
+                        <span
+                          className={cn(
+                            buttonVariants({ variant: "destructive" }),
+                            "pointer-events-none inline-flex cursor-help opacity-50"
+                          )}
+                          aria-disabled
+                        >
+                          {t.apps.settings.dataManagement.deleteDriveBackup}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>{t.apps.settings.dataManagement.driveBackupMissingHint}</TooltipContent>

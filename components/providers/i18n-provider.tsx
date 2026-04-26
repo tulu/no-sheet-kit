@@ -53,16 +53,21 @@ function persistLocaleCookie(locale: Locale) {
   document.cookie = `${LOCALE_COOKIE_NAME}=${locale}; Max-Age=31536000; Path=/; SameSite=Lax`;
 }
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  // Must match server render: browser/cookie are only available on the client.
-  const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
+type I18nProviderProps = {
+  children: ReactNode;
+  /** From server `cookies()` so SSR and first client paint match (avoids hydration mismatches). */
+  initialLocale: Locale;
+};
+
+export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
+  const [locale, setLocaleState] = useState<Locale>(() => initialLocale);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => {
       setLocaleState(resolveInitialLocale());
     });
     return () => cancelAnimationFrame(id);
-  }, []);
+  }, [initialLocale]);
 
   const value: I18nContextValue = {
     locale,

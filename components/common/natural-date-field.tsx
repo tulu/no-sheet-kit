@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { parseDate } from "chrono-node";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
@@ -75,10 +75,7 @@ export function NaturalDateField({
   const [inputValue, setInputValue] = useState("");
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  const resolvedDate = useMemo(
-    () => parseDateFromInput(inputValue) ?? parseISODate(valueIso),
-    [inputValue, valueIso]
-  );
+  const resolvedDate = parseDateFromInput(inputValue) ?? parseISODate(valueIso);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => {

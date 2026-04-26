@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import type { LoanPayment, NSKLoanItem } from "@/lib/loans/schema";
@@ -71,10 +71,10 @@ export function LoanPaymentsSheet({ open, loan, onClose, onUpdatePayments }: Loa
   const [paymentPendingDelete, setPaymentPendingDelete] = useState<LoanPayment | null>(null);
   const [payFullRemaining, setPayFullRemaining] = useState(false);
 
-  const sortedPayments = useMemo(() => {
+  const sortedPayments = (() => {
     if (!loan) return [];
     return [...loan.payments].sort((a, b) => b.date.localeCompare(a.date));
-  }, [loan]);
+  })();
 
   useEffect(() => {
     if (!open || !loan) return;
