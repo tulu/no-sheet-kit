@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -24,6 +24,10 @@ import {
 } from "@/lib/storage/google-calendar-local";
 import { getAppStorageUsage, getLastGoogleSyncAt } from "@/lib/apps/storage-usage";
 import { cn } from "@/lib/utils";
+import {
+  trackGoogleCalendarCreated,
+  trackGoogleCalendarDeleted,
+} from "@/lib/analytics/events";
 import { toast } from "sonner";
 
 type SessionJson =
@@ -95,7 +99,7 @@ export function AppsSettingsGeneralSection() {
   }, [refreshAppData]);
 
   const isGoogle = session?.kind === "google";
-  const formattedSync = useMemo(() => {
+  const formattedSync = (() => {
     if (!lastSyncAt) return null;
     const d = new Date(lastSyncAt);
     if (Number.isNaN(d.getTime())) return null;
@@ -103,7 +107,7 @@ export function AppsSettingsGeneralSection() {
       dateStyle: "medium",
       timeStyle: "short",
     }).format(d);
-  }, [lastSyncAt, locale]);
+  })();
 
   async function onCreateCalendar() {
     if (!isGoogle || busy) return;
@@ -117,6 +121,7 @@ export function AppsSettingsGeneralSection() {
       }
       writeGoogleCalendarIdLocal(session.sub, data.calendarId);
       setCalendarId(data.calendarId);
+      trackGoogleCalendarCreated();
       toast.success(t.apps.settings.general.calendarCreated);
     } finally {
       setBusy(null);
@@ -136,6 +141,7 @@ export function AppsSettingsGeneralSection() {
       }
       clearGoogleCalendarIdLocal(session.sub);
       setCalendarId(null);
+      trackGoogleCalendarDeleted();
       toast.success(t.apps.settings.general.calendarDeleted);
     } finally {
       setBusy(null);

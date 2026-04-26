@@ -6,9 +6,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { useI18n } from "@/components/providers/i18n-provider";
-import { AppsSettingsDataManagementSection } from "@/components/apps/apps-settings-data-management-section";
-import { AppsSettingsGeneralSection } from "@/components/apps/apps-settings-general-section";
-import { AppsSettingsStorageSection } from "@/components/apps/apps-settings-storage-section";
+import { AppsSettingsDataManagementSection } from "@/components/settings/apps-settings-data-management-section";
+import { AppsSettingsGeneralSection } from "@/components/settings/apps-settings-general-section";
+import { AppsSettingsStorageSection } from "@/components/settings/apps-settings-storage-section";
 import { cn } from "@/lib/utils";
 import {
   FilterSidebarDesktopAside,

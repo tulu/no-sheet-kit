@@ -31,6 +31,7 @@ import {
   type StoredGoogleProfile,
 } from "@/lib/storage/google-profile-local";
 import { clearAllListAppLocalStorageForSuffix } from "@/lib/storage/session-storage-keys";
+import { trackLocalDataCleared } from "@/lib/analytics/events";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -94,6 +95,7 @@ export function AppsUserMenu({
 
       if (choice === "delete" || choice === "downloadDelete") {
         clearAllAnonymousAppLocalStorage();
+        trackLocalDataCleared("logout_guest");
       }
 
       const logoutRes = await fetch("/api/auth/logout", { method: "POST" });
@@ -117,6 +119,7 @@ export function AppsUserMenu({
         clearGoogleProfileLocal(googleSub);
         clearGoogleCalendarIdLocal(googleSub);
       }
+      trackLocalDataCleared("logout_google");
 
       const logoutRes = await fetch("/api/auth/logout", { method: "POST" });
       if (!logoutRes.ok) return;

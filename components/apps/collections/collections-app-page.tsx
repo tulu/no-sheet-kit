@@ -11,7 +11,7 @@ import {
   Star,
   type LucideIcon,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { AppListToolbar } from "@/components/common/app-list-toolbar";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
@@ -125,18 +125,18 @@ export function CollectionsAppPage() {
     [sessionSuffix]
   );
 
-  const collectionsSorted = useMemo(() => sortCollections(store.collections), [store.collections]);
+  const collectionsSorted = sortCollections(store.collections);
 
-  const activePossessionStatus = useMemo(() => parsePossessionNavId(activeNav), [activeNav]);
+  const activePossessionStatus = parsePossessionNavId(activeNav);
 
-  const activeCollection = useMemo(() => {
+  const activeCollection = (() => {
     if (activeNav === COLLECTIONS_DASHBOARD_NAV_ID || activePossessionStatus) return null;
     return store.collections.find((c) => c.id === activeNav) ?? null;
-  }, [activeNav, activePossessionStatus, store.collections]);
+  })();
 
   const activeCollectionId = activeCollection?.id ?? null;
 
-  const sidebarItems: FilterSidebarItem<NavId>[] = useMemo(() => {
+  const sidebarItems: FilterSidebarItem<NavId>[] = (() => {
     const rows: FilterSidebarItem<NavId>[] = [
       {
         id: COLLECTIONS_DASHBOARD_NAV_ID,
@@ -172,21 +172,18 @@ export function CollectionsAppPage() {
       firstPossession = false;
     }
     return rows;
-  }, [store.items, collectionsSorted, t.collections.dashboardNav, t.collections.possessionLabels]);
+  })();
 
-  const collectionItemsRaw = useMemo(() => {
+  const collectionItemsRaw = (() => {
     if (activeNav === COLLECTIONS_DASHBOARD_NAV_ID) return [];
     if (activePossessionStatus) {
       return itemsByPossessionStatus(store.items, store.collections, activePossessionStatus);
     }
     if (activeCollectionId) return itemsInCollection(store.items, activeCollectionId);
     return [];
-  }, [activeNav, activePossessionStatus, activeCollectionId, store.items, store.collections]);
+  })();
 
-  const searchFilteredItems = useMemo(
-    () => filterItemsBySearch(collectionItemsRaw, itemSearch, itemMatchesSearch),
-    [collectionItemsRaw, itemSearch]
-  );
+  const searchFilteredItems = filterItemsBySearch(collectionItemsRaw, itemSearch, itemMatchesSearch);
 
   function handleViewModeChange(next: CollectionsViewMode) {
     setViewMode(next);
@@ -199,11 +196,11 @@ export function CollectionsAppPage() {
     setItemSheetOpen(true);
   }
 
-  const collectionNameById = useMemo(() => {
+  const collectionNameById = (() => {
     const m = new Map<string, string>();
     for (const c of store.collections) m.set(c.id, c.name);
     return m;
-  }, [store.collections]);
+  })();
 
   const getCollectionLabelForItem = useCallback(
     (item: NSKCollectionItem) => collectionNameById.get(item.collection_id),
@@ -457,13 +454,13 @@ export function CollectionsAppPage() {
     setItemPendingDelete(null);
   }
 
-  const showPriceCol = useMemo(() => {
+  const showPriceCol = (() => {
     if (activePossessionStatus) {
       const flags = new Map(store.collections.map((c) => [c.id, c.show_price]));
       return collectionItemsRaw.some((i) => flags.get(i.collection_id));
     }
     return Boolean(activeCollection?.show_price);
-  }, [activePossessionStatus, collectionItemsRaw, store.collections, activeCollection?.show_price]);
+  })();
 
   const sheetShowPrice = Boolean(
     editingItem
@@ -471,13 +468,13 @@ export function CollectionsAppPage() {
       : activeCollection?.show_price
   );
 
-  const showLinkCol = useMemo(() => {
+  const showLinkCol = (() => {
     if (activePossessionStatus) {
       const flags = new Map(store.collections.map((c) => [c.id, c.show_link]));
       return collectionItemsRaw.some((i) => flags.get(i.collection_id));
     }
     return Boolean(activeCollection?.show_link);
-  }, [activePossessionStatus, collectionItemsRaw, store.collections, activeCollection?.show_link]);
+  })();
 
   const sheetShowLink = Boolean(
     editingItem

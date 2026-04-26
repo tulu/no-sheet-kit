@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Geist_Mono, Instrument_Serif, Instrument_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { I18nProvider } from "@/components/providers/i18n-provider";
+import { AnalyticsConsentProvider } from "@/components/providers/analytics-consent-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { seoCopy } from "@/lib/seo/copy";
+import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, normalizeLocale } from "@/lib/i18n/types";
 import { getMetadataBase, siteName } from "@/lib/seo/site";
 const instrumentSerif = Instrument_Serif({
   variable: "--font-display",
@@ -58,14 +61,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const initialLocale =
+    normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value) ?? DEFAULT_LOCALE;
+
   return (
     <html
-      lang="en"
+      lang={initialLocale}
       suppressHydrationWarning
       data-scroll-behavior="smooth"
       className={`${instrumentSans.variable} ${inter.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
@@ -77,8 +84,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <I18nProvider>
+          <I18nProvider initialLocale={initialLocale}>
             {children}
+            <AnalyticsConsentProvider />
             <Toaster richColors position="top-center" />
           </I18nProvider>
         </ThemeProvider>

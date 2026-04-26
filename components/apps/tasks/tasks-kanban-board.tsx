@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -117,7 +117,7 @@ function KanbanColumn({
 }) {
   const dropId = `${TASKS_KANBAN_COL_PREFIX}${status}`;
   const { setNodeRef, isOver } = useDroppable({ id: dropId });
-  const ids = useMemo(() => tasks.map((t) => t.id), [tasks]);
+  const ids = tasks.map((t) => t.id);
 
   return (
     <div
@@ -176,7 +176,7 @@ export function TasksKanbanBoard({
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  const byStatus = useMemo(() => {
+  const byStatus = (() => {
     const map: Record<TaskStatus, NSKTask[]> = {
       todo: [],
       in_progress: [],
@@ -186,12 +186,12 @@ export function TasksKanbanBoard({
       map[st] = tasksByStatus(tasks, st);
     }
     return map;
-  }, [tasks]);
+  })();
 
-  const activeTask = useMemo(() => {
+  const activeTask = (() => {
     if (!activeId) return null;
     return allTasks.find((t) => t.id === activeId && t.space_id === spaceId) ?? null;
-  }, [activeId, allTasks, spaceId]);
+  })();
 
   function handleDragStart(event: DragStartEvent) {
     setActiveId(String(event.active.id));
