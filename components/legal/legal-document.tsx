@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
+import { ThemeToggle } from "@/components/landing/theme-toggle";
 import { useI18n } from "@/components/providers/i18n-provider";
 import type { LegalDocument as LegalDocumentData } from "@/content/legal/types";
 import {
@@ -34,7 +35,10 @@ function LegalDocumentBody({
         >
           {t.common.back}
         </Link>
-        <LanguageSwitcher />
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
       </div>
 
       <h1 className="font-display mb-4 text-4xl font-bold tracking-tight text-foreground">{title}</h1>

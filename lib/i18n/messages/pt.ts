@@ -264,6 +264,7 @@ export const ptMessages = {
     },
     notifications: {
       bellAria: "Próximos nos próximos 30 dias",
+      popoverTitle: "Notificações",
       menuTitle: "Próximos 30 dias",
       empty: "Nada nos próximos 30 dias.",
       kindDomainsExpiring: "A expirar",
@@ -287,6 +288,10 @@ export const ptMessages = {
       labelDirty: "Salvar alterações pendentes",
       labelNothing: "Nada para salvar",
       labelSaving: "Salvando...",
+      mobileShortSynced: "Salvo",
+      mobileShortDirty: "Salvar",
+      mobileShortNothing: "—",
+      mobileShortSaving: "...",
       ariaLabelDirty: "Salvar no Google Drive — há alterações locais não enviadas",
       ariaLabelSynced: "O backup no Google Drive está em dia — nada a salvar",
       ariaLabelNothing: "Não há dados locais disponíveis — nada para salvar",

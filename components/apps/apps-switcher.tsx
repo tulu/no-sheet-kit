@@ -22,22 +22,24 @@ export function AppsSwitcher() {
             type="button"
             aria-label={t.apps.switcherTitle}
             aria-expanded={open}
-            className="inline-flex size-12 items-center justify-center rounded-full bg-background text-foreground transition-colors hover:bg-muted/60"
+            className="inline-flex size-10 items-center justify-center rounded-full bg-background text-foreground transition-colors hover:bg-muted/60 md:size-12"
           />
         }
       >
-        <Grid3X3 className="size-6 text-muted-foreground" aria-hidden />
+        <Grid3X3 className="size-5 text-muted-foreground md:size-6" aria-hidden />
       </PopoverTrigger>
       <PopoverContent
-        align="end"
+        align="center"
         sideOffset={10}
-        className="w-[min(360px,calc(100vw-3rem))] max-w-[calc(100vw-3rem)] origin-top-right gap-0 rounded-[28px] border border-border p-0 shadow-xl"
+        positionMethod="fixed"
+        collisionPadding={16}
+        className="flex w-[min(360px,calc(100vw-3rem))] max-w-[calc(100vw-3rem)] max-h-[85vh] origin-top-right flex-col gap-0 p-0"
       >
         <div className="border-b border-border px-4 py-3">
-          <p className="text-center text-base font-semibold text-foreground">{t.apps.switcherTitle}</p>
+          <p className="text-center text-sm font-medium text-foreground">{t.apps.switcherTitle}</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-x-2 gap-y-3 p-1.5">
+        <div className="grid grid-cols-3 gap-x-2 gap-y-3 overflow-y-auto p-1.5">
           {apps.map((app) =>
             app.available && app.href ? (
               <Link

@@ -263,6 +263,7 @@ export const enMessages = {
     },
     notifications: {
       bellAria: "Upcoming in the next 30 days",
+      popoverTitle: "Notifications",
       menuTitle: "Next 30 days",
       empty: "Nothing coming up in the next 30 days.",
       kindDomainsExpiring: "Expiring soon",
@@ -286,6 +287,10 @@ export const enMessages = {
       labelDirty: "Save pending changes",
       labelNothing: "Nothing to save",
       labelSaving: "Saving...",
+      mobileShortSynced: "Saved",
+      mobileShortDirty: "Save",
+      mobileShortNothing: "—",
+      mobileShortSaving: "...",
       ariaLabelDirty: "Save to Google Drive — you have unsaved local changes",
       ariaLabelSynced: "Google Drive backup is up to date — nothing to save",
       ariaLabelNothing: "No local data available — nothing to save",
