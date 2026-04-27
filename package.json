@@ -1,15 +1,15 @@
 {
   "name": "no-sheet-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Ruben Sosenke <https://github.com/tulu>",
   "license": "MIT",
-  "private": true,
+  "private": false,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "build:demo-zip": "node scripts/build-screenshot-dummy-backup.mjs"
+    "build:demo-zip": "node scripts/build-dummy-backup.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",

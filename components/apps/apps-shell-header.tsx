@@ -45,8 +45,14 @@ export function AppsShellHeader({
   return (
     <header className="flex h-16 items-center justify-between px-6">
       <div className="flex select-none items-center gap-2.5 text-xl font-semibold text-foreground">
-        <Image src="/nsk-iso.png" alt="NoSheetKit" width={28} height={28} className="rounded-[6px]" />
-        {title}
+        <Image
+          src="/nsk-iso.png"
+          alt="NoSheetKit"
+          width={28}
+          height={28}
+          className="rounded-[6px]"
+        />
+        <span className="max-md:hidden">{title}</span>
       </div>
 
       <div className="flex items-center gap-3">

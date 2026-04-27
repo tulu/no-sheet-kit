@@ -45,7 +45,7 @@ export function FilterSidebarNav<T extends string>({
   onAfterSelect,
 }: FilterSidebarNavProps<T>) {
   return (
-    <ul className="flex flex-col gap-0">
+    <ul className="flex flex-col gap-1">
       {items.map((item, index) => {
         const prev = index > 0 ? items[index - 1] : undefined;
         const showGroupHeading =
@@ -74,7 +74,7 @@ export function FilterSidebarNav<T extends string>({
               <button
                 type="button"
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm transition-colors",
+                  "flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
                   isActive &&
                     tone === "default" &&
                     "bg-accent font-medium text-accent-foreground",

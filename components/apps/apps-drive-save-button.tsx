@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { CheckCircle2, Loader2, TriangleAlert } from "lucide-react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -90,21 +91,27 @@ export function AppsDriveSaveButton() {
   const canSave = hasLocalData && pending && !busy;
   const label = busy
     ? t.apps.driveSave.labelSaving
-    : !hasLocalData
-      ? t.apps.driveSave.labelNothing
-      : pending
+    : pending
       ? t.apps.driveSave.labelDirty
       : t.apps.driveSave.labelSynced;
-  const tooltip = !hasLocalData
-    ? t.apps.driveSave.tooltipNothing
+  const tooltip = pending
+    ? t.apps.driveSave.tooltipDirty
+    : t.apps.driveSave.tooltipSynced;
+  const ariaLabel = pending
+    ? t.apps.driveSave.ariaLabelDirty
+    : t.apps.driveSave.ariaLabelSynced;
+  const MobileStatusIcon = busy
+    ? Loader2
     : pending
-      ? t.apps.driveSave.tooltipDirty
-      : t.apps.driveSave.tooltipSynced;
-  const ariaLabel = !hasLocalData
-    ? t.apps.driveSave.ariaLabelNothing
+      ? TriangleAlert
+      : CheckCircle2;
+  const mobileShortLabel = busy
+    ? t.apps.driveSave.mobileShortSaving
     : pending
-      ? t.apps.driveSave.ariaLabelDirty
-      : t.apps.driveSave.ariaLabelSynced;
+      ? t.apps.driveSave.mobileShortDirty
+      : t.apps.driveSave.mobileShortSynced;
+
+  if (!hasLocalData) return null;
 
   return (
     <Button
@@ -112,15 +119,26 @@ export function AppsDriveSaveButton() {
       size="sm"
       variant="secondary"
       disabled={!canSave}
-      className={cn("h-10 shrink-0 rounded-full px-4")}
+      className={cn("h-10 shrink-0 rounded-full px-2.5 md:px-4")}
       title={tooltip}
       aria-label={ariaLabel}
       onClick={() => void onSave()}
     >
       <span className="flex items-center gap-2">
+        <MobileStatusIcon
+          className={cn(
+            "size-4 shrink-0 md:hidden",
+            busy && "animate-spin",
+            !busy && !hasLocalData && "text-muted-foreground",
+            !busy && pending && "text-amber-500",
+            !busy && hasLocalData && !pending && "text-emerald-500"
+          )}
+          aria-hidden
+        />
+        <span className="text-[11px] font-medium leading-none md:hidden">{mobileShortLabel}</span>
         <span
           className={cn(
-            "size-2 shrink-0 rounded-full",
+            "hidden size-2 shrink-0 rounded-full md:inline-block",
             !hasLocalData
               ? "bg-muted-foreground/60"
               : pending
@@ -129,7 +147,7 @@ export function AppsDriveSaveButton() {
           )}
           aria-hidden
         />
-        {label}
+        <span className="hidden md:inline">{label}</span>
       </span>
     </Button>
   );
