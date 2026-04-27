@@ -10,10 +10,11 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { CardActionsMenu, type CardActionsMenuItem } from "@/components/common/card-actions-menu";
-import { Archive, ArchiveRestore, Pencil, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, CalendarCheck2, Pencil, Trash2 } from "lucide-react";
 import type { NSKTask, TaskStatus } from "@/lib/tasks/schema";
 import { isTaskPastDue } from "@/lib/tasks/tasks-helpers";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/components/providers/i18n-provider";
 
 export type TasksListViewProps = {
   tasks: NSKTask[];
@@ -56,6 +57,7 @@ export function TasksListView({
   onArchive,
   onUnarchive,
 }: TasksListViewProps) {
+  const { t } = useI18n();
   const sorted = [...tasks].sort((a, b) => {
     const st = a.status.localeCompare(b.status);
     if (st !== 0) return st;
@@ -124,7 +126,15 @@ export function TasksListView({
                   task.due_date && isTaskPastDue(task) && "font-medium text-destructive"
                 )}
               >
-                {formatDue(task.due_date, localeTag)}
+                <span className="inline-flex items-center gap-1.5">
+                  {formatDue(task.due_date, localeTag)}
+                  {task.google_calendar_event_id ? (
+                    <CalendarCheck2
+                      className="size-3.5 shrink-0 text-muted-foreground"
+                      aria-label={t.googleCalendar.linkedBadge}
+                    />
+                  ) : null}
+                </span>
               </TableCell>
               <TableCell className="px-3 py-2 tabular-nums text-muted-foreground">{task.comments.length}</TableCell>
               <TableCell className="px-3 py-2 text-muted-foreground">{task.archived ? "✓" : "—"}</TableCell>

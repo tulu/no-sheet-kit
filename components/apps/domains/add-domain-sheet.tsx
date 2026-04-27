@@ -20,7 +20,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { NaturalDateField } from "@/components/common/natural-date-field";
+import {
+  GoogleCalendarEventOptions,
+  type GoogleCalendarSubmitPrefs,
+} from "@/components/common/google-calendar-event-options";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { useAppsSessionKind } from "@/lib/storage/session-storage-context";
+import { defaultReminderMinutesForAppKind } from "@/lib/google/calendar-constants";
 import { DOMAIN_STATUS_IDS, type DomainStatusId, type NSKDomainItem } from "@/lib/domains/schema";
 
 const REQUIRED_MARK = (
@@ -45,7 +51,8 @@ type AddDomainSheetProps = {
   editingItem: NSKDomainItem | null;
   registrarSuggestions: string[];
   onClose: () => void;
-  onSubmit: (values: DomainFormValues) => void;
+  onSubmit: (values: DomainFormValues, calendar: GoogleCalendarSubmitPrefs) => void | Promise<void>;
+  onDisconnectGoogleCalendar?: () => void | Promise<void>;
 };
 
 const DEFAULT_FORM: DomainFormValues = {
@@ -65,11 +72,18 @@ export function AddDomainSheet({
   registrarSuggestions,
   onClose,
   onSubmit,
+  onDisconnectGoogleCalendar,
 }: AddDomainSheetProps) {
   const { t, locale } = useI18n();
+  const sessionKind = useAppsSessionKind();
   const registrarListId = useId();
   const [form, setForm] = useState<DomainFormValues>(DEFAULT_FORM);
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [addToCalendar, setAddToCalendar] = useState(false);
+  const [reminderMinutes, setReminderMinutes] = useState(() =>
+    defaultReminderMinutesForAppKind("domains")
+  );
 
   const sheetTitle = editingItem ? t.domains.editDomain : t.domains.addDomain;
 
@@ -78,6 +92,8 @@ export function AddDomainSheet({
     const id = requestAnimationFrame(() => {
       if (!editingItem) {
         setForm(DEFAULT_FORM);
+        setAddToCalendar(false);
+        setReminderMinutes(defaultReminderMinutesForAppKind("domains"));
         setError(null);
         return;
       }
@@ -91,12 +107,20 @@ export function AddDomainSheet({
         price: editingItem.price,
         notes: editingItem.notes ?? "",
       });
+      setAddToCalendar(Boolean(editingItem.google_calendar_event_id));
+      setReminderMinutes(
+        editingItem.google_calendar_email_reminder_minutes ??
+          defaultReminderMinutesForAppKind("domains")
+      );
       setError(null);
     });
     return () => cancelAnimationFrame(id);
   }, [editingItem, open]);
 
-  function handleSave() {
+  const showGoogleCalendar = sessionKind === "google" && Boolean(form.expires_on);
+
+  async function handleSave() {
+    if (isSaving) return;
     if (!form.domain_name.trim()) {
       setError(t.domains.errors.domainNameRequired);
       return;
@@ -106,15 +130,29 @@ export function AddDomainSheet({
       return;
     }
     setError(null);
-    onSubmit({
-      ...form,
-      domain_name: form.domain_name.trim(),
-      registrar: form.registrar.trim(),
-      purchased_at: form.purchased_at,
-      expires_on: form.expires_on,
-      price: form.price.trim(),
-      notes: form.notes.trim(),
-    });
+    const linked = Boolean(editingItem?.google_calendar_event_id);
+    const calendar: GoogleCalendarSubmitPrefs = {
+      enabled:
+        sessionKind === "google" && Boolean(form.expires_on) && (linked || addToCalendar),
+      reminderMinutes,
+    };
+    setIsSaving(true);
+    try {
+      await onSubmit(
+        {
+          ...form,
+          domain_name: form.domain_name.trim(),
+          registrar: form.registrar.trim(),
+          purchased_at: form.purchased_at,
+          expires_on: form.expires_on,
+          price: form.price.trim(),
+          notes: form.notes.trim(),
+        },
+        calendar
+      );
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -239,14 +277,30 @@ export function AddDomainSheet({
             />
           </div>
 
+          <GoogleCalendarEventOptions
+            visible={showGoogleCalendar}
+            linkedEventId={editingItem?.google_calendar_event_id}
+            storedReminderMinutes={editingItem?.google_calendar_email_reminder_minutes}
+            addToCalendar={addToCalendar}
+            onAddToCalendarChange={setAddToCalendar}
+            reminderMinutes={reminderMinutes}
+            onReminderMinutesChange={setReminderMinutes}
+            onRemoveFromCalendar={async () => {
+              await onDisconnectGoogleCalendar?.();
+            }}
+            t={t}
+          />
+
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
         </div>
 
         <SheetFooter className="sm:justify-end">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isSaving}>
             {t.domains.cancel}
           </Button>
-          <Button onClick={handleSave}>{t.domains.save}</Button>
+          <Button onClick={() => void handleSave()} disabled={isSaving}>
+            {t.domains.save}
+          </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>

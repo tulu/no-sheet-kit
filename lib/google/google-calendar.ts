@@ -45,10 +45,22 @@ export async function deleteNoSheetKitCalendar(
   return res.ok || res.status === 404;
 }
 
+export type NskCalendarReminderOverride = {
+  method: "email" | "popup";
+  minutes: number;
+};
+
 export type NskCalendarEventInput = {
   summary: string;
+  description?: string;
   start: { date?: string; dateTime?: string; timeZone?: string };
   end: { date?: string; dateTime?: string; timeZone?: string };
+  reminders?: {
+    useDefault: boolean;
+    overrides?: NskCalendarReminderOverride[];
+  };
+  /** RFC5545 rules, e.g. `RRULE:FREQ=YEARLY;BYMONTH=3;BYMONTHDAY=14` */
+  recurrence?: string[];
 };
 
 export async function insertCalendarEvent(

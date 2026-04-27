@@ -49,6 +49,15 @@ function normalizeItems(rawItems: unknown): NSKLinkItem[] {
       status: typeof item.status === "string" && isLinkStatus(item.status) ? item.status : "pending",
       error_message:
         typeof item.error_message === "string" ? item.error_message.trim() || undefined : undefined,
+      google_calendar_event_id:
+        typeof item.google_calendar_event_id === "string" && item.google_calendar_event_id.trim()
+          ? item.google_calendar_event_id
+          : undefined,
+      google_calendar_email_reminder_minutes:
+        typeof item.google_calendar_email_reminder_minutes === "number" &&
+        Number.isFinite(item.google_calendar_email_reminder_minutes)
+          ? item.google_calendar_email_reminder_minutes
+          : undefined,
       created_at: createdAt,
       updated_at: updatedAt,
     });

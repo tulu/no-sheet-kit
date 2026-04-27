@@ -79,7 +79,7 @@ function startOfLocalDay(d: Date): Date {
 }
 
 /** Month (0–11) and calendar day; Feb 29 becomes Feb 28 in non-leap years. */
-function occurrenceInYear(month: number, day: number, year: number): Date {
+export function occurrenceInYear(month: number, day: number, year: number): Date {
   if (month === 1 && day === 29 && !isLeapYear(year)) {
     return new Date(year, 1, 28, 0, 0, 0, 0);
   }

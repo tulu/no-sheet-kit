@@ -58,6 +58,15 @@ function normalizeTasks(raw: unknown, validSpaceIds: Set<string>): NSKTask[] {
       status,
       archived: Boolean(t.archived),
       order,
+      google_calendar_event_id:
+        typeof t.google_calendar_event_id === "string" && t.google_calendar_event_id.trim()
+          ? t.google_calendar_event_id
+          : undefined,
+      google_calendar_email_reminder_minutes:
+        typeof t.google_calendar_email_reminder_minutes === "number" &&
+        Number.isFinite(t.google_calendar_email_reminder_minutes)
+          ? t.google_calendar_email_reminder_minutes
+          : undefined,
       created_at: createdAt,
       updated_at: updatedAt,
       comments: normalizeComments(t.comments),

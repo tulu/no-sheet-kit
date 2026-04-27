@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, ChevronRight } from "lucide-react";
+import { LayoutDashboard, ChevronRight, CalendarCheck2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { useI18n } from "@/components/providers/i18n-provider";
@@ -166,7 +166,14 @@ function DashboardTaskRow({ task, spaceName }: { task: NSKTask; spaceName: strin
         href={tasksBoardHref(task.space_id, task.id)}
         className="block w-full py-2.5 text-left transition-colors hover:bg-muted/40"
       >
-        <span className="font-medium text-primary underline-offset-4 hover:underline">{task.title}</span>
+        <span className="inline-flex items-center gap-1.5 font-medium text-primary underline-offset-4 hover:underline">
+          <span>{task.title}</span>
+          {task.google_calendar_event_id ? (
+            <span className="inline-flex items-center rounded-full bg-emerald-500/12 p-1 text-emerald-600 dark:text-emerald-400">
+              <CalendarCheck2 className="size-3.5" aria-hidden />
+            </span>
+          ) : null}
+        </span>
         <span className="mt-0.5 block text-xs text-muted-foreground">
           <span className={cn(task.due_date && isTaskPastDue(task) && "font-medium text-destructive")}>
             {task.due_date ?? "—"}

@@ -45,6 +45,15 @@ function normalizeItems(rawItems: unknown): NSKDateItem[] {
         date: item.date,
         is_recurring: Boolean(item.is_recurring),
         notes: typeof item.notes === "string" ? item.notes : undefined,
+        google_calendar_event_id:
+          typeof item.google_calendar_event_id === "string" && item.google_calendar_event_id.trim().length > 0
+            ? item.google_calendar_event_id
+            : undefined,
+        google_calendar_email_reminder_minutes:
+          typeof item.google_calendar_email_reminder_minutes === "number" &&
+          Number.isFinite(item.google_calendar_email_reminder_minutes)
+            ? item.google_calendar_email_reminder_minutes
+            : undefined,
         created_at: createdAt,
         updated_at: updatedAt,
       };

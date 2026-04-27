@@ -30,7 +30,7 @@ export function AppsShellLayout({
   googlePicture,
 }: AppsShellLayoutProps) {
   return (
-    <SessionStorageSuffixProvider suffix={storageSuffix}>
+    <SessionStorageSuffixProvider suffix={storageSuffix} sessionKind={sessionKind}>
       <div className="flex min-h-screen flex-col bg-background">
         <Suspense fallback={null}>
           <GoogleDriveRestoreBootstrap isGoogleSession={sessionKind === "google"} />

@@ -16,12 +16,17 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSessionStorageSuffix } from "@/lib/storage/session-storage-context";
 import {
   clearGoogleCalendarIdLocal,
   readGoogleCalendarIdLocal,
   writeGoogleCalendarIdLocal,
 } from "@/lib/storage/google-calendar-local";
+import { readNSKDatesStorage, writeNSKDatesStorage } from "@/lib/dates/storage";
+import { readNSKDomainsStorage, writeNSKDomainsStorage } from "@/lib/domains/storage";
+import { readNSKLinksStorage, writeNSKLinksStorage } from "@/lib/links/storage";
+import { readNSKTasksStorage, writeNSKTasksStorage } from "@/lib/tasks/storage";
 import { getAppStorageUsage, getLastGoogleSyncAt } from "@/lib/apps/storage-usage";
 import { cn } from "@/lib/utils";
 import {
@@ -39,6 +44,7 @@ export function AppsSettingsGeneralSection() {
   const sessionSuffix = useSessionStorageSuffix();
   const [session, setSession] = useState<SessionJson | null>(null);
   const [calendarId, setCalendarId] = useState<string | null>(null);
+  const [checkingCalendar, setCheckingCalendar] = useState(true);
   const [busy, setBusy] = useState<"create" | "delete" | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [usage, setUsage] = useState<ReturnType<typeof getAppStorageUsage>>([]);
@@ -60,8 +66,10 @@ export function AppsSettingsGeneralSection() {
   useEffect(() => {
     if (session?.kind !== "google") {
       setCalendarId(null);
+      setCheckingCalendar(false);
       return;
     }
+    setCheckingCalendar(true);
     const localId = readGoogleCalendarIdLocal(session.sub);
     setCalendarId(localId);
     void (async () => {
@@ -78,8 +86,15 @@ export function AppsSettingsGeneralSection() {
         }
       } catch {
         // Keep local fallback value if the remote check fails.
+      } finally {
+        setCheckingCalendar(false);
       }
     })();
+  }, [session]);
+
+  useEffect(() => {
+    if (!session) return;
+    if (session.kind !== "google") setCheckingCalendar(false);
   }, [session]);
 
   useEffect(() => {
@@ -139,6 +154,74 @@ export function AppsSettingsGeneralSection() {
         toast.error(t.apps.settings.general.calendarError);
         return;
       }
+      {
+        const dates = readNSKDatesStorage(sessionSuffix);
+        let changed = false;
+        const cleaned = dates.items.map((item) =>
+          item.google_calendar_event_id
+            ? {
+                ...item,
+                google_calendar_event_id: undefined,
+                google_calendar_email_reminder_minutes: undefined,
+              }
+            : item
+        );
+        changed = cleaned.some((item, idx) => item !== dates.items[idx]);
+        if (changed) {
+          writeNSKDatesStorage(sessionSuffix, { ...dates, items: cleaned });
+        }
+      }
+      {
+        const domains = readNSKDomainsStorage(sessionSuffix);
+        let changed = false;
+        const cleaned = domains.items.map((item) =>
+          item.google_calendar_event_id
+            ? {
+                ...item,
+                google_calendar_event_id: undefined,
+                google_calendar_email_reminder_minutes: undefined,
+              }
+            : item
+        );
+        changed = cleaned.some((item, idx) => item !== domains.items[idx]);
+        if (changed) {
+          writeNSKDomainsStorage(sessionSuffix, { ...domains, items: cleaned });
+        }
+      }
+      {
+        const links = readNSKLinksStorage(sessionSuffix);
+        let changed = false;
+        const cleaned = links.items.map((item) =>
+          item.google_calendar_event_id
+            ? {
+                ...item,
+                google_calendar_event_id: undefined,
+                google_calendar_email_reminder_minutes: undefined,
+              }
+            : item
+        );
+        changed = cleaned.some((item, idx) => item !== links.items[idx]);
+        if (changed) {
+          writeNSKLinksStorage(sessionSuffix, { ...links, items: cleaned });
+        }
+      }
+      {
+        const tasks = readNSKTasksStorage(sessionSuffix);
+        let changed = false;
+        const cleaned = tasks.tasks.map((task) =>
+          task.google_calendar_event_id
+            ? {
+                ...task,
+                google_calendar_event_id: undefined,
+                google_calendar_email_reminder_minutes: undefined,
+              }
+            : task
+        );
+        changed = cleaned.some((task, idx) => task !== tasks.tasks[idx]);
+        if (changed) {
+          writeNSKTasksStorage(sessionSuffix, { ...tasks, tasks: cleaned });
+        }
+      }
       clearGoogleCalendarIdLocal(session.sub);
       setCalendarId(null);
       trackGoogleCalendarDeleted();
@@ -176,44 +259,59 @@ export function AppsSettingsGeneralSection() {
         <section>
           <h2 className="text-base font-semibold text-foreground">{t.apps.settings.general.calendarTitle}</h2>
           <div className="mt-2 border-b border-border" />
-          <div className="mt-4 flex items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">
-              {calendarId ? t.apps.settings.general.calendarReady : t.apps.settings.general.calendarMissing}
-            </p>
-            {calendarId ? (
-              <Badge
-                variant="secondary"
-                className="inline-flex items-center gap-1 border-emerald-300/70 bg-emerald-900/90 text-emerald-50 shadow-sm"
-              >
-                <Check className="size-3.5" aria-hidden />
-                {t.apps.settings.general.calendarStatusReady}
-              </Badge>
-            ) : (
-              <Badge variant="outline">{t.apps.settings.general.calendarStatusMissing}</Badge>
-            )}
-          </div>
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={busy !== null || !!calendarId}
-              onClick={() => void onCreateCalendar()}
-            >
-              {busy === "create"
-                ? t.apps.settings.general.calendarCreateBusy
-                : t.apps.settings.general.calendarCreate}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={busy !== null || !calendarId}
-              onClick={() => setConfirmDeleteOpen(true)}
-            >
-              {busy === "delete"
-                ? t.apps.settings.general.calendarDeleteBusy
-                : t.apps.settings.general.calendarDelete}
-            </Button>
-          </div>
+          {checkingCalendar ? (
+            <>
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <Skeleton className="h-5 w-56 rounded-md" />
+                <Skeleton className="h-6 w-24 rounded-full" />
+              </div>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <Skeleton className="h-9 w-44 rounded-md" />
+                <Skeleton className="h-9 w-44 rounded-md" />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">
+                  {calendarId ? t.apps.settings.general.calendarReady : t.apps.settings.general.calendarMissing}
+                </p>
+                {calendarId ? (
+                  <Badge
+                    variant="secondary"
+                    className="inline-flex items-center gap-1 border-emerald-300/70 bg-emerald-900/90 text-emerald-50 shadow-sm"
+                  >
+                    <Check className="size-3.5" aria-hidden />
+                    {t.apps.settings.general.calendarStatusReady}
+                  </Badge>
+                ) : (
+                  <Badge variant="outline">{t.apps.settings.general.calendarStatusMissing}</Badge>
+                )}
+              </div>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={busy !== null || !!calendarId}
+                  onClick={() => void onCreateCalendar()}
+                >
+                  {busy === "create"
+                    ? t.apps.settings.general.calendarCreateBusy
+                    : t.apps.settings.general.calendarCreate}
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={busy !== null || !calendarId}
+                  onClick={() => setConfirmDeleteOpen(true)}
+                >
+                  {busy === "delete"
+                    ? t.apps.settings.general.calendarDeleteBusy
+                    : t.apps.settings.general.calendarDelete}
+                </Button>
+              </div>
+            </>
+          )}
         </section>
       ) : null}
 

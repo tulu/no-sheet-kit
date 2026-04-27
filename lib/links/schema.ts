@@ -24,6 +24,8 @@ export type NSKLinkItem = {
   review_due_date?: string; // YYYY-MM-DD
   status: LinkStatus;
   error_message?: string;
+  google_calendar_event_id?: string;
+  google_calendar_email_reminder_minutes?: number;
   created_at: string;
   updated_at: string;
 };

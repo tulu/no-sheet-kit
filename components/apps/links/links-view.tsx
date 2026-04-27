@@ -1,6 +1,16 @@
 "use client";
 
-import { CalendarClock, Check, ExternalLink, Image as ImageIcon, Pencil, RefreshCcw, Trash2, Undo2 } from "lucide-react";
+import {
+  CalendarCheck2,
+  CalendarClock,
+  Check,
+  ExternalLink,
+  Image as ImageIcon,
+  Pencil,
+  RefreshCcw,
+  Trash2,
+  Undo2,
+} from "lucide-react";
 import { useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -187,24 +197,35 @@ export function LinksView({
                         <CardTitle className="line-clamp-2 text-base">{linkDisplayTitle(item)}</CardTitle>
                       </div>
                     </div>
-                    <CardActionsMenu
-                      ariaLabel={t.links.cardActionsMenu}
-                      actions={linkActions(
-                        item,
-                        {
-                          edit: t.links.edit,
-                          delete: t.links.delete,
-                          refresh: t.links.refreshMetadata,
-                          open: t.links.openLink,
-                          markReviewed: t.links.markReviewed,
-                          markUnreviewed: t.links.markUnreviewed,
-                        },
-                        () => onEdit(item),
-                        () => onDelete(item),
-                        () => onRefreshMetadata(item),
-                        () => onToggleReviewed(item, !item.reviewed)
-                      )}
-                    />
+                    <div className="flex shrink-0 items-center gap-2">
+                      {item.google_calendar_event_id ? (
+                        <span
+                          className="inline-flex items-center rounded-full bg-emerald-500/12 p-1 text-emerald-600 dark:text-emerald-400"
+                          title={t.googleCalendar.linkedBadge}
+                          aria-label={t.googleCalendar.linkedBadge}
+                        >
+                          <CalendarCheck2 className="size-3.5" aria-hidden />
+                        </span>
+                      ) : null}
+                      <CardActionsMenu
+                        ariaLabel={t.links.cardActionsMenu}
+                        actions={linkActions(
+                          item,
+                          {
+                            edit: t.links.edit,
+                            delete: t.links.delete,
+                            refresh: t.links.refreshMetadata,
+                            open: t.links.openLink,
+                            markReviewed: t.links.markReviewed,
+                            markUnreviewed: t.links.markUnreviewed,
+                          },
+                          () => onEdit(item),
+                          () => onDelete(item),
+                          () => onRefreshMetadata(item),
+                          () => onToggleReviewed(item, !item.reviewed)
+                        )}
+                      />
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-2 px-4 pb-0 pt-3">
@@ -216,7 +237,15 @@ export function LinksView({
                       className="min-w-0 truncate text-xs text-muted-foreground"
                       title={`${linkCardSourceTitle(item)} · ${t.links.cardAddedOn}: ${formatDateShort(item.created_at, locale)}`}
                     >
-                      {`${linkCardSiteLabel(item) || "—"} · ${t.links.cardAddedOn}: ${formatDateShort(item.created_at, locale)}`}
+                      <span>
+                        {`${linkCardSiteLabel(item) || "—"} · ${t.links.cardAddedOn}: ${formatDateShort(item.created_at, locale)}`}
+                      </span>
+                      {item.google_calendar_event_id ? (
+                        <CalendarCheck2
+                          className="ml-1 inline size-3.5 shrink-0 align-text-bottom text-muted-foreground"
+                          aria-label={t.googleCalendar.linkedBadge}
+                        />
+                      ) : null}
                     </p>
                   </div>
                 </CardContent>
@@ -263,7 +292,15 @@ export function LinksView({
                   </TableCell>
                   <TableCell className="px-3 py-2 text-muted-foreground">{item.hostname ?? "—"}</TableCell>
                   <TableCell className="px-3 py-2 text-muted-foreground">
-                    {formatDateShort(item.created_at, locale)}
+                    <span className="inline-flex items-center gap-1.5">
+                      {formatDateShort(item.created_at, locale)}
+                      {item.google_calendar_event_id ? (
+                        <CalendarCheck2
+                          className="size-3.5 shrink-0 text-muted-foreground"
+                          aria-label={t.googleCalendar.linkedBadge}
+                        />
+                      ) : null}
+                    </span>
                   </TableCell>
                   <TableCell className="px-2 py-1 align-middle">
                     <CardActionsMenu

@@ -8,6 +8,29 @@ import {
 } from "@/lib/google/google-calendar";
 import { getGoogleAccessTokenForCookies } from "@/lib/google/google-access-token";
 
+function validReminders(r: unknown): boolean {
+  if (r === undefined) return true;
+  if (typeof r !== "object" || r === null) return false;
+  const o = r as Record<string, unknown>;
+  if (typeof o.useDefault !== "boolean") return false;
+  if (o.overrides !== undefined) {
+    if (!Array.isArray(o.overrides)) return false;
+    for (const x of o.overrides) {
+      if (typeof x !== "object" || x === null) return false;
+      const u = x as Record<string, unknown>;
+      if (u.method !== "email" && u.method !== "popup") return false;
+      if (typeof u.minutes !== "number" || !Number.isFinite(u.minutes)) return false;
+    }
+  }
+  return true;
+}
+
+function validRecurrence(r: unknown): boolean {
+  if (r === undefined) return true;
+  if (!Array.isArray(r)) return false;
+  return r.every((x) => typeof x === "string" && x.length > 0);
+}
+
 export async function POST(request: Request) {
   const ctx = await getGoogleAccessTokenForCookies();
   if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -25,6 +48,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
   if (!body.start || typeof body.start !== "object" || !body.end || typeof body.end !== "object") {
+    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+  }
+  if (body.description !== undefined && typeof body.description !== "string") {
+    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+  }
+  if (!validReminders(body.reminders)) {
+    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+  }
+  if (!validRecurrence(body.recurrence)) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
 
@@ -49,6 +81,16 @@ export async function PATCH(request: Request) {
     body = (await request.json()) as Partial<NskCalendarEventInput>;
   } catch {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
+  }
+
+  if (body.description !== undefined && typeof body.description !== "string") {
+    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+  }
+  if (body.reminders !== undefined && !validReminders(body.reminders)) {
+    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+  }
+  if (body.recurrence !== undefined && !validRecurrence(body.recurrence)) {
+    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
 
   const ok = await patchCalendarEvent(ctx.accessToken, calendarId, eventId, body);

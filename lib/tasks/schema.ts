@@ -29,6 +29,8 @@ export type NSKTask = {
   archived: boolean;
   /** Sort key within `(space_id, status)` for Kanban/list. */
   order: number;
+  google_calendar_event_id?: string;
+  google_calendar_email_reminder_minutes?: number;
   created_at: string;
   updated_at: string;
   comments: NSKTaskComment[];

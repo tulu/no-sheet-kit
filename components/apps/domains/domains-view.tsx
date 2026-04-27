@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, Pencil, RefreshCw, Trash2 } from "lucide-react";
+import { CalendarCheck2, ExternalLink, Pencil, RefreshCw, Trash2 } from "lucide-react";
 import type { DomainsViewMode, NSKDomainItem } from "@/lib/domains/schema";
 import {
   domainFaviconSources,
@@ -183,12 +183,23 @@ export function DomainsView({
                           {item.registrar.trim() || "—"}
                         </p>
                       </div>
-                      <CardActionsMenu
-                        ariaLabel={t.domains.cardActionsMenu}
-                        actions={domainCardMenuActions(item, t.domains, () => onEdit(item), () =>
-                          onDelete(item)
-                        )}
-                      />
+                      <div className="flex shrink-0 items-center gap-2">
+                        {item.google_calendar_event_id ? (
+                          <span
+                            className="inline-flex items-center rounded-full bg-emerald-500/12 p-1 text-emerald-600 dark:text-emerald-400"
+                            title={t.googleCalendar.linkedBadge}
+                            aria-label={t.googleCalendar.linkedBadge}
+                          >
+                            <CalendarCheck2 className="size-3.5" aria-hidden />
+                          </span>
+                        ) : null}
+                        <CardActionsMenu
+                          ariaLabel={t.domains.cardActionsMenu}
+                          actions={domainCardMenuActions(item, t.domains, () => onEdit(item), () =>
+                            onDelete(item)
+                          )}
+                        />
+                      </div>
                     </div>
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                       <Badge
@@ -209,8 +220,14 @@ export function DomainsView({
                 <div className="mt-4 flex items-end justify-between gap-3 pt-3 text-sm">
                   <p className="min-w-0 text-muted-foreground">
                     <span>{t.domains.cardExpiresLabel}:</span>{" "}
-                    <span className="font-medium text-foreground">
+                    <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
                       {formatDateShort(item.expires_on, locale)}
+                      {item.google_calendar_event_id ? (
+                        <CalendarCheck2
+                          className="size-3.5 shrink-0 text-muted-foreground"
+                          aria-label={t.googleCalendar.linkedBadge}
+                        />
+                      ) : null}
                     </span>
                   </p>
                   <p
@@ -294,7 +311,15 @@ export function DomainsView({
                   {formatPurchasedAt(item.purchased_at, locale)}
                 </TableCell>
                 <TableCell className="px-3 py-2 text-muted-foreground">
-                  {formatDateShort(item.expires_on, locale)}
+                  <span className="inline-flex items-center gap-1.5">
+                    {formatDateShort(item.expires_on, locale)}
+                    {item.google_calendar_event_id ? (
+                      <CalendarCheck2
+                        className="size-3.5 shrink-0 text-muted-foreground"
+                        aria-label={t.googleCalendar.linkedBadge}
+                      />
+                    ) : null}
+                  </span>
                 </TableCell>
                 <TableCell className="px-3 py-2">
                   <Badge
