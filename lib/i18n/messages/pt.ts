@@ -231,6 +231,14 @@ export const ptMessages = {
       description:
         "Os dados ficam só neste dispositivo. Quem compartilhar este computador pode vê-los, e eles podem ser perdidos se você não fizer backup.",
     },
+    notifications: {
+      bellAria: "Próximos nos próximos 30 dias",
+      menuTitle: "Próximos 30 dias",
+      empty: "Nada nos próximos 30 dias.",
+      kindDomainsExpiring: "A expirar",
+      kindTaskDue: "Data de vencimento",
+      kindLinkReview: "Revisão pendente",
+    },
     logoutDialog: {
       title: "Sair",
       description: "Escolha o que fazer com os dados salvos neste navegador na sessão de convidado.",
@@ -499,8 +507,6 @@ export const ptMessages = {
     paymentAddTitle: "Adicionar pagamento",
     paymentAmount: "Valor",
     paymentDate: "Data",
-    paymentDateHint: "Pressione ↓ para abrir o calendário.",
-    paymentDatePlaceholder: "Escolha uma data",
     paymentSubmitAdd: "Adicionar pagamento",
     paymentSettleFullLabel: "Pagar o saldo restante integral",
     paymentListSheetTitle: "Pagamentos",
@@ -552,6 +558,8 @@ export const ptMessages = {
       amount: "Valor",
       amountPlaceholder: "Ex: 500",
       date: "Data",
+      dateHint: "Pressione ↓ para abrir o calendário.",
+      dateNaturalPlaceholder: "Amanhã ou na próxima semana",
       notes: "Notas (opcional)",
       notesPlaceholder: "Condições, lembretes…",
     },

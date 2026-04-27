@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { resolveAvailableAppFromPath } from "@/lib/apps/catalog";
 import { getAppDisplayName } from "@/components/apps/launcher-apps";
 import { AppsUserMenu } from "./apps-user-menu";
+import { AppsUpcomingNotifications } from "./apps-upcoming-notifications";
 import { AppsSwitcher } from "./apps-switcher";
 import { GuestDataRestoreButton } from "./guest-data-restore-button";
 import { AppsDriveSaveButton } from "./apps-drive-save-button";
@@ -51,6 +52,7 @@ export function AppsShellHeader({
       <div className="flex items-center gap-3">
         {sessionKind === "google" ? <AppsDriveSaveButton /> : null}
         <GuestDataRestoreButton allowLocalZipRestore={sessionKind === "anonymous"} />
+        <AppsUpcomingNotifications />
         <AppsSwitcher />
         <AppsUserMenu
           sessionKind={sessionKind}

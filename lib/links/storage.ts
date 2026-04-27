@@ -1,5 +1,6 @@
 "use client";
 
+import { emitListAppDataUpdated } from "@/lib/storage/list-app-data-updated";
 import { markPendingDriveSync } from "@/lib/storage/pending-drive-sync";
 import { buildNskListAppStorageKey } from "@/lib/storage/session-storage-keys";
 import {
@@ -87,5 +88,6 @@ export function writeNSKLinksStorage(
     items: normalizeItems(next.items),
   };
   window.localStorage.setItem(key, JSON.stringify(toPersist));
+  emitListAppDataUpdated(sessionSuffix);
   if (!opts?.skipPendingDriveMark) markPendingDriveSync(sessionSuffix);
 }

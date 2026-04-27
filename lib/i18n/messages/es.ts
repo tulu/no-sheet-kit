@@ -232,6 +232,14 @@ export const esMessages = {
       description:
         "Los datos solo están en este dispositivo. Quien comparta este equipo podría verlos, y se pueden perder si no haces una copia de seguridad.",
     },
+    notifications: {
+      bellAria: "Próximos en los siguientes 30 días",
+      menuTitle: "Próximos 30 días",
+      empty: "No hay nada en los próximos 30 días.",
+      kindDomainsExpiring: "Por expirar",
+      kindTaskDue: "Fecha de vencimiento",
+      kindLinkReview: "Revisión pendiente",
+    },
     logoutDialog: {
       title: "Cerrar sesión",
       description: "Elige qué hacer con los datos guardados en este navegador para tu sesión de invitado.",
@@ -500,8 +508,6 @@ export const esMessages = {
     paymentAddTitle: "Agregar pago",
     paymentAmount: "Monto",
     paymentDate: "Fecha",
-    paymentDateHint: "Presiona ↓ para abrir el calendario.",
-    paymentDatePlaceholder: "Elige una fecha",
     paymentSubmitAdd: "Agregar pago",
     paymentSettleFullLabel: "Pagar el saldo restante completo",
     paymentListSheetTitle: "Pagos",
@@ -553,6 +559,8 @@ export const esMessages = {
       amount: "Monto",
       amountPlaceholder: "Ej: 500",
       date: "Fecha",
+      dateHint: "Presiona ↓ para abrir el calendario.",
+      dateNaturalPlaceholder: "Mañana o la próxima semana",
       notes: "Notas (opcional)",
       notesPlaceholder: "Condiciones, recordatorios…",
     },

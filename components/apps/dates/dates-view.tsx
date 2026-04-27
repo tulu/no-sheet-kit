@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, Pencil, Repeat2, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -20,6 +20,8 @@ import {
 } from "@/components/common/semantic-badge";
 import {
   getItemsForDay as getDateItemsForCalendarDay,
+  getLastPassedRecurringOccurrence,
+  getNextOccurrenceDate,
   isOccurrenceStrictlyPast,
   parseItemLocalDate,
   sortItemsByOccurrenceFromToday,
@@ -54,12 +56,8 @@ function dateCardMenuActions(
   ];
 }
 
-const MONTH_INDEX_ORDER = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const;
-
-function monthName(locale: Locale, monthIndex: number): string {
-  return new Intl.DateTimeFormat(getIntlLocaleTag(locale), { month: "long" }).format(
-    new Date(2024, monthIndex, 1)
-  );
+function startOfLocalDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
 /** Within a named calendar month block, order by day-of-month (recurring-friendly), then full ISO date. */
@@ -74,14 +72,77 @@ function compareByDayOfMonthThenIsoDate(a: NSKDateItem, b: NSKDateItem): number 
   return a.date.localeCompare(b.date);
 }
 
-function groupByCalendarMonth(items: NSKDateItem[]): Map<number, NSKDateItem[]> {
-  const map = new Map<number, NSKDateItem[]>();
+function yearMonthKey(year: number, month: number): string {
+  return `${year}-${month}`;
+}
+
+function parseYearMonthKey(key: string): { year: number; month: number } {
+  const [ys, ms] = key.split("-");
+  return { year: Number(ys), month: Number(ms) };
+}
+
+function monthYearLabel(locale: Locale, year: number, monthIndex: number): string {
+  return new Intl.DateTimeFormat(getIntlLocaleTag(locale), {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(year, monthIndex, 1));
+}
+
+/**
+ * Year–month bucket for grid: non-recurring = stored date; recurring future anchor = anchor;
+ * recurring past anchor + upcoming = next occurrence; recurring past anchor + past section =
+ * last occurrence before today (e.g. March 2026 when today is April 2026).
+ */
+function getGridYearMonthForItem(
+  item: NSKDateItem,
+  now: Date,
+  mode: "upcoming" | "past"
+): { year: number; month: number } {
+  const src = parseItemLocalDate(item);
+  if (!src) {
+    const t = startOfLocalDay(now);
+    return { year: t.getFullYear(), month: t.getMonth() };
+  }
+
+  if (!item.is_recurring) {
+    return { year: src.getFullYear(), month: src.getMonth() };
+  }
+
+  const today = startOfLocalDay(now);
+  const anchor = startOfLocalDay(src);
+
+  if (anchor.getTime() >= today.getTime()) {
+    return { year: anchor.getFullYear(), month: anchor.getMonth() };
+  }
+
+  if (mode === "past") {
+    const last = getLastPassedRecurringOccurrence(item, now);
+    if (last) {
+      return { year: last.getFullYear(), month: last.getMonth() };
+    }
+    return { year: src.getFullYear(), month: src.getMonth() };
+  }
+
+  const next = getNextOccurrenceDate(item, now);
+  if (!next) return { year: src.getFullYear(), month: src.getMonth() };
+  return { year: next.getFullYear(), month: next.getMonth() };
+}
+
+function buildYearMonthBucketMap(
+  items: NSKDateItem[],
+  now: Date,
+  mode: "upcoming" | "past"
+): Map<string, NSKDateItem[]> {
+  const map = new Map<string, NSKDateItem[]>();
   for (const item of items) {
-    const d = new Date(`${item.date}T00:00:00`);
-    if (Number.isNaN(d.getTime())) continue;
-    const m = d.getMonth();
-    if (!map.has(m)) map.set(m, []);
-    map.get(m)!.push(item);
+    const past = isOccurrenceStrictlyPast(item, now);
+    if (mode === "upcoming" && past) continue;
+    if (mode === "past" && !past) continue;
+
+    const { year, month } = getGridYearMonthForItem(item, now, mode);
+    const key = yearMonthKey(year, month);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(item);
   }
   for (const list of map.values()) {
     list.sort(compareByDayOfMonthThenIsoDate);
@@ -89,38 +150,30 @@ function groupByCalendarMonth(items: NSKDateItem[]): Map<number, NSKDateItem[]> 
   return map;
 }
 
-function formatDayMonthYear(
-  locale: Locale,
-  item: NSKDateItem
-): {
+function sortedYearMonthKeys(keys: string[], order: "asc" | "desc"): string[] {
+  const parsed = keys.map((k) => ({ k, ...parseYearMonthKey(k) }));
+  parsed.sort((a, b) => {
+    if (a.year !== b.year) return order === "asc" ? a.year - b.year : b.year - a.year;
+    return order === "asc" ? a.month - b.month : b.month - a.month;
+  });
+  return parsed.map((p) => p.k);
+}
+
+/** Card body date: always the stored calendar day (e.g. birth year for recurring birthdays). */
+function formatDayMonthYearForCard(locale: Locale, item: NSKDateItem): {
   dayMonth: string;
   year: string;
 } {
-  const d = new Date(`${item.date}T00:00:00`);
+  const src = parseItemLocalDate(item);
+  if (!src) return { dayMonth: "", year: "" };
+
   const intl = getIntlLocaleTag(locale);
   const dayMonth = new Intl.DateTimeFormat(intl, {
     day: "numeric",
     month: "long",
-  }).format(d);
-  const year = new Intl.DateTimeFormat(intl, { year: "numeric" }).format(d);
+  }).format(src);
+  const year = new Intl.DateTimeFormat(intl, { year: "numeric" }).format(src);
   return { dayMonth, year };
-}
-
-/** Non-recurring dates in the future whose calendar month is before the current month (e.g. Jan 2027 while viewing April). */
-function futureOneOffsAfterMainStrip(
-  items: NSKDateItem[],
-  now: Date,
-  currentMonth: number
-): NSKDateItem[] {
-  return items
-    .filter((item) => {
-      if (item.is_recurring) return false;
-      if (isOccurrenceStrictlyPast(item, now)) return false;
-      const d = parseItemLocalDate(item);
-      if (!d) return false;
-      return d.getMonth() < currentMonth;
-    })
-    .sort((a, b) => a.date.localeCompare(b.date));
 }
 
 function formatDateShort(iso: string, locale: Locale): string {
@@ -240,7 +293,7 @@ function MonthBlock({
 
       <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {monthItems.map((item) => {
-          const { dayMonth, year } = formatDayMonthYear(locale, item);
+          const { dayMonth, year } = formatDayMonthYearForCard(locale, item);
           return (
             <li key={item.id}>
               <Card className="h-full overflow-hidden border border-border/70 gap-0 py-0 pb-4">
@@ -256,7 +309,15 @@ function MonthBlock({
                         <span className="text-xl font-semibold tabular-nums tracking-tight text-foreground">
                           {dayMonth}
                         </span>
-                        <span className="text-xs text-muted-foreground">{year}</span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="text-xs text-muted-foreground">{year}</span>
+                          {item.is_recurring ? (
+                            <Repeat2
+                              className="size-3.5 shrink-0 text-muted-foreground"
+                              aria-label={t.dates.fields.recurring}
+                            />
+                          ) : null}
+                        </span>
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -312,57 +373,31 @@ export function DatesView({
 
   function renderGrid() {
     const now = new Date();
-    const grouped = groupByCalendarMonth(items);
-    const monthIndices = MONTH_INDEX_ORDER.filter((m) => (grouped.get(m)?.length ?? 0) > 0);
+    const upcomingMap = buildYearMonthBucketMap(items, now, "upcoming");
+    const pastMap = buildYearMonthBucketMap(items, now, "past");
 
-    const currentMonth = now.getMonth();
+    const upcomingKeys = sortedYearMonthKeys([...upcomingMap.keys()], "asc");
+    const pastKeys = sortedYearMonthKeys([...pastMap.keys()], "desc");
+    const showPastToggle = pastKeys.length > 0;
 
-    const itemsStillUpcoming = (list: NSKDateItem[]) =>
-      list.filter((item) => !isOccurrenceStrictlyPast(item, now));
-    const itemsAlreadyPastThisYear = (list: NSKDateItem[]) =>
-      list.filter((item) => isOccurrenceStrictlyPast(item, now));
-
-    const upcomingMonthIndices = monthIndices.filter((m) => {
-      if (m < currentMonth) return false;
-      return itemsStillUpcoming(grouped.get(m)!).length > 0;
-    });
-
-    // Include any month (except current month handled separately) that has past items.
-    // This avoids hiding non-recurring historical dates whose month is still ahead
-    // of the current month (e.g. 1990-12-01 while today is April).
-    const pastMonthIndicesWithContent = monthIndices.filter(
-      (m) => m !== currentMonth && itemsAlreadyPastThisYear(grouped.get(m)!).length > 0
-    );
-    const pastInCurrentMonth = itemsAlreadyPastThisYear(grouped.get(currentMonth) ?? []);
-
-    const showPastToggle =
-      pastMonthIndicesWithContent.length > 0 || pastInCurrentMonth.length > 0;
-
-    const futureOneOffLater = futureOneOffsAfterMainStrip(items, now, currentMonth);
+    const nowY = now.getFullYear();
+    const nowM = now.getMonth();
 
     return (
       <div className="space-y-8">
-        {upcomingMonthIndices.map((monthIndex) => (
-          <MonthBlock
-            key={monthIndex}
-            monthItems={itemsStillUpcoming(grouped.get(monthIndex)!)}
-            monthLabel={monthName(locale, monthIndex)}
-            locale={locale}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-        ))}
-
-        {futureOneOffLater.length > 0 ? (
-          <MonthBlock
-            key="future-one-off"
-            monthItems={futureOneOffLater}
-            monthLabel={t.dates.futureOneOffSectionTitle}
-            locale={locale}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-        ) : null}
+        {upcomingKeys.map((key) => {
+          const { year, month } = parseYearMonthKey(key);
+          return (
+            <MonthBlock
+              key={`up-${key}`}
+              monthItems={upcomingMap.get(key)!}
+              monthLabel={monthYearLabel(locale, year, month)}
+              locale={locale}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+          );
+        })}
 
         {showPastToggle ? (
           <div className="border-t border-border pt-6">
@@ -380,27 +415,22 @@ export function DatesView({
             </button>
             {pastOpen ? (
               <div className="mt-4 space-y-8">
-                {pastMonthIndicesWithContent.map((monthIndex) => (
-                  <MonthBlock
-                    key={monthIndex}
-                    monthItems={itemsAlreadyPastThisYear(grouped.get(monthIndex)!)}
-                    monthLabel={monthName(locale, monthIndex)}
-                    locale={locale}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                  />
-                ))}
-                {pastInCurrentMonth.length > 0 ? (
-                  <MonthBlock
-                    key={`past-in-${currentMonth}`}
-                    monthItems={pastInCurrentMonth}
-                    monthLabel={monthName(locale, currentMonth)}
-                    sectionSubtitle={t.dates.pastSectionMonthSubtitle}
-                    locale={locale}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                  />
-                ) : null}
+                {pastKeys.map((key) => {
+                  const { year, month } = parseYearMonthKey(key);
+                  const sectionSubtitle =
+                    year === nowY && month === nowM ? t.dates.pastSectionMonthSubtitle : undefined;
+                  return (
+                    <MonthBlock
+                      key={`past-${key}`}
+                      monthItems={pastMap.get(key)!}
+                      monthLabel={monthYearLabel(locale, year, month)}
+                      sectionSubtitle={sectionSubtitle}
+                      locale={locale}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                    />
+                  );
+                })}
               </div>
             ) : null}
           </div>
