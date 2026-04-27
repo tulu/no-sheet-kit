@@ -1,10 +1,11 @@
-/** OAuth 2.0 scopes for Drive app data + Calendar + profile. */
+/** OAuth 2.0 scopes for Drive app data + constrained Calendar + profile. */
 export const GOOGLE_OAUTH_SCOPES = [
   "openid",
   "email",
   "profile",
   "https://www.googleapis.com/auth/drive.appdata",
-  "https://www.googleapis.com/auth/calendar",
+  "https://www.googleapis.com/auth/calendar.app.created",
+  "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
 ].join(" ");
 
 export const NSK_GOOGLE_REFRESH_COOKIE = "nsk_google_refresh";

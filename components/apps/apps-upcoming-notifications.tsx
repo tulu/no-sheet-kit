@@ -85,26 +85,30 @@ export function AppsUpcomingNotifications() {
         render={
           <button
             type="button"
-            className="relative inline-flex size-12 shrink-0 items-center justify-center rounded-full bg-background text-foreground transition-colors hover:bg-muted/60"
+            className="relative inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-background text-foreground transition-colors hover:bg-muted/60 md:size-12"
             aria-label={t.apps.notifications.bellAria}
           />
         }
       >
-        <Bell className="size-6 text-muted-foreground" aria-hidden />
+        <Bell className="size-5 text-muted-foreground md:size-6" aria-hidden />
         {count > 0 ? (
           <span
-            className="absolute right-2 top-2.5 size-2 rounded-full bg-red-500"
+            className="absolute right-1.5 top-2 size-2 rounded-full bg-red-500 md:right-2 md:top-2.5"
             aria-hidden
           />
         ) : null}
       </PopoverTrigger>
       <PopoverContent
-        align="end"
+        align="center"
         sideOffset={10}
-        className="flex w-[min(calc(100vw-2rem),22rem)] max-h-[min(70vh,24rem)] flex-col gap-0 p-0"
+        positionMethod="fixed"
+        collisionPadding={16}
+        className="flex w-[min(calc(100vw-2rem),22rem)] max-h-[min(85vh,24rem)] flex-col gap-0 p-0"
       >
         <div className="border-b border-border px-4 py-3">
-          <p className="text-sm font-medium text-foreground">{t.apps.notifications.menuTitle}</p>
+          <p className="text-center text-sm font-medium text-foreground">
+            {t.apps.notifications.popoverTitle}
+          </p>
         </div>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-1.5">
           {count === 0 ? (

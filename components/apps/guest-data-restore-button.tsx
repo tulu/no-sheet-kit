@@ -10,6 +10,11 @@ import {
   GuestBackupRestoreError,
   restoreAnonymousGuestDataFromZipFile,
 } from "@/lib/storage/export-anonymous-guest-zip";
+import {
+  LIST_APP_DATA_UPDATED_EVENT,
+  type ListAppDataUpdatedDetail,
+} from "@/lib/storage/list-app-data-updated";
+import { SESSION_SUFFIX_ANONYMOUS } from "@/lib/storage/session-storage-keys";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -38,8 +43,17 @@ export function GuestDataRestoreButton({ allowLocalZipRestore = true }: GuestDat
       if (!ev.key) return;
       if (ev.key.endsWith("Anonym")) refreshHasData();
     }
+    function onListAppDataUpdated(ev: Event) {
+      const detail = (ev as CustomEvent<ListAppDataUpdatedDetail>).detail;
+      if (detail?.sessionSuffix !== SESSION_SUFFIX_ANONYMOUS) return;
+      refreshHasData();
+    }
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    window.addEventListener(LIST_APP_DATA_UPDATED_EVENT, onListAppDataUpdated);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(LIST_APP_DATA_UPDATED_EVENT, onListAppDataUpdated);
+    };
   }, [refreshHasData]);
 
   if (!allowLocalZipRestore) return null;
@@ -93,6 +107,7 @@ export function GuestDataRestoreButton({ allowLocalZipRestore = true }: GuestDat
         title={t.apps.guestRestore.tooltip}
         aria-label={t.apps.guestRestore.tooltip}
         className={cn(
+          "hidden md:inline-flex",
           "h-12 shrink-0 gap-2 rounded-full border-border px-3 sm:px-3.5",
           "text-foreground hover:bg-muted/60"
         )}

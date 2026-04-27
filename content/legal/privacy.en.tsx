@@ -21,7 +21,7 @@ export const privacyEn: LegalDocument = {
       title: "Google Sign-In (optional)",
       paragraphs: [
         "Google authentication is optional.",
-        "When enabled, NoSheetKit requests only the scopes required for Drive appDataFolder access and Calendar events.",
+        "When enabled, NoSheetKit requests only the scopes required for Drive appDataFolder access and Calendar event management in calendars created by the app, plus read-only calendar list access to detect whether the dedicated NoSheetKit calendar already exists.",
       ],
       bullets: [
         "Read/write files in Google Drive appDataFolder (hidden app-private space).",

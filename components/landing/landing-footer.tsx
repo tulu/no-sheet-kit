@@ -33,8 +33,8 @@ export function LandingFooter() {
 
   return (
     <footer className="flex items-center justify-between border-t border-border px-12 py-8 max-md:flex-col max-md:gap-4 max-md:text-center max-sm:px-5">
-      <p className="text-sm text-muted-foreground">{t.landing.footer.copyright}</p>
-      <div className="flex gap-6">
+      <p className="order-2 text-sm text-muted-foreground md:order-1">{t.landing.footer.copyright}</p>
+      <div className="order-1 flex gap-6 md:order-2">
         <Link
           href="/"
           className="text-sm text-muted-foreground no-underline transition-colors duration-150 hover:text-foreground"
@@ -45,7 +45,7 @@ export function LandingFooter() {
           href="/docs"
           className="text-sm text-muted-foreground no-underline transition-colors duration-150 hover:text-foreground"
         >
-          {t.docs.navTitle}
+          Docs
         </Link>
         <a
           href="https://github.com/tulu/no-sheet-kit"

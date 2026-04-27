@@ -21,7 +21,7 @@ export const privacyEs: LegalDocument = {
       title: "Inicio de sesión con Google (opcional)",
       paragraphs: [
         "La autenticación con Google es opcional.",
-        "Si la activás, NoSheetKit solicita solo los permisos necesarios para appDataFolder de Drive y eventos de Calendar.",
+        "Si la activás, NoSheetKit solicita solo los permisos necesarios para appDataFolder de Drive y para gestionar eventos de Calendar en calendarios creados por la app, más acceso de solo lectura a la lista de calendarios para detectar si el calendario dedicado de NoSheetKit ya existe.",
       ],
       bullets: [
         "Leer/escribir archivos en appDataFolder de Google Drive (espacio oculto privado de la app).",
