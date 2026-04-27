@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { parseDate } from "chrono-node";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
@@ -12,6 +11,10 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  resolveNaturalDateFullMatch,
+  resolveNaturalDatePreview,
+} from "@/lib/dates/natural-date-input-parse";
 import { getDayPickerLocale, getIntlLocaleTag } from "@/lib/i18n/locale-display";
 import type { Locale } from "@/lib/i18n/types";
 
@@ -20,6 +23,8 @@ const REQUIRED_MARK = (
     {" *"}
   </span>
 );
+
+const BLUR_COMMIT_MS = 180;
 
 function parseISODate(value: string): Date | undefined {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
@@ -43,14 +48,6 @@ function formatDateDisplay(date: Date | undefined, locale: Locale): string {
   });
 }
 
-function parseDateFromInput(text: string): Date | undefined {
-  const trimmed = text.trim();
-  if (!trimmed) return undefined;
-  const parsed = parseDate(trimmed);
-  if (!parsed || Number.isNaN(parsed.getTime())) return undefined;
-  return parsed;
-}
-
 type NaturalDateFieldProps = {
   id: string;
   locale: Locale;
@@ -60,6 +57,8 @@ type NaturalDateFieldProps = {
   valueIso: string;
   onChangeIso: (iso: string) => void;
   required?: boolean;
+  /** When true, text input, calendar trigger, and popover are inactive. */
+  disabled?: boolean;
 };
 
 export function NaturalDateField({
@@ -71,19 +70,65 @@ export function NaturalDateField({
   valueIso,
   onChangeIso,
   required = false,
+  disabled = false,
 }: NaturalDateFieldProps) {
   const [inputValue, setInputValue] = useState("");
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [parseReferenceDate] = useState(() => new Date());
+  const inputFocusedRef = useRef(false);
+  const blurCommitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputValueRef = useRef(inputValue);
+  const valueIsoRef = useRef(valueIso);
 
-  const resolvedDate = useMemo(
-    () => parseDateFromInput(inputValue) ?? parseISODate(valueIso),
-    [inputValue, valueIso]
-  );
+  useLayoutEffect(() => {
+    inputValueRef.current = inputValue;
+    valueIsoRef.current = valueIso;
+  }, [inputValue, valueIso]);
+
+  const resolvedDate =
+    resolveNaturalDatePreview(inputValue, parseReferenceDate) ??
+    parseISODate(valueIso.trim());
+
+  function clearBlurCommitTimer() {
+    if (blurCommitTimerRef.current) {
+      clearTimeout(blurCommitTimerRef.current);
+      blurCommitTimerRef.current = null;
+    }
+  }
+
+  function commitInputFromBlur() {
+    const trimmed = inputValueRef.current.trim();
+    if (!trimmed) {
+      onChangeIso("");
+      setInputValue("");
+      return;
+    }
+    const full = resolveNaturalDateFullMatch(trimmed, parseReferenceDate);
+    if (full) {
+      onChangeIso(toISODate(full));
+      setInputValue(formatDateDisplay(full, locale));
+      return;
+    }
+    const parsedIso = parseISODate(valueIsoRef.current.trim());
+    if (parsedIso) {
+      setInputValue(formatDateDisplay(parsedIso, locale));
+    } else {
+      setInputValue(trimmed);
+    }
+  }
 
   useEffect(() => {
+    if (!disabled) return;
+    queueMicrotask(() => {
+      setCalendarOpen(false);
+    });
+  }, [disabled]);
+
+  useEffect(() => {
+    if (inputFocusedRef.current) return;
     const id = requestAnimationFrame(() => {
-      const parsedIso = parseISODate(valueIso);
-      setInputValue(parsedIso ? formatDateDisplay(parsedIso, locale) : valueIso);
+      const parsedIso = parseISODate(valueIso.trim());
+      setInputValue(parsedIso ? formatDateDisplay(parsedIso, locale) : valueIso.trim());
     });
     return () => cancelAnimationFrame(id);
   }, [valueIso, locale]);
@@ -99,26 +144,67 @@ export function NaturalDateField({
           id={id}
           value={inputValue}
           placeholder={placeholder}
+          disabled={disabled}
+          onFocus={() => {
+            clearBlurCommitTimer();
+            inputFocusedRef.current = true;
+          }}
+          onBlur={() => {
+            blurCommitTimerRef.current = setTimeout(() => {
+              blurCommitTimerRef.current = null;
+              inputFocusedRef.current = false;
+              commitInputFromBlur();
+            }, BLUR_COMMIT_MS);
+          }}
           onChange={(e) => {
             const v = e.target.value;
             setInputValue(v);
-            const d = parseDateFromInput(v);
-            if (d) {
-              onChangeIso(toISODate(d));
-            } else if (!v.trim()) {
+            const trimmed = v.trim();
+            if (!trimmed) {
               onChangeIso("");
+              return;
+            }
+            const full = resolveNaturalDateFullMatch(trimmed, parseReferenceDate);
+            if (full) {
+              onChangeIso(toISODate(full));
             }
           }}
           onKeyDown={(e) => {
+            if (disabled) return;
             if (e.key === "ArrowDown") {
               e.preventDefault();
+              clearBlurCommitTimer();
               setCalendarOpen(true);
+              return;
+            }
+            if (e.key === "Enter") {
+              e.preventDefault();
+              clearBlurCommitTimer();
+              inputFocusedRef.current = false;
+              commitInputFromBlur();
             }
           }}
         />
-        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+        <Popover
+          open={!disabled && calendarOpen}
+          onOpenChange={(next) => {
+            if (disabled) return;
+            if (next) clearBlurCommitTimer();
+            setCalendarOpen(next);
+          }}
+        >
           <PopoverTrigger nativeButton={false} render={<InputGroupAddon align="inline-end" />}>
-            <InputGroupButton variant="ghost" size="icon-xs" aria-label={label}>
+            <InputGroupButton
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label={label}
+              disabled={disabled}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                clearBlurCommitTimer();
+              }}
+            >
               <CalendarIcon className="size-4" />
               <span className="sr-only">{label}</span>
             </InputGroupButton>
@@ -138,6 +224,8 @@ export function NaturalDateField({
                 captionLayout="dropdown"
                 onSelect={(date) => {
                   if (!date) return;
+                  clearBlurCommitTimer();
+                  inputFocusedRef.current = false;
                   onChangeIso(toISODate(date));
                   setInputValue(formatDateDisplay(date, locale));
                   setCalendarOpen(false);

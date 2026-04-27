@@ -1,10 +1,12 @@
 "use client";
 
+import { emitListAppDataUpdated } from "@/lib/storage/list-app-data-updated";
+import { markPendingDriveSync } from "@/lib/storage/pending-drive-sync";
+import { buildNskListAppStorageKey } from "@/lib/storage/session-storage-keys";
 import {
   createEmptyNSKTasksSchema,
   isTaskStatus,
   NSKTASKS_SCHEMA_VERSION,
-  NSKTASKS_STORAGE_KEY,
   type NSKSpace,
   type NSKTask,
   type NSKTaskComment,
@@ -56,6 +58,15 @@ function normalizeTasks(raw: unknown, validSpaceIds: Set<string>): NSKTask[] {
       status,
       archived: Boolean(t.archived),
       order,
+      google_calendar_event_id:
+        typeof t.google_calendar_event_id === "string" && t.google_calendar_event_id.trim()
+          ? t.google_calendar_event_id
+          : undefined,
+      google_calendar_email_reminder_minutes:
+        typeof t.google_calendar_email_reminder_minutes === "number" &&
+        Number.isFinite(t.google_calendar_email_reminder_minutes)
+          ? t.google_calendar_email_reminder_minutes
+          : undefined,
       created_at: createdAt,
       updated_at: updatedAt,
       comments: normalizeComments(t.comments),
@@ -86,10 +97,11 @@ function normalizeSpaces(raw: unknown): NSKSpace[] {
   return list;
 }
 
-export function readNSKTasksStorage(): NSKTasksSchema {
+export function readNSKTasksStorage(sessionSuffix: string): NSKTasksSchema {
   if (typeof window === "undefined") return createEmptyNSKTasksSchema();
 
-  const raw = window.localStorage.getItem(NSKTASKS_STORAGE_KEY);
+  const key = buildNskListAppStorageKey("tasks", sessionSuffix);
+  const raw = window.localStorage.getItem(key);
   if (!raw) return createEmptyNSKTasksSchema();
 
   try {
@@ -118,8 +130,13 @@ export function readNSKTasksStorage(): NSKTasksSchema {
   }
 }
 
-export function writeNSKTasksStorage(next: NSKTasksSchema) {
+export function writeNSKTasksStorage(
+  sessionSuffix: string,
+  next: NSKTasksSchema,
+  opts?: { skipPendingDriveMark?: boolean }
+) {
   if (typeof window === "undefined") return;
+  const key = buildNskListAppStorageKey("tasks", sessionSuffix);
   const validSpaceIds = new Set(next.spaces.map((s) => s.id));
   const spaces = normalizeSpaces(next.spaces);
   const tasks = normalizeTasks(next.tasks, validSpaceIds);
@@ -129,5 +146,7 @@ export function writeNSKTasksStorage(next: NSKTasksSchema) {
     spaces,
     tasks,
   };
-  window.localStorage.setItem(NSKTASKS_STORAGE_KEY, JSON.stringify(payload));
+  window.localStorage.setItem(key, JSON.stringify(payload));
+  emitListAppDataUpdated(sessionSuffix);
+  if (!opts?.skipPendingDriveMark) markPendingDriveSync(sessionSuffix);
 }

@@ -1,10 +1,12 @@
 "use client";
 
+import { emitListAppDataUpdated } from "@/lib/storage/list-app-data-updated";
+import { markPendingDriveSync } from "@/lib/storage/pending-drive-sync";
+import { buildNskListAppStorageKey } from "@/lib/storage/session-storage-keys";
 import {
   createEmptyNSKDomainsSchema,
   isDomainStatusId,
   NSKDOMAINS_SCHEMA_VERSION,
-  NSKDOMAINS_STORAGE_KEY,
   type DomainStatusId,
   type NSKDomainItem,
   type NSKDomainsSchema,
@@ -44,6 +46,15 @@ function normalizeItems(rawItems: unknown): NSKDomainItem[] {
       auto_renew: Boolean(item.auto_renew),
       price: typeof item.price === "string" ? item.price : "",
       notes: typeof item.notes === "string" ? item.notes : undefined,
+      google_calendar_event_id:
+        typeof item.google_calendar_event_id === "string" && item.google_calendar_event_id.trim().length > 0
+          ? item.google_calendar_event_id
+          : undefined,
+      google_calendar_email_reminder_minutes:
+        typeof item.google_calendar_email_reminder_minutes === "number" &&
+        Number.isFinite(item.google_calendar_email_reminder_minutes)
+          ? item.google_calendar_email_reminder_minutes
+          : undefined,
       created_at: createdAt,
       updated_at: updatedAt,
     };
@@ -53,10 +64,11 @@ function normalizeItems(rawItems: unknown): NSKDomainItem[] {
   }, []);
 }
 
-export function readNSKDomainsStorage(): NSKDomainsSchema {
+export function readNSKDomainsStorage(sessionSuffix: string): NSKDomainsSchema {
   if (typeof window === "undefined") return createEmptyNSKDomainsSchema();
 
-  const raw = window.localStorage.getItem(NSKDOMAINS_STORAGE_KEY);
+  const key = buildNskListAppStorageKey("domains", sessionSuffix);
+  const raw = window.localStorage.getItem(key);
   if (!raw) return createEmptyNSKDomainsSchema();
 
   try {
@@ -74,13 +86,20 @@ export function readNSKDomainsStorage(): NSKDomainsSchema {
   }
 }
 
-export function writeNSKDomainsStorage(next: NSKDomainsSchema) {
+export function writeNSKDomainsStorage(
+  sessionSuffix: string,
+  next: NSKDomainsSchema,
+  opts?: { skipPendingDriveMark?: boolean }
+) {
   if (typeof window === "undefined") return;
 
+  const key = buildNskListAppStorageKey("domains", sessionSuffix);
   const toPersist: NSKDomainsSchema = {
     version: NSKDOMAINS_SCHEMA_VERSION,
     last_google_sync_at: next.last_google_sync_at ?? null,
     items: normalizeItems(next.items),
   };
-  window.localStorage.setItem(NSKDOMAINS_STORAGE_KEY, JSON.stringify(toPersist));
+  window.localStorage.setItem(key, JSON.stringify(toPersist));
+  emitListAppDataUpdated(sessionSuffix);
+  if (!opts?.skipPendingDriveMark) markPendingDriveSync(sessionSuffix);
 }

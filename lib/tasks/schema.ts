@@ -1,4 +1,4 @@
-export const NSKTASKS_STORAGE_KEY = "nsktasks";
+export { NSKTASKS_STORAGE_KEY } from "@/lib/storage/anonymous-storage-keys";
 export const NSKTASKS_SCHEMA_VERSION = 1;
 
 export const TASK_STATUSES = ["todo", "in_progress", "done"] as const;
@@ -29,6 +29,8 @@ export type NSKTask = {
   archived: boolean;
   /** Sort key within `(space_id, status)` for Kanban/list. */
   order: number;
+  google_calendar_event_id?: string;
+  google_calendar_email_reminder_minutes?: number;
   created_at: string;
   updated_at: string;
   comments: NSKTaskComment[];

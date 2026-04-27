@@ -49,7 +49,8 @@ export const privacyEs: LegalDocument = {
     {
       title: "Analítica y seguimiento",
       paragraphs: [
-        "NoSheetKit no incluye analítica, trackers publicitarios ni scripts de perfilado.",
+        "NoSheetKit puede usar Google Analytics 4 solo después de tu consentimiento explícito en el banner de tracking.",
+        "Si rechazas, los scripts de analítica no se cargan. Si aceptas, se pueden enviar eventos de uso agregado a Google Analytics.",
       ],
     },
     {

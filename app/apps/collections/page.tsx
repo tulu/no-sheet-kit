@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { CollectionsAppPage } from "@/components/collections/collections-app-page";
+import { CollectionsAppPage } from "@/components/apps/collections/collections-app-page";
 import { buildPageMetadata } from "@/lib/seo/build-page-metadata";
 
 export const metadata: Metadata = buildPageMetadata("collections", "/apps/collections");

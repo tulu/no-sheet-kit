@@ -1,9 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { safeReturnTo } from "@/lib/auth/safe-return-to";
+import {
+  NSK_LOGIN_PENDING_GOOGLE_VALUE,
+  NSK_LOGIN_PENDING_SESSION_KEY,
+  trackLoginCompleted,
+} from "@/lib/analytics/events";
 
 function GoogleIcon() {
   return (
@@ -35,18 +42,43 @@ function GoogleIcon() {
 
 export function LoginOptions() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useI18n();
+  const [anonymousBusy, setAnonymousBusy] = useState(false);
+  const returnTo = safeReturnTo(searchParams.get("returnTo"));
+  const googleError = searchParams.get("google_error");
 
   function handleGoogle() {
-    alert("Google Sign-In — coming soon!");
+    try {
+      sessionStorage.setItem(NSK_LOGIN_PENDING_SESSION_KEY, NSK_LOGIN_PENDING_GOOGLE_VALUE);
+    } catch {
+      /* ignore */
+    }
+    const start = new URL("/api/auth/google/start", window.location.origin);
+    start.searchParams.set("returnTo", returnTo);
+    window.location.assign(start.toString());
   }
 
-  function handleAnonymous() {
-    router.push("/apps");
+  async function handleAnonymous() {
+    if (anonymousBusy) return;
+    setAnonymousBusy(true);
+    try {
+      const res = await fetch("/api/auth/anonymous", { method: "POST" });
+      if (!res.ok) return;
+      trackLoginCompleted("guest");
+      router.replace(returnTo);
+    } finally {
+      setAnonymousBusy(false);
+    }
   }
 
   return (
     <div className="w-full flex flex-col gap-3">
+      {googleError ? (
+        <p className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-center text-sm text-destructive">
+          {t.login.googleError}
+        </p>
+      ) : null}
       <Button
         size="lg"
         variant="outline"
@@ -67,7 +99,8 @@ export function LoginOptions() {
         size="lg"
         variant="ghost"
         className="w-full"
-        onClick={handleAnonymous}
+        disabled={anonymousBusy}
+        onClick={() => void handleAnonymous()}
       >
         {t.login.continueAnonymously}
       </Button>

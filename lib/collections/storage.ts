@@ -1,10 +1,12 @@
 "use client";
 
+import { emitListAppDataUpdated } from "@/lib/storage/list-app-data-updated";
+import { markPendingDriveSync } from "@/lib/storage/pending-drive-sync";
+import { buildNskListAppStorageKey } from "@/lib/storage/session-storage-keys";
 import {
   createEmptyNSKCollectionsSchema,
   isPossessionStatus,
   NSKCOLLECTIONS_SCHEMA_VERSION,
-  NSKCOLLECTIONS_STORAGE_KEY,
   type NSKCollection,
   type NSKCollectionItem,
   type NSKCollectionsSchema,
@@ -91,10 +93,11 @@ function normalizeItems(raw: unknown, validCollectionIds: Set<string>): NSKColle
   }, []);
 }
 
-export function readNSKCollectionsStorage(): NSKCollectionsSchema {
+export function readNSKCollectionsStorage(sessionSuffix: string): NSKCollectionsSchema {
   if (typeof window === "undefined") return createEmptyNSKCollectionsSchema();
 
-  const raw = window.localStorage.getItem(NSKCOLLECTIONS_STORAGE_KEY);
+  const key = buildNskListAppStorageKey("collections", sessionSuffix);
+  const raw = window.localStorage.getItem(key);
   if (!raw) return createEmptyNSKCollectionsSchema();
 
   try {
@@ -122,8 +125,13 @@ export function readNSKCollectionsStorage(): NSKCollectionsSchema {
   }
 }
 
-export function writeNSKCollectionsStorage(next: NSKCollectionsSchema) {
+export function writeNSKCollectionsStorage(
+  sessionSuffix: string,
+  next: NSKCollectionsSchema,
+  opts?: { skipPendingDriveMark?: boolean }
+) {
   if (typeof window === "undefined") return;
+  const key = buildNskListAppStorageKey("collections", sessionSuffix);
   const validIds = new Set(next.collections.map((c) => c.id));
   const collections = normalizeCollections(next.collections);
   const items = normalizeItems(next.items, validIds);
@@ -133,5 +141,7 @@ export function writeNSKCollectionsStorage(next: NSKCollectionsSchema) {
     collections,
     items,
   };
-  window.localStorage.setItem(NSKCOLLECTIONS_STORAGE_KEY, JSON.stringify(payload));
+  window.localStorage.setItem(key, JSON.stringify(payload));
+  emitListAppDataUpdated(sessionSuffix);
+  if (!opts?.skipPendingDriveMark) markPendingDriveSync(sessionSuffix);
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { Fragment } from "react";
 import { PanelLeft, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +24,11 @@ export type FilterSidebarItem<T extends string = string> = {
   tone?: FilterSidebarTone;
   /** Draw a divider above this row (e.g. before dynamically appended filters). */
   dividerBefore?: boolean;
+  /**
+   * Optional group label shown once above the first item that carries the same label
+   * (e.g. documentation sidebars).
+   */
+  navGroupLabel?: string;
 };
 
 export type FilterSidebarNavProps<T extends string> = {
@@ -39,70 +45,88 @@ export function FilterSidebarNav<T extends string>({
   onAfterSelect,
 }: FilterSidebarNavProps<T>) {
   return (
-    <ul className="flex flex-col gap-1">
-      {items.map((item) => {
+    <ul className="flex flex-col gap-0">
+      {items.map((item, index) => {
+        const prev = index > 0 ? items[index - 1] : undefined;
+        const showGroupHeading =
+          item.navGroupLabel &&
+          (!prev?.navGroupLabel || prev.navGroupLabel !== item.navGroupLabel);
         const Icon = item.icon;
         const isActive = item.id === activeId;
         const tone = item.tone ?? "default";
         const destructive = tone === "destructive";
         const accent = tone === "accent";
         return (
-          <li key={item.id} className={cn(item.dividerBefore && "mt-2 border-t border-border pt-2")}>
-            <button
-              type="button"
-              className={cn(
-                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
-                isActive &&
-                  tone === "default" &&
-                  "bg-accent font-medium text-accent-foreground",
-                isActive &&
-                  destructive &&
-                  "border border-destructive/40 bg-destructive/10 font-medium text-destructive",
-                isActive &&
-                  accent &&
-                  "border border-teal-500/40 bg-teal-500/10 font-medium text-teal-900 dark:border-teal-400/35 dark:bg-teal-500/15 dark:text-teal-100",
-                !isActive &&
-                  tone === "default" &&
-                  "text-muted-foreground hover:bg-muted hover:text-foreground",
-                !isActive &&
-                  destructive &&
-                  "border border-transparent text-destructive/90 hover:border-destructive/25 hover:bg-destructive/5",
-                !isActive &&
-                  accent &&
-                  "border border-transparent text-teal-800/95 hover:border-teal-500/25 hover:bg-teal-500/10 dark:text-teal-200/90 dark:hover:border-teal-400/20 dark:hover:bg-teal-500/10"
-              )}
-              aria-current={isActive ? "true" : undefined}
-              onClick={() => {
-                onFilterChange(item.id);
-                onAfterSelect?.();
-              }}
-            >
-              <Icon
+          <Fragment key={item.id}>
+            {showGroupHeading ? (
+              <li
                 className={cn(
-                  "size-4 shrink-0",
-                  accent && !isActive && "text-teal-600 dark:text-teal-400",
-                  accent && isActive && "text-teal-700 dark:text-teal-300"
+                  "list-none",
+                  index === 0 ? "pt-0" : "mt-6 pt-1"
                 )}
-                aria-hidden
-              />
-              <span className="min-w-0 flex-1 truncate">{item.label}</span>
-              {item.hideCount ? null : (
-                <span
-                  className={cn(
-                    "tabular-nums",
-                    destructive && "text-destructive/80",
+              >
+                <p className="px-3 pb-3 text-sm font-semibold tracking-tight text-foreground">
+                  {item.navGroupLabel}
+                </p>
+              </li>
+            ) : null}
+            <li className={cn(item.dividerBefore && "mt-2 border-t border-border pt-2")}>
+              <button
+                type="button"
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm transition-colors",
+                  isActive &&
+                    tone === "default" &&
+                    "bg-accent font-medium text-accent-foreground",
+                  isActive &&
+                    destructive &&
+                    "border border-destructive/40 bg-destructive/10 font-medium text-destructive",
+                  isActive &&
                     accent &&
-                      (isActive
-                        ? "text-teal-900/80 dark:text-teal-100/85"
-                        : "text-teal-700/90 dark:text-teal-400/90"),
-                    tone === "default" && "text-muted-foreground"
+                    "border border-teal-500/40 bg-teal-500/10 font-medium text-teal-900 dark:border-teal-400/35 dark:bg-teal-500/15 dark:text-teal-100",
+                  !isActive &&
+                    tone === "default" &&
+                    "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  !isActive &&
+                    destructive &&
+                    "border border-transparent text-destructive/90 hover:border-destructive/25 hover:bg-destructive/5",
+                  !isActive &&
+                    accent &&
+                    "border border-transparent text-teal-800/95 hover:border-teal-500/25 hover:bg-teal-500/10 dark:text-teal-200/90 dark:hover:border-teal-400/20 dark:hover:bg-teal-500/10"
+                )}
+                aria-current={isActive ? "true" : undefined}
+                onClick={() => {
+                  onFilterChange(item.id);
+                  onAfterSelect?.();
+                }}
+              >
+                <Icon
+                  className={cn(
+                    "size-4 shrink-0",
+                    accent && !isActive && "text-teal-600 dark:text-teal-400",
+                    accent && isActive && "text-teal-700 dark:text-teal-300"
                   )}
-                >
-                  {item.count}
-                </span>
-              )}
-            </button>
-          </li>
+                  aria-hidden
+                />
+                <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                {item.hideCount ? null : (
+                  <span
+                    className={cn(
+                      "tabular-nums",
+                      destructive && "text-destructive/80",
+                      accent &&
+                        (isActive
+                          ? "text-teal-900/80 dark:text-teal-100/85"
+                          : "text-teal-700/90 dark:text-teal-400/90"),
+                      tone === "default" && "text-muted-foreground"
+                    )}
+                  >
+                    {item.count}
+                  </span>
+                )}
+              </button>
+            </li>
+          </Fragment>
         );
       })}
     </ul>
@@ -112,6 +136,8 @@ export function FilterSidebarNav<T extends string>({
 export type FilterSidebarDesktopAsideProps<T extends string> = {
   title: string;
   navAriaLabel?: string;
+  /** When true, the main title row is not shown (e.g. docs uses only in-nav group headings). */
+  omitVisibleTitle?: boolean;
   /** e.g. “Manage spaces” pinned under the scrollable nav */
   footer?: ReactNode;
 } & FilterSidebarNavProps<T>;
@@ -119,6 +145,7 @@ export type FilterSidebarDesktopAsideProps<T extends string> = {
 export function FilterSidebarDesktopAside<T extends string>({
   title,
   navAriaLabel,
+  omitVisibleTitle = false,
   footer,
   items,
   activeId,
@@ -128,7 +155,9 @@ export function FilterSidebarDesktopAside<T extends string>({
   return (
     <aside className="hidden min-h-0 w-75 shrink-0 flex-col border-r border-border bg-background/90 backdrop-blur-md md:flex">
       <div className="flex h-full min-h-0 flex-1 flex-col gap-3 p-4">
-        <h2 className="shrink-0 text-sm font-semibold tracking-tight text-foreground">{title}</h2>
+        {omitVisibleTitle ? null : (
+          <h2 className="shrink-0 text-sm font-semibold tracking-tight text-foreground">{title}</h2>
+        )}
         <nav
           className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden"
           aria-label={aria}
@@ -150,6 +179,8 @@ export type FilterSidebarMobileSheetProps<T extends string> = {
   onOpenChange: (open: boolean) => void;
   title: string;
   navAriaLabel?: string;
+  /** When true, the sheet title is visually hidden (still available to assistive tech). */
+  omitVisibleTitle?: boolean;
   footer?: ReactNode;
 } & FilterSidebarNavProps<T>;
 
@@ -158,6 +189,7 @@ export function FilterSidebarMobileSheet<T extends string>({
   onOpenChange,
   title,
   navAriaLabel,
+  omitVisibleTitle = false,
   footer,
   items,
   activeId,
@@ -170,7 +202,7 @@ export function FilterSidebarMobileSheet<T extends string>({
         side="left"
         className="flex w-[min(100%,22rem)] flex-col bg-background/90 backdrop-blur-md sm:max-w-[22rem]"
       >
-        <SheetHeader>
+        <SheetHeader className={omitVisibleTitle ? "sr-only" : undefined}>
           <SheetTitle>{title}</SheetTitle>
         </SheetHeader>
         <nav className="min-h-0 flex-1 overflow-auto px-4 pb-2" aria-label={aria}>

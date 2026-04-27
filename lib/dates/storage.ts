@@ -1,10 +1,12 @@
 "use client";
 
+import { emitListAppDataUpdated } from "@/lib/storage/list-app-data-updated";
+import { markPendingDriveSync } from "@/lib/storage/pending-drive-sync";
+import { buildNskListAppStorageKey } from "@/lib/storage/session-storage-keys";
 import {
   createEmptyNSKDatesSchema,
   isDateTypeId,
   NSKDATES_SCHEMA_VERSION,
-  NSKDATES_STORAGE_KEY,
   type DateTypeId,
   type NSKDateItem,
   type NSKDatesSchema,
@@ -43,6 +45,15 @@ function normalizeItems(rawItems: unknown): NSKDateItem[] {
         date: item.date,
         is_recurring: Boolean(item.is_recurring),
         notes: typeof item.notes === "string" ? item.notes : undefined,
+        google_calendar_event_id:
+          typeof item.google_calendar_event_id === "string" && item.google_calendar_event_id.trim().length > 0
+            ? item.google_calendar_event_id
+            : undefined,
+        google_calendar_email_reminder_minutes:
+          typeof item.google_calendar_email_reminder_minutes === "number" &&
+          Number.isFinite(item.google_calendar_email_reminder_minutes)
+            ? item.google_calendar_email_reminder_minutes
+            : undefined,
         created_at: createdAt,
         updated_at: updatedAt,
       };
@@ -52,10 +63,11 @@ function normalizeItems(rawItems: unknown): NSKDateItem[] {
     }, []);
 }
 
-export function readNSKDatesStorage(): NSKDatesSchema {
+export function readNSKDatesStorage(sessionSuffix: string): NSKDatesSchema {
   if (typeof window === "undefined") return createEmptyNSKDatesSchema();
 
-  const raw = window.localStorage.getItem(NSKDATES_STORAGE_KEY);
+  const key = buildNskListAppStorageKey("dates", sessionSuffix);
+  const raw = window.localStorage.getItem(key);
   if (!raw) return createEmptyNSKDatesSchema();
 
   try {
@@ -73,13 +85,20 @@ export function readNSKDatesStorage(): NSKDatesSchema {
   }
 }
 
-export function writeNSKDatesStorage(next: NSKDatesSchema) {
+export function writeNSKDatesStorage(
+  sessionSuffix: string,
+  next: NSKDatesSchema,
+  opts?: { skipPendingDriveMark?: boolean }
+) {
   if (typeof window === "undefined") return;
 
+  const key = buildNskListAppStorageKey("dates", sessionSuffix);
   const toPersist: NSKDatesSchema = {
     version: NSKDATES_SCHEMA_VERSION,
     last_google_sync_at: next.last_google_sync_at ?? null,
     items: normalizeItems(next.items),
   };
-  window.localStorage.setItem(NSKDATES_STORAGE_KEY, JSON.stringify(toPersist));
+  window.localStorage.setItem(key, JSON.stringify(toPersist));
+  emitListAppDataUpdated(sessionSuffix);
+  if (!opts?.skipPendingDriveMark) markPendingDriveSync(sessionSuffix);
 }

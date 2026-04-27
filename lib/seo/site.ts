@@ -1,6 +1,7 @@
 /** Canonical site origin for metadata, Open Graph, sitemap, and robots. */
 export function getMetadataBase(): URL {
-  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  const fromEnv =
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (fromEnv) {
     const normalized = fromEnv.replace(/\/$/, "");
     return new URL(`${normalized}/`);

@@ -29,6 +29,7 @@ export function HomeJsonLd() {
 
   return (
     <script
+      id="nsk-home-jsonld"
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />

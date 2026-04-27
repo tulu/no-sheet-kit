@@ -1,4 +1,4 @@
-export const NSKCOLLECTIONS_STORAGE_KEY = "nskcollections";
+export { NSKCOLLECTIONS_STORAGE_KEY } from "@/lib/storage/anonymous-storage-keys";
 export const NSKCOLLECTIONS_SCHEMA_VERSION = 1;
 
 export const POSSESSION_STATUSES = ["owned", "lent_out", "borrowed", "wanted"] as const;

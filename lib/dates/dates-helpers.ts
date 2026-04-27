@@ -52,6 +52,10 @@ export function getItemsForDay(items: NSKDateItem[], day: Date): NSKDateItem[] {
       continue;
     }
 
+    if (y < src.getFullYear()) {
+      continue;
+    }
+
     const sm = src.getMonth();
     const sd = src.getDate();
 
@@ -75,20 +79,49 @@ function startOfLocalDay(d: Date): Date {
 }
 
 /** Month (0–11) and calendar day; Feb 29 becomes Feb 28 in non-leap years. */
-function occurrenceInYear(month: number, day: number, year: number): Date {
+export function occurrenceInYear(month: number, day: number, year: number): Date {
   if (month === 1 && day === 29 && !isLeapYear(year)) {
     return new Date(year, 1, 28, 0, 0, 0, 0);
   }
   return new Date(year, month, day, 0, 0, 0, 0);
 }
 
-/** True if the item's relevant date this cycle is strictly before local today. */
+/**
+ * Recurring item with anchor before today: the latest month/day occurrence strictly before
+ * `now` (start of local day). Used for past sorting and grid past buckets.
+ */
+export function getLastPassedRecurringOccurrence(item: NSKDateItem, now: Date): Date | null {
+  const src = parseItemLocalDate(item);
+  if (!src || !item.is_recurring) return null;
+  const today = startOfLocalDay(now);
+  const anchor = startOfLocalDay(src);
+  if (anchor.getTime() >= today.getTime()) return null;
+
+  const m = src.getMonth();
+  const d = src.getDate();
+  const y = today.getFullYear();
+  let occ = startOfLocalDay(occurrenceInYear(m, d, y));
+  if (occ.getTime() >= today.getTime()) {
+    occ = startOfLocalDay(occurrenceInYear(m, d, y - 1));
+  }
+  return occ;
+}
+
+/**
+ * True if the item's relevant date this cycle is strictly before local today.
+ * Recurring (anchor in the past): compares this calendar year's month/day to today — e.g. in
+ * April, March birthdays are past for this cycle even though the next March is next year.
+ */
 export function isOccurrenceStrictlyPast(item: NSKDateItem, now: Date = new Date()): boolean {
   const src = parseItemLocalDate(item);
   if (!src) return false;
   const t0 = startOfLocalDay(now).getTime();
   if (!item.is_recurring) {
     return startOfLocalDay(src).getTime() < t0;
+  }
+  const anchor = startOfLocalDay(src);
+  if (anchor.getTime() >= t0) {
+    return false;
   }
   const y = startOfLocalDay(now).getFullYear();
   const tt = startOfLocalDay(occurrenceInYear(src.getMonth(), src.getDate(), y)).getTime();
@@ -105,8 +138,6 @@ export function sortItemsByOccurrenceFromToday(
   items: NSKDateItem[],
   now: Date = new Date()
 ): NSKDateItem[] {
-  const today = startOfLocalDay(now);
-
   type Tagged = { item: NSKDateItem; past: boolean; sortTime: number };
 
   const tagged: Tagged[] = [];
@@ -119,11 +150,16 @@ export function sortItemsByOccurrenceFromToday(
     }
 
     const past = isOccurrenceStrictlyPast(item, now);
-    const sortTime = !item.is_recurring
-      ? startOfLocalDay(src).getTime()
-      : startOfLocalDay(
-          occurrenceInYear(src.getMonth(), src.getDate(), today.getFullYear())
-        ).getTime();
+    let sortTime: number;
+    if (!item.is_recurring) {
+      sortTime = startOfLocalDay(src).getTime();
+    } else if (past) {
+      const last = getLastPassedRecurringOccurrence(item, now);
+      sortTime = last ? last.getTime() : startOfLocalDay(src).getTime();
+    } else {
+      const next = getNextOccurrenceDate(item, now);
+      sortTime = next ? startOfLocalDay(next).getTime() : Number.MAX_SAFE_INTEGER;
+    }
     tagged.push({ item, past, sortTime });
   }
 
@@ -138,19 +174,34 @@ export function sortItemsByOccurrenceFromToday(
 
 // --- Upcoming within 30 days ---
 
-/** Next calendar occurrence (local) used for "days until" style checks. */
+/**
+ * Next calendar occurrence (local) for notifications and filters.
+ * Non-recurring: stored Y-M-D. Recurring: if the stored date is still today or in the future,
+ * that day is the next occurrence; otherwise the next month/day in this year or the next
+ * (so pushing the anchor year forward hides yearly items until that year).
+ */
 export function getNextOccurrenceDate(item: NSKDateItem, now: Date): Date | null {
-  const source = new Date(`${item.date}T00:00:00`);
-  if (Number.isNaN(source.getTime())) return null;
+  const src = parseItemLocalDate(item);
+  if (!src) return null;
 
-  if (!item.is_recurring) return source;
+  if (!item.is_recurring) {
+    return src;
+  }
 
-  const month = source.getMonth();
-  const day = source.getDate();
   const today = startOfLocalDay(now);
-  const thisYear = new Date(today.getFullYear(), month, day);
-  if (thisYear >= today) return thisYear;
-  return new Date(today.getFullYear() + 1, month, day);
+  const anchor = startOfLocalDay(src);
+  if (anchor.getTime() >= today.getTime()) {
+    return anchor;
+  }
+
+  const month = src.getMonth();
+  const day = src.getDate();
+  const y = today.getFullYear();
+  let cand = startOfLocalDay(occurrenceInYear(month, day, y));
+  if (cand.getTime() < today.getTime()) {
+    cand = startOfLocalDay(occurrenceInYear(month, day, y + 1));
+  }
+  return cand;
 }
 
 /** Whether the next occurrence falls within the next 30 calendar days from now (inclusive of today). */

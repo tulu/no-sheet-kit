@@ -1,10 +1,12 @@
 "use client";
 
+import { emitListAppDataUpdated } from "@/lib/storage/list-app-data-updated";
+import { markPendingDriveSync } from "@/lib/storage/pending-drive-sync";
+import { buildNskListAppStorageKey } from "@/lib/storage/session-storage-keys";
 import {
   createEmptyNSKLinksSchema,
   isLinkStatus,
   NSKLINKS_SCHEMA_VERSION,
-  NSKLINKS_STORAGE_KEY,
   type NSKLinkItem,
   type NSKLinksSchema,
 } from "./schema";
@@ -47,6 +49,15 @@ function normalizeItems(rawItems: unknown): NSKLinkItem[] {
       status: typeof item.status === "string" && isLinkStatus(item.status) ? item.status : "pending",
       error_message:
         typeof item.error_message === "string" ? item.error_message.trim() || undefined : undefined,
+      google_calendar_event_id:
+        typeof item.google_calendar_event_id === "string" && item.google_calendar_event_id.trim()
+          ? item.google_calendar_event_id
+          : undefined,
+      google_calendar_email_reminder_minutes:
+        typeof item.google_calendar_email_reminder_minutes === "number" &&
+        Number.isFinite(item.google_calendar_email_reminder_minutes)
+          ? item.google_calendar_email_reminder_minutes
+          : undefined,
       created_at: createdAt,
       updated_at: updatedAt,
     });
@@ -54,9 +65,10 @@ function normalizeItems(rawItems: unknown): NSKLinkItem[] {
   }, []);
 }
 
-export function readNSKLinksStorage(): NSKLinksSchema {
+export function readNSKLinksStorage(sessionSuffix: string): NSKLinksSchema {
   if (typeof window === "undefined") return createEmptyNSKLinksSchema();
-  const raw = window.localStorage.getItem(NSKLINKS_STORAGE_KEY);
+  const key = buildNskListAppStorageKey("links", sessionSuffix);
+  const raw = window.localStorage.getItem(key);
   if (!raw) return createEmptyNSKLinksSchema();
 
   try {
@@ -72,12 +84,19 @@ export function readNSKLinksStorage(): NSKLinksSchema {
   }
 }
 
-export function writeNSKLinksStorage(next: NSKLinksSchema): void {
+export function writeNSKLinksStorage(
+  sessionSuffix: string,
+  next: NSKLinksSchema,
+  opts?: { skipPendingDriveMark?: boolean }
+): void {
   if (typeof window === "undefined") return;
+  const key = buildNskListAppStorageKey("links", sessionSuffix);
   const toPersist: NSKLinksSchema = {
     version: NSKLINKS_SCHEMA_VERSION,
     last_google_sync_at: next.last_google_sync_at ?? null,
     items: normalizeItems(next.items),
   };
-  window.localStorage.setItem(NSKLINKS_STORAGE_KEY, JSON.stringify(toPersist));
+  window.localStorage.setItem(key, JSON.stringify(toPersist));
+  emitListAppDataUpdated(sessionSuffix);
+  if (!opts?.skipPendingDriveMark) markPendingDriveSync(sessionSuffix);
 }
