@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Pencil, Repeat2, Trash2 } from "lucide-react";
+import { CalendarCheck2, ChevronDown, Pencil, Repeat2, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -230,7 +230,15 @@ function DatesListTable({ items, locale, onEdit, onDelete }: DatesListTableProps
                 <div className="min-w-0 truncate">{item.label}</div>
               </TableCell>
               <TableCell className="px-3 py-2 text-muted-foreground">
-                {formatDateShort(item.date, locale)}
+                <span className="inline-flex items-center gap-1.5">
+                  {formatDateShort(item.date, locale)}
+                  {item.google_calendar_event_id ? (
+                    <CalendarCheck2
+                      className="size-3.5 shrink-0 text-muted-foreground"
+                      aria-label={t.googleCalendar.linkedBadge}
+                    />
+                  ) : null}
+                </span>
               </TableCell>
               <TableCell className="px-3 py-2">
                 <Badge
@@ -311,6 +319,12 @@ function MonthBlock({
                         </span>
                         <span className="inline-flex items-center gap-1.5">
                           <span className="text-xs text-muted-foreground">{year}</span>
+                          {item.google_calendar_event_id ? (
+                            <CalendarCheck2
+                              className="size-3.5 shrink-0 text-muted-foreground"
+                              aria-label={t.googleCalendar.linkedBadge}
+                            />
+                          ) : null}
                           {item.is_recurring ? (
                             <Repeat2
                               className="size-3.5 shrink-0 text-muted-foreground"
@@ -321,6 +335,15 @@ function MonthBlock({
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
+                      {item.google_calendar_event_id ? (
+                        <span
+                          className="inline-flex items-center rounded-full bg-emerald-500/12 p-1 text-emerald-600 dark:text-emerald-400"
+                          title={t.googleCalendar.linkedBadge}
+                          aria-label={t.googleCalendar.linkedBadge}
+                        >
+                          <CalendarCheck2 className="size-3.5" aria-hidden />
+                        </span>
+                      ) : null}
                       <Badge
                         variant="outline"
                         className={cn("font-medium", semanticBadgeOutlineClass(item.type_id))}
@@ -461,7 +484,12 @@ export function DatesView({
               semanticBadgeOutlineClass(item.type_id)
             )}
           >
-            {item.label}
+            <span className="inline-flex min-w-0 items-center gap-1">
+              <span className="truncate">{item.label}</span>
+              {item.google_calendar_event_id ? (
+                <CalendarCheck2 className="size-3.5 shrink-0" aria-label={t.googleCalendar.linkedBadge} />
+              ) : null}
+            </span>
           </Badge>
         )}
       />

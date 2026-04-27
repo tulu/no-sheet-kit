@@ -46,6 +46,15 @@ function normalizeItems(rawItems: unknown): NSKDomainItem[] {
       auto_renew: Boolean(item.auto_renew),
       price: typeof item.price === "string" ? item.price : "",
       notes: typeof item.notes === "string" ? item.notes : undefined,
+      google_calendar_event_id:
+        typeof item.google_calendar_event_id === "string" && item.google_calendar_event_id.trim().length > 0
+          ? item.google_calendar_event_id
+          : undefined,
+      google_calendar_email_reminder_minutes:
+        typeof item.google_calendar_email_reminder_minutes === "number" &&
+        Number.isFinite(item.google_calendar_email_reminder_minutes)
+          ? item.google_calendar_email_reminder_minutes
+          : undefined,
       created_at: createdAt,
       updated_at: updatedAt,
     };

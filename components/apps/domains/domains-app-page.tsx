@@ -13,8 +13,20 @@ import {
   Tag,
   type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useI18n } from "@/components/providers/i18n-provider";
+import type { GoogleCalendarSubmitPrefs } from "@/components/common/google-calendar-event-options";
+import { useAppsSessionKind } from "@/lib/storage/session-storage-context";
+import { buildDomainCalendarCopy } from "@/lib/google/calendar-event-copy";
+import { buildAllDayNskEventInput } from "@/lib/google/calendar-event-body";
+import {
+  nskCalendarCreateEvent,
+  nskCalendarDeleteEvent,
+  nskCalendarGetNoSheetKitCalendarId,
+  nskCalendarPatchEvent,
+} from "@/lib/google/calendar-sync-client";
+import type { NskCalendarEventInput } from "@/lib/google/google-calendar";
 import { useAppLocalHydration } from "@/lib/apps/use-app-local-hydration";
 import { filterItemsBySearch } from "@/lib/apps/filter-items-by-search";
 import { appCrudToast } from "@/lib/app-toasts";
@@ -38,6 +50,16 @@ import {
   FilterSidebarMobileSheet,
 } from "@/components/common/filter-sidebar";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Empty,
   EmptyContent,
@@ -130,6 +152,7 @@ function buildDomainsFilterItems(
 
 export function DomainsAppPage() {
   const sessionSuffix = useSessionStorageSuffix();
+  const sessionKind = useAppsSessionKind();
   const { locale, t } = useI18n();
   const [activeFilter, setActiveFilter] = useState<DomainFilterId>("all");
   const [viewMode, setViewMode] = useState<DomainsViewMode>("grid");
@@ -141,6 +164,21 @@ export function DomainsAppPage() {
   const [editingItem, setEditingItem] = useState<NSKDomainItem | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(new Date()));
   const [itemPendingDelete, setItemPendingDelete] = useState<NSKDomainItem | null>(null);
+  const [createCalendarConfirmOpen, setCreateCalendarConfirmOpen] = useState(false);
+  const createCalendarConfirmResolverRef = useRef<((accepted: boolean) => void) | null>(null);
+
+  const requestCreateCalendarConfirm = useCallback(() => {
+    return new Promise<boolean>((resolve) => {
+      createCalendarConfirmResolverRef.current = resolve;
+      setCreateCalendarConfirmOpen(true);
+    });
+  }, []);
+
+  const resolveCreateCalendarConfirm = useCallback((accepted: boolean) => {
+    createCalendarConfirmResolverRef.current?.(accepted);
+    createCalendarConfirmResolverRef.current = null;
+    setCreateCalendarConfirmOpen(false);
+  }, []);
 
   useAppLocalHydration(() => readNSKDomainsStorage(sessionSuffix), setStore, setIsStoreHydrated, {
     appViewKey: "domains",
@@ -197,10 +235,20 @@ export function DomainsAppPage() {
     writeNSKDomainsStorage(sessionSuffix, nextStore);
   }
 
-  function handleCreateOrUpdate(values: DomainSubmitValues) {
+  async function handleDisconnectDomainCalendar() {
+    if (!editingItem?.google_calendar_event_id) return;
+    await nskCalendarDeleteEvent(editingItem.google_calendar_event_id);
+    setEditingItem({
+      ...editingItem,
+      google_calendar_event_id: undefined,
+      google_calendar_email_reminder_minutes: undefined,
+    });
+  }
+
+  async function handleCreateOrUpdate(values: DomainSubmitValues, calendar: GoogleCalendarSubmitPrefs) {
     const now = new Date().toISOString();
     if (!editingItem) {
-      const newItem: NSKDomainItem = {
+      let newItem: NSKDomainItem = {
         id: crypto.randomUUID(),
         domain_name: values.domain_name,
         registrar: values.registrar,
@@ -213,25 +261,104 @@ export function DomainsAppPage() {
         created_at: now,
         updated_at: now,
       };
+      if (sessionKind === "google" && calendar.enabled && values.expires_on) {
+        const calendarId = await nskCalendarGetNoSheetKitCalendarId();
+        if (calendarId === null) {
+          const accepted = await requestCreateCalendarConfirm();
+          if (!accepted) return;
+        }
+        const { summary, description } = buildDomainCalendarCopy({
+          item: newItem,
+          t,
+          locale,
+        });
+        const body = buildAllDayNskEventInput({
+          summary,
+          description,
+          startDateYmd: values.expires_on,
+          reminderEmailMinutes: calendar.reminderMinutes,
+        });
+        const created = await nskCalendarCreateEvent(body);
+        if (created) {
+          newItem = {
+            ...newItem,
+            google_calendar_event_id: created.id,
+            google_calendar_email_reminder_minutes: calendar.reminderMinutes,
+          };
+        } else {
+          toast.error(t.googleCalendar.syncError);
+        }
+      }
       updateStore([...store.items, newItem]);
       appCrudToast(t, "domains", "created");
     } else {
-      const nextItems = store.items.map((item) =>
-        item.id === editingItem.id
-          ? {
-              ...item,
-              domain_name: values.domain_name,
-              registrar: values.registrar,
-              purchased_at: values.purchased_at,
-              expires_on: values.expires_on,
-              status_id: values.status_id,
-              auto_renew: values.auto_renew,
-              price: values.price,
-              notes: values.notes || undefined,
-              updated_at: now,
-            }
-          : item
-      );
+      let merged: NSKDomainItem = {
+        ...editingItem,
+        domain_name: values.domain_name,
+        registrar: values.registrar,
+        purchased_at: values.purchased_at,
+        expires_on: values.expires_on,
+        status_id: values.status_id,
+        auto_renew: values.auto_renew,
+        price: values.price,
+        notes: values.notes || undefined,
+        updated_at: now,
+      };
+
+      if (sessionKind === "google" && calendar.enabled && values.expires_on) {
+        if (merged.google_calendar_event_id) {
+          const { summary, description } = buildDomainCalendarCopy({
+            item: merged,
+            t,
+            locale,
+          });
+          const body = buildAllDayNskEventInput({
+            summary,
+            description,
+            startDateYmd: values.expires_on,
+            reminderEmailMinutes:
+              merged.google_calendar_email_reminder_minutes ?? calendar.reminderMinutes,
+          });
+          const patchBody: Partial<NskCalendarEventInput> = {
+            summary: body.summary,
+            description: body.description,
+            start: body.start,
+            end: body.end,
+            reminders: body.reminders,
+          };
+          const ok = await nskCalendarPatchEvent(merged.google_calendar_event_id, patchBody);
+          if (!ok) toast.error(t.googleCalendar.syncError);
+        } else {
+          const calendarId = await nskCalendarGetNoSheetKitCalendarId();
+          if (calendarId === null) {
+            const accepted = await requestCreateCalendarConfirm();
+            if (!accepted) return;
+          }
+          const { summary, description } = buildDomainCalendarCopy({
+            item: merged,
+            t,
+            locale,
+          });
+          const body = buildAllDayNskEventInput({
+            summary,
+            description,
+            startDateYmd: values.expires_on,
+            reminderEmailMinutes: calendar.reminderMinutes,
+          });
+          const created = await nskCalendarCreateEvent(body);
+          if (created) {
+            merged = {
+              ...merged,
+              google_calendar_event_id: created.id,
+              google_calendar_email_reminder_minutes: calendar.reminderMinutes,
+            };
+          } else {
+            toast.error(t.googleCalendar.syncError);
+          }
+        }
+      }
+
+      const nextItems = store.items.map((item) => (item.id === editingItem.id ? merged : item));
       updateStore(nextItems);
       appCrudToast(t, "domains", "updated");
     }
@@ -244,8 +371,12 @@ export function DomainsAppPage() {
     setItemPendingDelete(item);
   }
 
-  function handleConfirmDelete() {
+  async function handleConfirmDelete() {
     if (!itemPendingDelete) return;
+    const ev = itemPendingDelete.google_calendar_event_id;
+    if (ev) {
+      await nskCalendarDeleteEvent(ev);
+    }
     updateStore(store.items.filter((entry) => entry.id !== itemPendingDelete.id));
     appCrudToast(t, "domains", "deleted");
     setItemPendingDelete(null);
@@ -269,6 +400,10 @@ export function DomainsAppPage() {
     }
   }
 
+  const deleteDomainDescription = itemPendingDelete?.google_calendar_event_id
+    ? `${t.domains.deleteDialogDescription}\n\n${t.googleCalendar.deleteItemAlsoDeletesEvent}`
+    : t.domains.deleteDialogDescription;
+
   return (
     <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
       <ConfirmDeleteAlertDialog
@@ -277,12 +412,40 @@ export function DomainsAppPage() {
           if (!open) setItemPendingDelete(null);
         }}
         title={t.domains.deleteDialogTitle}
-        description={t.domains.deleteDialogDescription}
+        description={deleteDomainDescription}
         itemLabel={itemPendingDelete?.domain_name ?? null}
         cancelLabel={t.domains.deleteDialogCancel}
         confirmLabel={t.domains.deleteDialogConfirm}
         onConfirm={handleConfirmDelete}
       />
+      <AlertDialog
+        open={createCalendarConfirmOpen}
+        onOpenChange={(open) => {
+          if (!open) resolveCreateCalendarConfirm(false);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.googleCalendar.confirmCreateCalendarTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t.googleCalendar.confirmCreateCalendarIfMissing}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => resolveCreateCalendarConfirm(false)}>
+              {t.googleCalendar.confirmCreateCalendarCancel}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                resolveCreateCalendarConfirm(true);
+              }}
+            >
+              {t.googleCalendar.confirmCreateCalendarConfirm}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-row">
         <FilterSidebarDesktopAside<DomainFilterId>
@@ -398,6 +561,7 @@ export function DomainsAppPage() {
           setEditingItem(null);
         }}
         onSubmit={handleCreateOrUpdate}
+        onDisconnectGoogleCalendar={handleDisconnectDomainCalendar}
       />
     </div>
   );

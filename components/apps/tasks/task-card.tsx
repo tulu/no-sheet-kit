@@ -1,6 +1,7 @@
 "use client";
 
-import { Archive, ArchiveRestore, Calendar, MessageSquareText, Pencil, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, Calendar, CalendarCheck2, MessageSquareText, Pencil, Trash2 } from "lucide-react";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CardActionsMenu, type CardActionsMenuItem } from "@/components/common/card-actions-menu";
@@ -46,6 +47,7 @@ export function TaskCard({
   compact,
   highlightFlash,
 }: TaskCardProps) {
+  const { t } = useI18n();
   const dueIsPast = task.due_date ? isTaskPastDue(task) : false;
   const actions: CardActionsMenuItem[] = [
     { label: labels.edit, icon: Pencil, onSelect: onEdit },
@@ -79,7 +81,18 @@ export function TaskCard({
       >
         <div className="flex items-start justify-between gap-2">
           <p className="min-w-0 flex-1 text-sm font-medium leading-snug text-foreground">{task.title}</p>
-          <CardActionsMenu ariaLabel={labels.cardActionsMenu} actions={actions} />
+          <div className="flex shrink-0 items-center gap-2">
+            {task.google_calendar_event_id ? (
+              <span
+                className="inline-flex items-center rounded-full bg-emerald-500/12 p-1 text-emerald-600 dark:text-emerald-400"
+                title={t.googleCalendar.linkedBadge}
+                aria-label={t.googleCalendar.linkedBadge}
+              >
+                <CalendarCheck2 className="size-3.5" aria-hidden />
+              </span>
+            ) : null}
+            <CardActionsMenu ariaLabel={labels.cardActionsMenu} actions={actions} />
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {task.due_date ? (
@@ -92,6 +105,9 @@ export function TaskCard({
             >
               <Calendar className="size-3" aria-hidden />
               {task.due_date}
+              {task.google_calendar_event_id ? (
+                <CalendarCheck2 className="size-3 text-muted-foreground" aria-label={t.googleCalendar.linkedBadge} />
+              ) : null}
             </Badge>
           ) : null}
           {task.comments.length > 0 ? (

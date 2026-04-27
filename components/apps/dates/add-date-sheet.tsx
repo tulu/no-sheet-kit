@@ -20,7 +20,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { NaturalDateField } from "@/components/common/natural-date-field";
+import {
+  GoogleCalendarEventOptions,
+  type GoogleCalendarSubmitPrefs,
+} from "@/components/common/google-calendar-event-options";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { useAppsSessionKind } from "@/lib/storage/session-storage-context";
+import { defaultReminderMinutesForAppKind } from "@/lib/google/calendar-constants";
 import { DATE_TYPE_IDS, type DateTypeId, type NSKDateItem } from "@/lib/dates/schema";
 
 const REQUIRED_MARK = (
@@ -41,7 +47,8 @@ type AddDateSheetProps = {
   open: boolean;
   editingItem: NSKDateItem | null;
   onClose: () => void;
-  onSubmit: (values: DateFormValues) => void;
+  onSubmit: (values: DateFormValues, calendar: GoogleCalendarSubmitPrefs) => void | Promise<void>;
+  onDisconnectGoogleCalendar?: () => void | Promise<void>;
 };
 
 const DEFAULT_FORM: DateFormValues = {
@@ -52,10 +59,22 @@ const DEFAULT_FORM: DateFormValues = {
   notes: "",
 };
 
-export function AddDateSheet({ open, editingItem, onClose, onSubmit }: AddDateSheetProps) {
+export function AddDateSheet({
+  open,
+  editingItem,
+  onClose,
+  onSubmit,
+  onDisconnectGoogleCalendar,
+}: AddDateSheetProps) {
   const { t, locale } = useI18n();
+  const sessionKind = useAppsSessionKind();
   const [form, setForm] = useState<DateFormValues>(DEFAULT_FORM);
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [addToCalendar, setAddToCalendar] = useState(false);
+  const [reminderMinutes, setReminderMinutes] = useState(() =>
+    defaultReminderMinutesForAppKind("dates")
+  );
 
   const sheetTitle = editingItem ? t.dates.editDate : t.dates.addDate;
 
@@ -64,6 +83,8 @@ export function AddDateSheet({ open, editingItem, onClose, onSubmit }: AddDateSh
     const id = requestAnimationFrame(() => {
       if (!editingItem) {
         setForm(DEFAULT_FORM);
+        setAddToCalendar(false);
+        setReminderMinutes(defaultReminderMinutesForAppKind("dates"));
         setError(null);
         return;
       }
@@ -74,12 +95,20 @@ export function AddDateSheet({ open, editingItem, onClose, onSubmit }: AddDateSh
         is_recurring: editingItem.is_recurring,
         notes: editingItem.notes ?? "",
       });
+      setAddToCalendar(Boolean(editingItem.google_calendar_event_id));
+      setReminderMinutes(
+        editingItem.google_calendar_email_reminder_minutes ??
+          defaultReminderMinutesForAppKind("dates")
+      );
       setError(null);
     });
     return () => cancelAnimationFrame(id);
   }, [editingItem, open]);
 
-  function handleSave() {
+  const showGoogleCalendar = sessionKind === "google" && Boolean(form.date);
+
+  async function handleSave() {
+    if (isSaving) return;
     if (!form.label.trim()) {
       setError(t.dates.errors.labelRequired);
       return;
@@ -89,12 +118,28 @@ export function AddDateSheet({ open, editingItem, onClose, onSubmit }: AddDateSh
       return;
     }
     setError(null);
-    onSubmit({
-      ...form,
-      label: form.label.trim(),
-      notes: form.notes.trim(),
-      date: form.date,
-    });
+    const linked = Boolean(editingItem?.google_calendar_event_id);
+    const calendar: GoogleCalendarSubmitPrefs = {
+      enabled:
+        sessionKind === "google" &&
+        Boolean(form.date) &&
+        (linked || addToCalendar),
+      reminderMinutes,
+    };
+    setIsSaving(true);
+    try {
+      await onSubmit(
+        {
+          ...form,
+          label: form.label.trim(),
+          notes: form.notes.trim(),
+          date: form.date,
+        },
+        calendar
+      );
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -178,14 +223,30 @@ export function AddDateSheet({ open, editingItem, onClose, onSubmit }: AddDateSh
             />
           </div>
 
+          <GoogleCalendarEventOptions
+            visible={showGoogleCalendar}
+            linkedEventId={editingItem?.google_calendar_event_id}
+            storedReminderMinutes={editingItem?.google_calendar_email_reminder_minutes}
+            addToCalendar={addToCalendar}
+            onAddToCalendarChange={setAddToCalendar}
+            reminderMinutes={reminderMinutes}
+            onReminderMinutesChange={setReminderMinutes}
+            onRemoveFromCalendar={async () => {
+              await onDisconnectGoogleCalendar?.();
+            }}
+            t={t}
+          />
+
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
 
         <SheetFooter className="sm:justify-end">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isSaving}>
             {t.dates.cancel}
           </Button>
-          <Button onClick={handleSave}>{t.dates.save}</Button>
+          <Button onClick={() => void handleSave()} disabled={isSaving}>
+            {t.dates.save}
+          </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>

@@ -17,8 +17,24 @@ import {
   List,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useI18n } from "@/components/providers/i18n-provider";
+import type { GoogleCalendarSubmitPrefs } from "@/components/common/google-calendar-event-options";
+import { useAppsSessionKind } from "@/lib/storage/session-storage-context";
+import { buildDateCalendarCopy } from "@/lib/google/calendar-event-copy";
+import {
+  buildAllDayNskEventInput,
+  startYmdForDateItem,
+  yearlyRecurrenceFromMonthDay,
+} from "@/lib/google/calendar-event-body";
+import {
+  nskCalendarCreateEvent,
+  nskCalendarDeleteEvent,
+  nskCalendarGetNoSheetKitCalendarId,
+  nskCalendarPatchEvent,
+} from "@/lib/google/calendar-sync-client";
+import type { NskCalendarEventInput } from "@/lib/google/google-calendar";
 import { useAppLocalHydration } from "@/lib/apps/use-app-local-hydration";
 import { filterItemsBySearch } from "@/lib/apps/filter-items-by-search";
 import { appCrudToast } from "@/lib/app-toasts";
@@ -42,6 +58,16 @@ import {
   FilterSidebarMobileSheet,
 } from "@/components/common/filter-sidebar";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Empty,
   EmptyContent,
@@ -103,6 +129,7 @@ function buildDatesFilterItems(
 
 export function DatesAppPage() {
   const sessionSuffix = useSessionStorageSuffix();
+  const sessionKind = useAppsSessionKind();
   const { locale, t } = useI18n();
   const [activeFilter, setActiveFilter] = useState<DateFilterId>("all");
   const [viewMode, setViewMode] = useState<DatesViewMode>("grid");
@@ -114,6 +141,21 @@ export function DatesAppPage() {
   const [editingItem, setEditingItem] = useState<NSKDateItem | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(new Date()));
   const [itemPendingDelete, setItemPendingDelete] = useState<NSKDateItem | null>(null);
+  const [createCalendarConfirmOpen, setCreateCalendarConfirmOpen] = useState(false);
+  const createCalendarConfirmResolverRef = useRef<((accepted: boolean) => void) | null>(null);
+
+  const requestCreateCalendarConfirm = useCallback(() => {
+    return new Promise<boolean>((resolve) => {
+      createCalendarConfirmResolverRef.current = resolve;
+      setCreateCalendarConfirmOpen(true);
+    });
+  }, []);
+
+  const resolveCreateCalendarConfirm = useCallback((accepted: boolean) => {
+    createCalendarConfirmResolverRef.current?.(accepted);
+    createCalendarConfirmResolverRef.current = null;
+    setCreateCalendarConfirmOpen(false);
+  }, []);
 
   useAppLocalHydration(() => readNSKDatesStorage(sessionSuffix), setStore, setIsStoreHydrated, {
     appViewKey: "dates",
@@ -169,16 +211,29 @@ export function DatesAppPage() {
     writeNSKDatesStorage(sessionSuffix, nextStore);
   }
 
-  function handleCreateOrUpdate(values: {
-    label: string;
-    type_id: NSKDateItem["type_id"];
-    date: string;
-    is_recurring: boolean;
-    notes: string;
-  }) {
+  async function handleDisconnectDateCalendar() {
+    if (!editingItem?.google_calendar_event_id) return;
+    await nskCalendarDeleteEvent(editingItem.google_calendar_event_id);
+    setEditingItem({
+      ...editingItem,
+      google_calendar_event_id: undefined,
+      google_calendar_email_reminder_minutes: undefined,
+    });
+  }
+
+  async function handleCreateOrUpdate(
+    values: {
+      label: string;
+      type_id: NSKDateItem["type_id"];
+      date: string;
+      is_recurring: boolean;
+      notes: string;
+    },
+    calendar: GoogleCalendarSubmitPrefs
+  ) {
     const now = new Date().toISOString();
     if (!editingItem) {
-      const newItem: NSKDateItem = {
+      let newItem: NSKDateItem = {
         id: crypto.randomUUID(),
         label: values.label,
         type_id: values.type_id,
@@ -188,22 +243,135 @@ export function DatesAppPage() {
         created_at: now,
         updated_at: now,
       };
+      if (sessionKind === "google" && calendar.enabled && values.date) {
+        const calendarId = await nskCalendarGetNoSheetKitCalendarId();
+        if (calendarId === null) {
+          const accepted = await requestCreateCalendarConfirm();
+          if (!accepted) return;
+        }
+        const startYmd = startYmdForDateItem(values.date, values.is_recurring);
+        if (startYmd) {
+          const anchor = new Date(`${values.date}T00:00:00`);
+          const recurrence = values.is_recurring
+            ? yearlyRecurrenceFromMonthDay(anchor.getMonth(), anchor.getDate())
+            : undefined;
+          const { summary, description } = buildDateCalendarCopy({
+            item: newItem,
+            t,
+            locale,
+          });
+          const body = buildAllDayNskEventInput({
+            summary,
+            description,
+            startDateYmd: startYmd,
+            reminderEmailMinutes: calendar.reminderMinutes,
+            recurrence,
+          });
+          const created = await nskCalendarCreateEvent(body);
+          if (created) {
+            newItem = {
+              ...newItem,
+              google_calendar_event_id: created.id,
+              google_calendar_email_reminder_minutes: calendar.reminderMinutes,
+            };
+          } else {
+            toast.error(t.googleCalendar.syncError);
+          }
+        }
+      }
       updateStore([...store.items, newItem]);
       appCrudToast(t, "dates", "created");
     } else {
-      const nextItems = store.items.map((item) =>
-        item.id === editingItem.id
-          ? {
-              ...item,
-              label: values.label,
-              type_id: values.type_id,
-              date: values.date,
-              is_recurring: values.is_recurring,
-              notes: values.notes || undefined,
-              updated_at: now,
+      let merged: NSKDateItem = {
+        ...editingItem,
+        label: values.label,
+        type_id: values.type_id,
+        date: values.date,
+        is_recurring: values.is_recurring,
+        notes: values.notes || undefined,
+        updated_at: now,
+      };
+
+      if (sessionKind === "google" && values.date && calendar.enabled) {
+        const recurrenceModeChanged = editingItem.is_recurring !== values.is_recurring;
+        if (merged.google_calendar_event_id && recurrenceModeChanged) {
+          await nskCalendarDeleteEvent(merged.google_calendar_event_id);
+          merged = {
+            ...merged,
+            google_calendar_event_id: undefined,
+            google_calendar_email_reminder_minutes: undefined,
+          };
+        }
+
+        const startYmd = startYmdForDateItem(values.date, values.is_recurring);
+        if (startYmd) {
+          if (merged.google_calendar_event_id) {
+            const anchor = new Date(`${values.date}T00:00:00`);
+            const recurrence = values.is_recurring
+              ? yearlyRecurrenceFromMonthDay(anchor.getMonth(), anchor.getDate())
+              : undefined;
+            const { summary, description } = buildDateCalendarCopy({
+              item: merged,
+              t,
+              locale,
+            });
+            const body = buildAllDayNskEventInput({
+              summary,
+              description,
+              startDateYmd: startYmd,
+              reminderEmailMinutes:
+                merged.google_calendar_email_reminder_minutes ?? calendar.reminderMinutes,
+              recurrence,
+            });
+            const patchBody: Partial<NskCalendarEventInput> = {
+              summary: body.summary,
+              description: body.description,
+              start: body.start,
+              end: body.end,
+              reminders: body.reminders,
+            };
+            if (body.recurrence && body.recurrence.length > 0) {
+              patchBody.recurrence = body.recurrence;
             }
-          : item
-      );
+            const ok = await nskCalendarPatchEvent(merged.google_calendar_event_id, patchBody);
+            if (!ok) toast.error(t.googleCalendar.syncError);
+          } else {
+            const calendarId = await nskCalendarGetNoSheetKitCalendarId();
+            if (calendarId === null) {
+              const accepted = await requestCreateCalendarConfirm();
+              if (!accepted) return;
+            }
+            const anchor = new Date(`${values.date}T00:00:00`);
+            const recurrence = values.is_recurring
+              ? yearlyRecurrenceFromMonthDay(anchor.getMonth(), anchor.getDate())
+              : undefined;
+            const { summary, description } = buildDateCalendarCopy({
+              item: merged,
+              t,
+              locale,
+            });
+            const body = buildAllDayNskEventInput({
+              summary,
+              description,
+              startDateYmd: startYmd,
+              reminderEmailMinutes: calendar.reminderMinutes,
+              recurrence,
+            });
+            const created = await nskCalendarCreateEvent(body);
+            if (created) {
+              merged = {
+                ...merged,
+                google_calendar_event_id: created.id,
+                google_calendar_email_reminder_minutes: calendar.reminderMinutes,
+              };
+            } else {
+              toast.error(t.googleCalendar.syncError);
+            }
+          }
+        }
+      }
+
+      const nextItems = store.items.map((item) => (item.id === editingItem.id ? merged : item));
       updateStore(nextItems);
       appCrudToast(t, "dates", "updated");
     }
@@ -216,8 +384,12 @@ export function DatesAppPage() {
     setItemPendingDelete(item);
   }
 
-  function handleConfirmDelete() {
+  async function handleConfirmDelete() {
     if (!itemPendingDelete) return;
+    const ev = itemPendingDelete.google_calendar_event_id;
+    if (ev) {
+      await nskCalendarDeleteEvent(ev);
+    }
     updateStore(store.items.filter((entry) => entry.id !== itemPendingDelete.id));
     appCrudToast(t, "dates", "deleted");
     setItemPendingDelete(null);
@@ -241,6 +413,10 @@ export function DatesAppPage() {
     }
   }
 
+  const deleteDateDescription = itemPendingDelete?.google_calendar_event_id
+    ? `${t.dates.deleteDialogDescription}\n\n${t.googleCalendar.deleteItemAlsoDeletesEvent}`
+    : t.dates.deleteDialogDescription;
+
   return (
     <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
       <ConfirmDeleteAlertDialog
@@ -249,12 +425,40 @@ export function DatesAppPage() {
           if (!open) setItemPendingDelete(null);
         }}
         title={t.dates.deleteDialogTitle}
-        description={t.dates.deleteDialogDescription}
+        description={deleteDateDescription}
         itemLabel={itemPendingDelete?.label ?? null}
         cancelLabel={t.dates.deleteDialogCancel}
         confirmLabel={t.dates.deleteDialogConfirm}
         onConfirm={handleConfirmDelete}
       />
+      <AlertDialog
+        open={createCalendarConfirmOpen}
+        onOpenChange={(open) => {
+          if (!open) resolveCreateCalendarConfirm(false);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.googleCalendar.confirmCreateCalendarTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t.googleCalendar.confirmCreateCalendarIfMissing}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => resolveCreateCalendarConfirm(false)}>
+              {t.googleCalendar.confirmCreateCalendarCancel}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                resolveCreateCalendarConfirm(true);
+              }}
+            >
+              {t.googleCalendar.confirmCreateCalendarConfirm}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-row">
         <FilterSidebarDesktopAside<DateFilterId>
@@ -374,6 +578,7 @@ export function DatesAppPage() {
           setEditingItem(null);
         }}
         onSubmit={handleCreateOrUpdate}
+        onDisconnectGoogleCalendar={handleDisconnectDateCalendar}
       />
     </div>
   );

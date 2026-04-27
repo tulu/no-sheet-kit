@@ -21,6 +21,8 @@ export type NSKDomainItem = {
   auto_renew: boolean;
   price: string;
   notes?: string;
+  google_calendar_event_id?: string;
+  google_calendar_email_reminder_minutes?: number;
   created_at: string;
   updated_at: string;
 };

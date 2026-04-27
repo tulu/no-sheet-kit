@@ -54,7 +54,7 @@ export function AppsSettingsDataManagementSection() {
   const [pendingRestoreFile, setPendingRestoreFile] = useState<File | null>(null);
   const [hasLocalData, setHasLocalData] = useState(false);
   const [hasDriveBackup, setHasDriveBackup] = useState(false);
-  const [checkingDriveBackup, setCheckingDriveBackup] = useState(false);
+  const [checkingDriveBackup, setCheckingDriveBackup] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -87,6 +87,11 @@ export function AppsSettingsDataManagementSection() {
       setCheckingDriveBackup(false);
     }
   }, [isGoogle]);
+
+  useEffect(() => {
+    if (!session) return;
+    if (session.kind !== "google") setCheckingDriveBackup(false);
+  }, [session]);
 
   useEffect(() => {
     queueMicrotask(() => {

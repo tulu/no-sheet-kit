@@ -13,7 +13,13 @@ import {
 } from "@/components/ui/sheet";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { NaturalDateField } from "@/components/common/natural-date-field";
+import {
+  GoogleCalendarEventOptions,
+  type GoogleCalendarSubmitPrefs,
+} from "@/components/common/google-calendar-event-options";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { useAppsSessionKind } from "@/lib/storage/session-storage-context";
+import { defaultReminderMinutesForAppKind } from "@/lib/google/calendar-constants";
 import type { NSKLinkItem } from "@/lib/links/schema";
 import { parseTagsInput, tagsInputValue, toValidHttpUrl } from "@/lib/links/links-helpers";
 
@@ -34,7 +40,8 @@ type AddLinkSheetProps = {
   open: boolean;
   editingItem: NSKLinkItem | null;
   onClose: () => void;
-  onSubmit: (values: LinkFormValues) => void;
+  onSubmit: (values: LinkFormValues, calendar: GoogleCalendarSubmitPrefs) => void | Promise<void>;
+  onDisconnectGoogleCalendar?: () => void | Promise<void>;
 };
 
 type FormState = {
@@ -51,17 +58,31 @@ const DEFAULT_FORM: FormState = {
   reviewDueDate: "",
 };
 
-export function AddLinkSheet({ open, editingItem, onClose, onSubmit }: AddLinkSheetProps) {
+export function AddLinkSheet({
+  open,
+  editingItem,
+  onClose,
+  onSubmit,
+  onDisconnectGoogleCalendar,
+}: AddLinkSheetProps) {
   const { t, locale } = useI18n();
+  const sessionKind = useAppsSessionKind();
   const baseId = useId();
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [addToCalendar, setAddToCalendar] = useState(false);
+  const [reminderMinutes, setReminderMinutes] = useState(() =>
+    defaultReminderMinutesForAppKind("links")
+  );
 
   useEffect(() => {
     if (!open) return;
     const id = requestAnimationFrame(() => {
       if (!editingItem) {
         setForm(DEFAULT_FORM);
+        setAddToCalendar(false);
+        setReminderMinutes(defaultReminderMinutesForAppKind("links"));
       } else {
         setForm({
           url: editingItem.url,
@@ -69,26 +90,48 @@ export function AddLinkSheet({ open, editingItem, onClose, onSubmit }: AddLinkSh
           reviewed: editingItem.reviewed,
           reviewDueDate: editingItem.review_due_date ?? "",
         });
+        setAddToCalendar(Boolean(editingItem.google_calendar_event_id));
+        setReminderMinutes(
+          editingItem.google_calendar_email_reminder_minutes ??
+            defaultReminderMinutesForAppKind("links")
+        );
       }
       setError(null);
     });
     return () => cancelAnimationFrame(id);
   }, [open, editingItem]);
 
-  function handleSubmit(e: React.FormEvent) {
+  const showGoogleCalendar = sessionKind === "google" && Boolean(form.reviewDueDate.trim());
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (isSaving) return;
     const parsed = toValidHttpUrl(form.url);
     if (!parsed) {
       setError(t.links.errors.urlInvalid);
       return;
     }
     setError(null);
-    onSubmit({
-      url: parsed.toString(),
-      manualTags: parseTagsInput(form.tags),
-      reviewed: form.reviewed,
-      reviewDueDate: form.reviewDueDate || undefined,
-    });
+    const due = form.reviewDueDate.trim() || undefined;
+    const linked = Boolean(editingItem?.google_calendar_event_id);
+    const calendar: GoogleCalendarSubmitPrefs = {
+      enabled: sessionKind === "google" && Boolean(due) && (linked || addToCalendar),
+      reminderMinutes,
+    };
+    setIsSaving(true);
+    try {
+      await onSubmit(
+        {
+          url: parsed.toString(),
+          manualTags: parseTagsInput(form.tags),
+          reviewed: form.reviewed,
+          reviewDueDate: due,
+        },
+        calendar
+      );
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   const title = editingItem ? t.links.editLink : t.links.addLink;
@@ -152,11 +195,27 @@ export function AddLinkSheet({ open, editingItem, onClose, onSubmit }: AddLinkSh
             </div>
           </Field>
 
+          <GoogleCalendarEventOptions
+            visible={showGoogleCalendar}
+            linkedEventId={editingItem?.google_calendar_event_id}
+            storedReminderMinutes={editingItem?.google_calendar_email_reminder_minutes}
+            addToCalendar={addToCalendar}
+            onAddToCalendarChange={setAddToCalendar}
+            reminderMinutes={reminderMinutes}
+            onReminderMinutesChange={setReminderMinutes}
+            onRemoveFromCalendar={async () => {
+              await onDisconnectGoogleCalendar?.();
+            }}
+            t={t}
+          />
+
           <SheetFooter className="mt-auto flex-row justify-end gap-2 border-t border-border pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
               {t.links.cancel}
             </Button>
-            <Button type="submit">{editingItem ? t.links.save : t.links.addNew}</Button>
+            <Button type="submit" disabled={isSaving}>
+              {editingItem ? t.links.save : t.links.addNew}
+            </Button>
           </SheetFooter>
         </form>
       </SheetContent>
