@@ -75,6 +75,15 @@ To enable **Continue with Google**, create an OAuth 2.0 **Web application** clie
 
 Authorized redirect URI in Google Cloud must match exactly: `{NEXT_PUBLIC_APP_URL}` in production, or your dev origin when testing locally without that variable.
 
+**OAuth scopes requested by NoSheetKit:**
+
+- `openid`, `email`, `profile`
+- `https://www.googleapis.com/auth/drive.appdata`
+- `https://www.googleapis.com/auth/calendar.app.created`
+- `https://www.googleapis.com/auth/calendar.calendarlist.readonly`
+
+Calendar uses `calendar.app.created` for event/calendar operations and `calendar.calendarlist.readonly` only to detect whether the dedicated NoSheetKit calendar already exists.
+
 **Behaviour:** After Google login, the app pulls your latest backup ZIP from Drive **app data** (hidden app folder) when present and restores it into browser storage for that Google account. **Save** in the apps header uploads a fresh ZIP and updates each app’s `last_google_sync_at`. Sign-out warns if changes were not saved yet. OAuth **refresh** tokens are kept in an **httpOnly** encrypted cookie; profile metadata for each Google `sub` can be cached in `localStorage` under `nsk_google_profile_*`.
 
 ### Optional analytics
