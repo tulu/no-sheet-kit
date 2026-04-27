@@ -11,6 +11,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { NaturalDateField } from "@/components/common/natural-date-field";
 import { useI18n } from "@/components/providers/i18n-provider";
 import type { NSKLoanItem } from "@/lib/loans/schema";
 import {
@@ -160,22 +161,19 @@ export function LoanPaymentSheet({ open, loan, onClose, onSubmit }: LoanPaymentS
             {error ? <FieldDescription className="text-destructive">{error}</FieldDescription> : null}
           </Field>
 
-          <Field>
-            <FieldLabel htmlFor={`${baseId}-date`}>
-              {t.loans.paymentDate}
-              {REQUIRED_MARK}
-            </FieldLabel>
-            <Input
-              id={`${baseId}-date`}
-              type="date"
-              value={date}
-              onChange={(e) => {
-                setDate(e.target.value);
-                setError(null);
-              }}
-            />
-            <FieldDescription>{t.loans.paymentDateHint}</FieldDescription>
-          </Field>
+          <NaturalDateField
+            id={`${baseId}-date`}
+            locale={locale}
+            label={t.loans.paymentDate}
+            hint={t.loans.fields.dateHint}
+            placeholder={t.loans.fields.dateNaturalPlaceholder}
+            valueIso={date}
+            onChangeIso={(iso) => {
+              setDate(iso);
+              setError(null);
+            }}
+            required
+          />
 
           <SheetFooter className="mt-auto flex-row justify-end gap-2 border-t border-border pt-4">
             <Button type="button" variant="outline" onClick={onClose}>

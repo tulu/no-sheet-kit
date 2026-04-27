@@ -12,6 +12,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { NaturalDateField } from "@/components/common/natural-date-field";
 import { useI18n } from "@/components/providers/i18n-provider";
 import type { LoanDirection, NSKLoanItem } from "@/lib/loans/schema";
 import { parseAmount } from "@/lib/loans/loans-helpers";
@@ -68,7 +69,7 @@ function itemToForm(item: NSKLoanItem): LoanFormValues {
 }
 
 export function AddLoanSheet({ open, editingItem, onClose, onSubmit }: AddLoanSheetProps) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const baseId = useId();
   const [form, setForm] = useState<LoanFormValues>(EMPTY_FORM);
   const [errors, setErrors] = useState<Partial<Record<keyof LoanFormValues, string>>>({});
@@ -198,21 +199,21 @@ export function AddLoanSheet({ open, editingItem, onClose, onSubmit }: AddLoanSh
             ) : null}
           </Field>
 
-          <Field data-invalid={errors.date ? true : undefined}>
-            <FieldLabel htmlFor={`${baseId}-loan-date`}>
-              {t.loans.fields.date}
-              {REQUIRED_MARK}
-            </FieldLabel>
-            <Input
+          <div>
+            <NaturalDateField
               id={`${baseId}-loan-date`}
-              type="date"
-              value={form.date}
-              onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+              locale={locale}
+              label={t.loans.fields.date}
+              hint={t.loans.fields.dateHint}
+              placeholder={t.loans.fields.dateNaturalPlaceholder}
+              valueIso={form.date}
+              onChangeIso={(iso) => setForm((f) => ({ ...f, date: iso }))}
+              required
             />
             {errors.date ? (
-              <FieldDescription className="text-destructive">{errors.date}</FieldDescription>
+              <p className="mt-1.5 text-sm text-destructive">{errors.date}</p>
             ) : null}
-          </Field>
+          </div>
 
           <Field>
             <FieldLabel htmlFor={`${baseId}-notes`}>{t.loans.fields.notes}</FieldLabel>

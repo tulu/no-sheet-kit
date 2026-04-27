@@ -22,7 +22,7 @@ NoSheetKit is a **personal kit of mini-apps**. Each app does one job, with a con
 
 ## What’s in the kit
 
-Open the hub at **`/apps`** and pick a tool. Each app keeps its own data in the browser and follows the same design language so switching between them feels familiar.
+Open the hub at **`/apps`** and pick a tool. Each app keeps its own data in the browser and follows the same design language so switching between them feels familiar. The hub header also shows a **local “upcoming” summary** (bell icon): items in the next **30 calendar days** drawn from your storage—**Dates** next occurrences, **Domains** renewal dates, and open **Tasks** with due dates—without calling a backend.
 
 | App | What it’s for |
 | --- | --- |
@@ -76,6 +76,10 @@ To enable **Continue with Google**, create an OAuth 2.0 **Web application** clie
 Authorized redirect URI in Google Cloud must match exactly: `{NEXT_PUBLIC_APP_URL}` in production, or your dev origin when testing locally without that variable.
 
 **Behaviour:** After Google login, the app pulls your latest backup ZIP from Drive **app data** (hidden app folder) when present and restores it into browser storage for that Google account. **Save** in the apps header uploads a fresh ZIP and updates each app’s `last_google_sync_at`. Sign-out warns if changes were not saved yet. OAuth **refresh** tokens are kept in an **httpOnly** encrypted cookie; profile metadata for each Google `sub` can be cached in `localStorage` under `nsk_google_profile_*`.
+
+### Optional analytics
+
+If you set `NEXT_PUBLIC_GA_MEASUREMENT_ID` (a Google Analytics 4 measurement ID), the app can load GA **only after** the visitor accepts the in-app consent banner. If the variable is unset, no analytics script is loaded.
 
 ## Contributing
 

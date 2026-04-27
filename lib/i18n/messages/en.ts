@@ -230,6 +230,14 @@ export const enMessages = {
       description:
         "Data is only on this device. Others who use this computer may see it, and it can be lost if you do not back it up.",
     },
+    notifications: {
+      bellAria: "Upcoming in the next 30 days",
+      menuTitle: "Next 30 days",
+      empty: "Nothing coming up in the next 30 days.",
+      kindDomainsExpiring: "Expiring soon",
+      kindTaskDue: "Due date",
+      kindLinkReview: "Review due",
+    },
     logoutDialog: {
       title: "Sign out",
       description: "Choose what to do with data stored in this browser for your guest session.",
@@ -495,8 +503,6 @@ export const enMessages = {
     paymentAddTitle: "Add payment",
     paymentAmount: "Amount",
     paymentDate: "Date",
-    paymentDateHint: "Press ↓ to open the calendar.",
-    paymentDatePlaceholder: "Pick a date",
     paymentSubmitAdd: "Add payment",
     paymentSettleFullLabel: "Pay full remaining balance",
     paymentListSheetTitle: "Payments",
@@ -548,6 +554,8 @@ export const enMessages = {
       amount: "Amount",
       amountPlaceholder: "e.g. 500",
       date: "Date",
+      dateHint: "Press ↓ to open the calendar.",
+      dateNaturalPlaceholder: "Tomorrow or next week",
       notes: "Notes (optional)",
       notesPlaceholder: "Terms, reminders…",
     },

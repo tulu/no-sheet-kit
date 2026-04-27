@@ -12,6 +12,7 @@ import {
 } from "@/lib/loans/loans-helpers";
 import { getIntlLocaleTag } from "@/lib/i18n/locale-display";
 import { ConfirmDeleteAlertDialog } from "@/components/common/confirm-delete-alert-dialog";
+import { NaturalDateField } from "@/components/common/natural-date-field";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -300,19 +301,19 @@ export function LoanPaymentsSheet({ open, loan, onClose, onUpdatePayments }: Loa
                 onSubmit={editingId ? handleSaveEdit : handleSubmitNew}
                 className="flex flex-col gap-3"
               >
-                <Field data-invalid={formError ? true : undefined}>
-                  <FieldLabel htmlFor={`${baseId}-date`}>{t.loans.paymentDate}</FieldLabel>
-                  <Input
-                    id={`${baseId}-date`}
-                    type="date"
-                    value={draftDate}
-                    onChange={(e) => {
-                      setDraftDate(e.target.value);
-                      setFormError(null);
-                    }}
-                    disabled={!editingId && !canAddMore}
-                  />
-                </Field>
+                <NaturalDateField
+                  id={`${baseId}-date`}
+                  locale={locale}
+                  label={t.loans.paymentDate}
+                  hint={t.loans.fields.dateHint}
+                  placeholder={t.loans.fields.dateNaturalPlaceholder}
+                  valueIso={draftDate}
+                  onChangeIso={(iso) => {
+                    setDraftDate(iso);
+                    setFormError(null);
+                  }}
+                  disabled={!editingId && !canAddMore}
+                />
                 <Field data-invalid={formError ? true : undefined}>
                   <FieldLabel htmlFor={`${baseId}-amount`}>{t.loans.paymentAmount}</FieldLabel>
                   <Input

@@ -1,4 +1,5 @@
 import JSZip from "jszip";
+import { emitListAppDataUpdated } from "@/lib/storage/list-app-data-updated";
 import {
   buildNskListAppStorageKey,
   GUEST_BACKUP_FILENAME_TO_SLUG,
@@ -132,6 +133,8 @@ export async function restoreSessionGuestDataFromZipFile(
   if (touched.size === 0) {
     throw new GuestBackupRestoreError("No recognized backup JSON files in ZIP.", "NO_FILES");
   }
+
+  emitListAppDataUpdated(sessionSuffix);
 
   return touched.size;
 }
