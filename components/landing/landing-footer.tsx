@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { useLegalPageHref } from "@/components/legal/use-legal-page-href";
 import { useI18n } from "@/components/providers/i18n-provider";
-
 function LandingLegalLinks() {
   const { t } = useI18n();
   const privacyHref = useLegalPageHref("/privacy");
@@ -45,7 +44,7 @@ export function LandingFooter() {
           href="/docs"
           className="text-sm text-muted-foreground no-underline transition-colors duration-150 hover:text-foreground"
         >
-          Docs
+          {t.common.docs}
         </Link>
         <a
           href="https://github.com/tulu/no-sheet-kit"

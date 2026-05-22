@@ -1,52 +1,47 @@
 import type { Metadata } from "next";
 import { LandingPage } from "@/components/landing/landing-page";
 import { HomeJsonLd } from "@/components/seo/home-json-ld";
+import { buildRichPageMetadata } from "@/lib/seo/build-page-metadata";
 import { seoCopy } from "@/lib/seo/copy";
-import { getMetadataBase, siteLogoPath, siteName } from "@/lib/seo/site";
+import { shouldRenderSeoJsonLd } from "@/lib/seo/site-indexing";
+import { siteLogoPngPath } from "@/lib/seo/site";
 
-const base = getMetadataBase();
+const homeKeywords = [
+  "NoSheetKit",
+  "local-first",
+  "privacy",
+  "birthday reminder",
+  "loan tracker",
+  "domain portfolio manager",
+  "bookmark manager",
+  "task tracker",
+  "collection tracker",
+  "browser mini-apps",
+  "Google Drive backup",
+  "Google Calendar",
+  "open source",
+];
+
+const richHome = buildRichPageMetadata({
+  title: seoCopy.home.title.replace(/^NoSheetKit — /, ""),
+  description: seoCopy.home.description,
+  pathname: "/",
+  keywords: homeKeywords,
+  ogImagePath: siteLogoPngPath,
+  ogImageAlt: "NoSheetKit",
+});
 
 export const metadata: Metadata = {
+  ...richHome,
   title: {
     absolute: seoCopy.home.title,
-  },
-  description: seoCopy.home.description,
-  keywords: [
-    "NoSheetKit",
-    "local-first",
-    "privacy",
-    "productivity",
-    "browser",
-    "mini-apps",
-    "Google Drive backup",
-    "Google Calendar",
-    "documentation",
-    "open source",
-  ],
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: base.href,
-    siteName,
-    title: seoCopy.home.title,
-    description: seoCopy.home.description,
-    images: [{ url: siteLogoPath, alt: `${siteName} logo` }],
-  },
-  twitter: {
-    card: "summary",
-    title: seoCopy.home.title,
-    description: seoCopy.home.description,
-    images: [siteLogoPath],
   },
 };
 
 export default function Home() {
   return (
     <>
-      <HomeJsonLd />
+      {shouldRenderSeoJsonLd() ? <HomeJsonLd /> : null}
       <LandingPage />
     </>
   );

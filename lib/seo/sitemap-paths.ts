@@ -1,7 +1,8 @@
 import { APP_ORDER } from "@/lib/apps/catalog";
+import { getAllSolutionPathnames } from "@/lib/seo/app-solutions";
 
 /**
- * Public URLs included in `sitemap.xml` (indexable marketing + docs + legal + login).
+ * Public URLs included in `sitemap.xml` when indexing is enabled.
  * Intentionally excludes `/apps` and API routes.
  */
 export const PUBLIC_SITEMAP_PATHS: string[] = [
@@ -16,4 +17,5 @@ export const PUBLIC_SITEMAP_PATHS: string[] = [
   "/docs/data/google-calendar",
   "/docs/data/import-export",
   "/docs/data/google-drive",
+  ...getAllSolutionPathnames(),
 ];

@@ -1,43 +1,82 @@
 import type { Metadata } from "next";
 import { seoCopy } from "@/lib/seo/copy";
-import { getMetadataBase, siteLogoPath, siteName } from "@/lib/seo/site";
+import { getSiteRobotsMetadata } from "@/lib/seo/site-indexing";
+import { getMetadataBase, siteLogoPath, siteLogoPngPath, siteName } from "@/lib/seo/site";
 
 type SeoKey = keyof typeof seoCopy;
+
+export type RichPageMetadataInput = {
+  title: string;
+  description: string;
+  pathname: string;
+  keywords?: string[];
+  ogImagePath?: string;
+  ogImageAlt?: string;
+};
 
 function fullTitle(shortTitle: string) {
   return `${shortTitle} | ${siteName}`;
 }
 
 /** Absolute page URL for Open Graph (and similar), using the configured site origin. */
-function absolutePageUrl(pathname: string): string {
+export function absolutePageUrl(pathname: string): string {
   const origin = getMetadataBase().origin.replace(/\/$/, "");
   if (pathname === "/") return `${origin}/`;
   const path = pathname.startsWith("/") ? pathname : `/${pathname}`;
   return `${origin}${path}`;
 }
 
-/** Per-route SEO: short `title` uses root `title.template`; OG/Twitter get the full branded title. */
-export function buildPageMetadata(key: SeoKey, pathname: string): Metadata {
-  const { title, description } = seoCopy[key];
+function absoluteAssetUrl(assetPath: string): string {
+  const origin = getMetadataBase().origin.replace(/\/$/, "");
+  const path = assetPath.startsWith("/") ? assetPath : `/${assetPath}`;
+  return `${origin}${path}`;
+}
+
+export function buildRichPageMetadata(input: RichPageMetadataInput): Metadata {
+  const { title, description, pathname, keywords, ogImagePath, ogImageAlt } = input;
   const ogUrl = absolutePageUrl(pathname);
+  const imagePath = ogImagePath ?? siteLogoPngPath;
+  const imageUrl = absoluteAssetUrl(imagePath);
+  const brandedTitle = fullTitle(title);
+
   return {
     title,
     description,
+    ...(keywords?.length ? { keywords } : {}),
     alternates: {
-      canonical: pathname,
+      canonical: ogUrl,
     },
+    robots: getSiteRobotsMetadata(),
     openGraph: {
       type: "website",
-      title: fullTitle(title),
+      locale: "en_US",
+      siteName,
+      title: brandedTitle,
       description,
       url: ogUrl,
-      images: [{ url: siteLogoPath, alt: `${siteName} logo` }],
+      images: [
+        {
+          url: imageUrl,
+          alt: ogImageAlt ?? `${siteName}`,
+        },
+      ],
     },
     twitter: {
-      card: "summary",
-      title: fullTitle(title),
+      card: "summary_large_image",
+      title: brandedTitle,
       description,
-      images: [siteLogoPath],
+      images: [imageUrl],
     },
   };
+}
+
+/** Per-route SEO from `seoCopy` keys. */
+export function buildPageMetadata(key: SeoKey, pathname: string, ogImagePath?: string): Metadata {
+  const { title, description } = seoCopy[key];
+  return buildRichPageMetadata({
+    title,
+    description,
+    pathname,
+    ogImagePath,
+  });
 }

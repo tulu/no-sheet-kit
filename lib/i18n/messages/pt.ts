@@ -1,3 +1,5 @@
+import { solutionsMessagesPt } from "@/lib/i18n/messages/solutions-content";
+
 export const ptMessages = {
   common: {
     localeLabel: "Idioma",
@@ -9,6 +11,7 @@ export const ptMessages = {
     backToNoSheetKit: "← Voltar para NoSheetKit",
     back: "← Voltar",
     home: "Home",
+    docs: "Documentação",
     getStarted: "Começar",
     privacy: "Privacidade",
     terms: "Termos",
@@ -224,6 +227,7 @@ export const ptMessages = {
     },
     footer: {
       copyright: "© 2026 NoSheetKit",
+      solutionsTitle: "Soluções",
     },
   },
   login: {
@@ -972,6 +976,7 @@ export const ptMessages = {
       actions: "Ações",
     },
   },
+  solutions: solutionsMessagesPt,
   docs: {
     brandTitle: "NSKDocs",
     navTitle: "Documentação",
