@@ -1,3 +1,5 @@
+import { solutionsMessagesEn } from "@/lib/i18n/messages/solutions-content";
+
 export const enMessages = {
   common: {
     localeLabel: "Language",
@@ -9,6 +11,7 @@ export const enMessages = {
     backToNoSheetKit: "← Back to NoSheetKit",
     back: "← Back",
     home: "Home",
+    docs: "Docs",
     getStarted: "Get started",
     privacy: "Privacy",
     terms: "Terms",
@@ -224,6 +227,7 @@ export const enMessages = {
     },
     footer: {
       copyright: "© 2026 NoSheetKit",
+      solutionsTitle: "Solutions",
     },
   },
   login: {
@@ -969,6 +973,7 @@ export const enMessages = {
       actions: "Actions",
     },
   },
+  solutions: solutionsMessagesEn,
   docs: {
     brandTitle: "NSKDocs",
     navTitle: "Documentation",

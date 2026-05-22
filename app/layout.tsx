@@ -8,6 +8,7 @@ import { AnalyticsConsentProvider } from "@/components/providers/analytics-conse
 import { Toaster } from "@/components/ui/sonner";
 import { seoCopy } from "@/lib/seo/copy";
 import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, normalizeLocale } from "@/lib/i18n/types";
+import { getSiteRobotsMetadata } from "@/lib/seo/site-indexing";
 import { getMetadataBase, siteName } from "@/lib/seo/site";
 const instrumentSerif = Instrument_Serif({
   variable: "--font-display",
@@ -42,10 +43,7 @@ export const metadata: Metadata = {
   description: seoCopy.home.description,
   applicationName: siteName,
   referrer: "origin-when-cross-origin",
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: getSiteRobotsMetadata(),
   openGraph: {
     type: "website",
     siteName,

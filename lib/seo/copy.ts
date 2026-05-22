@@ -1,122 +1,130 @@
-/** English SEO copy (UI i18n stays client-side; crawlers use these defaults). */
+/** English SEO meta copy. Descriptions ~90–130 chars, intent-first—no Google/sync filler. */
 export const seoCopy = {
   home: {
     title: "NoSheetKit — Simple, private mini-apps for everyday tracking",
     description:
-      "NoSheetKit is a browser-first personal kit: loans, dates, links, domains, tasks, and collections—without spreadsheets or a hosted database. Stay local by default, or sign in with Google for optional Drive backups and Calendar reminders.",
+      "Private browser mini-apps: birthday reminders, loan tracker, domain portfolio, bookmarks, tasks, and collections—no spreadsheet.",
+  },
+  solutionDates: {
+    title: "Birthday Reminder — private browser app",
+    description:
+      "Never miss a birthday or anniversary. Reminder app with upcoming dates, list, grid, and month calendar views.",
+  },
+  solutionDomains: {
+    title: "Domain Portfolio Manager — renewal tracker",
+    description:
+      "Domain portfolio manager: track registrars, renewal dates, expiry, and notes for every domain you own.",
+  },
+  solutionLoans: {
+    title: "Loan Tracker — lend and borrow money",
+    description:
+      "Loan tracker for money you lend and borrow—running balances, partial repayments, due dates, and payment history.",
+  },
+  solutionLinks: {
+    title: "Bookmark Manager — tags and link metadata",
+    description:
+      "Bookmark manager to save URLs with tags, titles, and previews. Find important links fast—no clutter.",
+  },
+  solutionTasks: {
+    title: "Simple Task Tracker — Kanban in your browser",
+    description:
+      "Simple task tracker with Kanban and list views, spaces, due dates, and comments—for personal to-dos.",
+  },
+  solutionCollections: {
+    title: "Collection Tracker — own, lent, borrowed, wanted",
+    description:
+      "Collection tracker for games, books, gear, and more—see what you own, lent, borrowed, or still want.",
   },
   apps: {
     title: "Apps",
-    description:
-      "Open the NoSheetKit launcher and choose a mini-app. Data stays in your browser by default; optional Google Drive and Calendar where supported.",
+    description: "Open NoSheetKit and launch a mini-app—loans, dates, domains, links, tasks, or collections.",
   },
   dates: {
     title: "NSKDates",
-    description:
-      "Remember birthdays, anniversaries, and milestones in your browser. Optional Google Calendar reminders by email after you sign in.",
+    description: "Birthday and anniversary reminder with upcoming dates plus list, grid, and calendar views.",
   },
   domains: {
     title: "NSKDomains",
-    description:
-      "Track domain names, registrars, renewal dates, and notes in one private portfolio view stored locally in your browser.",
+    description: "Domain portfolio: registrars, renewal and expiry dates, and notes for all your domain names.",
   },
   loans: {
     title: "NSKLoans",
-    description:
-      "Track money you lent and money you borrowed, with partial payments and balances—stored privately in your browser until you export or sync.",
+    description: "Track loans you give and receive—balances, partial payments, due dates, and payoff history.",
   },
   links: {
     title: "NSKLinks",
-    description:
-      "Save links with automatic metadata extraction, tags, and review status. Private by default in your browser.",
+    description: "Save links with tags and metadata. Search and filter your personal bookmark library.",
   },
   tasks: {
     title: "NSKTasks",
-    description:
-      "Organize tasks in spaces with a Kanban board, due dates, and comments. Local-only storage in your browser.",
+    description: "Kanban and list task boards with spaces, due dates, comments, and archive when done.",
   },
   collections: {
     title: "NSKCollections",
-    description:
-      "Track things you own, lent, borrowed, or want across named collections with a simple table—local-only in your browser.",
+    description: "Named collections with owned, lent, borrowed, or wanted status—list or grid view.",
   },
   settings: {
     title: "Settings",
-    description: "Language, appearance, account, storage usage, and data management for NoSheetKit while you use the apps.",
+    description: "Language, theme, account, storage, and backup settings for your NoSheetKit apps.",
   },
   login: {
     title: "Get started with NoSheetKit",
-    description:
-      "Sign in with Google for optional Drive backups and Calendar, or continue as a guest with local storage only—no separate account required.",
+    description: "Start using NoSheetKit in your browser—guest mode keeps your data on your device.",
   },
   privacy: {
     title: "Privacy Policy — NoSheetKit",
-    description:
-      "How NoSheetKit handles data: local browser storage, guest and Google sessions, optional Google Drive and Calendar scopes, and what the project does not collect on its own servers.",
+    description: "How NoSheetKit handles your data: local browser storage and what the project does not collect.",
   },
   terms: {
     title: "Terms of Service — NoSheetKit",
-    description:
-      "Terms of use for the NoSheetKit open-source toolkit: acceptable use, software disclaimer, third-party services (such as Google), and limitations of liability.",
+    description: "Terms of use for NoSheetKit: acceptable use, disclaimers, and limitation of liability.",
   },
   docsWelcomeWhy: {
     title: "Documentation — Why NoSheetKit",
-    description:
-      "Why NoSheetKit exists: local-first browser mini-apps, optional Google Drive and Calendar, and a modular toolkit without spreadsheets or subscription lock-in.",
+    description: "Why NoSheetKit: focused browser mini-apps for everyday tracking—without spreadsheets.",
   },
   docsWelcomeFeatures: {
     title: "Documentation — Key features",
-    description:
-      "Key features across NoSheetKit: browser-first mini-apps, local storage, optional Google sync, shared UI patterns, and guest or Google sessions.",
+    description: "Features of the kit: six mini-apps, local storage, shared UI, and one launcher.",
   },
   docsWelcomeQuickstart: {
     title: "Documentation — Quickstart",
-    description:
-      "Start with NoSheetKit as a guest using local storage, or sign in with Google when you want Drive backups and Calendar integration where an app supports it.",
+    description: "How to open the launcher, add your first items, and use each mini-app.",
   },
   docsDataGoogleCalendar: {
     title: "Documentation — Google Calendar",
-    description:
-      "How NoSheetKit uses Google Calendar after sign-in: optional reminders for dates, loans, domains, and similar—using email notifications from your own Google account.",
+    description: "How date-based apps can mirror reminders into Google Calendar after you connect Google.",
   },
   docsDataImportExport: {
     title: "Documentation — Import & export",
-    description:
-      "Download and restore NoSheetKit local backups as `.zip` files from Apps → Settings → Data management. File backup stays on your device unless you separately use Drive.",
+    description: "Export and restore NoSheetKit data as `.zip` backups from Settings.",
   },
   docsDataGoogleDrive: {
     title: "Documentation — Google Drive sync",
-    description:
-      "Save packaged backups to your Google Drive app-data folder, restore from Settings after sign-in, and manage the remote copy alongside local `.zip` exports.",
+    description: "How to save and restore packaged backups to your Google Drive app folder.",
   },
   docsApplicationCollections: {
-    title: "Documentation — NSKCollections",
-    description:
-      "NSKCollections: track things you own, lent, borrowed, or want across named collections with a simple table and local-only browser storage.",
+    title: "Collection Tracker Documentation — NSKCollections",
+    description: "Docs for tracking collections—owned, lent, borrowed, and wanted items in one table.",
   },
   docsApplicationDates: {
-    title: "Documentation — NSKDates",
-    description:
-      "NSKDates: remember birthdays, anniversaries, and milestones with local storage and optional Google Calendar reminders.",
+    title: "Birthday Reminder Documentation — NSKDates",
+    description: "Docs for birthday and anniversary reminders—list, grid, calendar, and upcoming view.",
   },
   docsApplicationDomains: {
-    title: "Documentation — NSKDomains",
-    description:
-      "NSKDomains: track domain names, registrars, renewal dates, and notes in one private portfolio view.",
+    title: "Domain Portfolio Documentation — NSKDomains",
+    description: "Docs for your domain portfolio—registrars, renewals, expiry dates, and notes.",
   },
   docsApplicationLinks: {
-    title: "Documentation — NSKLinks",
-    description:
-      "NSKLinks: save links with automatic metadata extraction, tags, and review status—private by default.",
+    title: "Bookmark Manager Documentation — NSKLinks",
+    description: "Docs for saving links with tags, metadata, and filters to revisit later.",
   },
   docsApplicationLoans: {
-    title: "Documentation — NSKLoans",
-    description:
-      "NSKLoans: track money you lent and borrowed, partial payments, and balances stored privately in your browser.",
+    title: "Loan Tracker Documentation — NSKLoans",
+    description: "Docs for tracking money lent and borrowed, repayments, balances, and due dates.",
   },
   docsApplicationTasks: {
-    title: "Documentation — NSKTasks",
-    description:
-      "NSKTasks: organize tasks in spaces with a Kanban board, due dates, comments, and local-only storage.",
+    title: "Task Tracker Documentation — NSKTasks",
+    description: "Docs for spaces, Kanban and list boards, due dates, and task comments.",
   },
 } as const;
