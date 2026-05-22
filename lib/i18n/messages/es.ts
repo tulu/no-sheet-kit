@@ -1,3 +1,5 @@
+import { solutionsMessagesEs } from "@/lib/i18n/messages/solutions-content";
+
 export const esMessages = {
   common: {
     localeLabel: "Idioma",
@@ -9,6 +11,7 @@ export const esMessages = {
     backToNoSheetKit: "← Volver a NoSheetKit",
     back: "← Volver",
     home: "Inicio",
+    docs: "Documentación",
     getStarted: "Comenzar",
     privacy: "Privacidad",
     terms: "Términos",
@@ -224,6 +227,7 @@ export const esMessages = {
     },
     footer: {
       copyright: "© 2026 NoSheetKit",
+      solutionsTitle: "Soluciones",
     },
   },
   login: {
@@ -973,6 +977,7 @@ export const esMessages = {
       actions: "Acciones",
     },
   },
+  solutions: solutionsMessagesEs,
   docs: {
     brandTitle: "NSKDocs",
     navTitle: "Documentación",

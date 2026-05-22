@@ -74,6 +74,9 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
     setLocale: (next) => {
       setLocaleState(next);
       persistLocaleCookie(next);
+      if (typeof document !== "undefined" && document.documentElement.lang !== next) {
+        document.documentElement.lang = next;
+      }
     },
     t: messagesByLocale[locale],
   };

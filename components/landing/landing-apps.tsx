@@ -5,6 +5,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { getLauncherApps } from "@/components/apps/launcher-apps";
+import { getAppHref } from "@/lib/apps/catalog";
+import { getSolutionHref } from "@/lib/seo/site-indexing";
 
 const ACCENT = "#519186";
 
@@ -75,11 +77,14 @@ export function LandingApps() {
             </Card>
           );
 
-          if (app.available && app.href) {
+          const marketingHref =
+            app.available ? getSolutionHref(app.id) ?? getAppHref(app.id) : null;
+
+          if (app.available && marketingHref) {
             return (
               <Link
                 key={app.id}
-                href={app.href}
+                href={marketingHref}
                 className="block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={t.apps.openApp.replace("{name}", app.displayName)}
               >

@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { AppId } from "@/lib/apps/catalog";
 import { getAppHref } from "@/lib/apps/catalog";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { getSolutionHref } from "@/lib/seo/site-indexing";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +16,8 @@ export function DocsApplicationAppContent({ appId }: { appId: AppId }) {
   const { t } = useI18n();
   const page = t.docs.pages.applications[appId];
   const href = getAppHref(appId);
+  const solutionHref = getSolutionHref(appId);
+  const learnMore = t.solutions.pages[appId].learnMore;
   const [imageFailed, setImageFailed] = useState(false);
   const src = `${SCREENSHOT_PUBLIC_PATH}/${appId}.png`;
 
@@ -54,13 +57,18 @@ export function DocsApplicationAppContent({ appId }: { appId: AppId }) {
 
       <p>{page.body}</p>
 
-      {href ? (
-        <p>
+      <div className="flex flex-wrap gap-3">
+        {solutionHref ? (
+          <Link href={solutionHref} className={buttonVariants({ size: "default", variant: "outline" })}>
+            {learnMore}
+          </Link>
+        ) : null}
+        {href ? (
           <Link href={href} className={buttonVariants({ size: "default" })}>
             {page.cta}
           </Link>
-        </p>
-      ) : null}
+        ) : null}
+      </div>
     </article>
   );
 }
