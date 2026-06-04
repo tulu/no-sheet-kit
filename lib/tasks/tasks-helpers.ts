@@ -92,6 +92,19 @@ export function overdueActiveTasks(tasks: NSKTask[], now: Date = new Date()): NS
 /** Droppable id prefix for empty column hit area (concat status). */
 export const TASKS_KANBAN_COL_PREFIX = "nsk-task-col:";
 
+/** Droppable id prefix for sidebar space targets (concat space id). */
+export const TASKS_SPACE_DROP_PREFIX = "nsk-task-space:";
+
+export function taskSpaceDropId(spaceId: string): string {
+  return `${TASKS_SPACE_DROP_PREFIX}${spaceId}`;
+}
+
+export function parseTaskSpaceDropId(overId: string): string | null {
+  if (!overId.startsWith(TASKS_SPACE_DROP_PREFIX)) return null;
+  const id = overId.slice(TASKS_SPACE_DROP_PREFIX.length);
+  return id.length > 0 ? id : null;
+}
+
 function orderedIdsInColumn(tasks: NSKTask[], spaceId: string, status: TaskStatus): string[] {
   return tasks
     .filter((t) => t.space_id === spaceId && t.status === status)
@@ -205,5 +218,35 @@ export function applyKanbanDrag(args: {
   next = patchOrdersForColumn(next, spaceId, active.status, fromIds, now, activeId);
   next = patchOrdersForColumn(next, spaceId, overStatus, toIds, now, activeId);
   return reindexTaskOrdersForSpace(next, spaceId);
+}
+
+/** Tasks with `due_date` on this local calendar day (YYYY-MM-DD). */
+export function tasksOnCalendarDay(tasks: NSKTask[], day: Date): NSKTask[] {
+  const y = day.getFullYear();
+  const m = String(day.getMonth() + 1).padStart(2, "0");
+  const d = String(day.getDate()).padStart(2, "0");
+  const key = `${y}-${m}-${d}`;
+  return tasks
+    .filter((t) => t.due_date === key)
+    .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
+}
+
+/** Move a task to another space; keeps status and appends to the end of that column. */
+export function moveTaskToSpace(
+  tasks: NSKTask[],
+  taskId: string,
+  targetSpaceId: string
+): NSKTask[] {
+  const task = tasks.find((t) => t.id === taskId);
+  if (!task || task.space_id === targetSpaceId) return tasks;
+  const sourceSpaceId = task.space_id;
+  const now = new Date().toISOString();
+  const order = nextOrderForColumn(tasks, targetSpaceId, task.status);
+  let next = tasks.map((t) =>
+    t.id === taskId ? { ...t, space_id: targetSpaceId, order, updated_at: now } : t
+  );
+  next = reindexTaskOrdersForSpace(next, sourceSpaceId);
+  next = reindexTaskOrdersForSpace(next, targetSpaceId);
+  return next;
 }
 
