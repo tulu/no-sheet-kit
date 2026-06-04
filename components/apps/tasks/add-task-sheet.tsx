@@ -7,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Field, FieldLabel } from "@/components/ui/field";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { NaturalDateField } from "@/components/common/natural-date-field";
 import {
   GoogleCalendarEventOptions,
@@ -15,7 +22,7 @@ import {
 import { useI18n } from "@/components/providers/i18n-provider";
 import { useAppsSessionKind } from "@/lib/storage/session-storage-context";
 import { defaultReminderMinutesForAppKind } from "@/lib/google/calendar-constants";
-import type { NSKTask, NSKTaskComment } from "@/lib/tasks/schema";
+import type { NSKSpace, NSKTask, NSKTaskComment } from "@/lib/tasks/schema";
 
 const REQUIRED_MARK = (
   <span className="text-destructive" aria-hidden>
@@ -27,11 +34,14 @@ type TaskFormValues = {
   title: string;
   description: string;
   due_date: string;
+  space_id: string;
 };
 
 type AddTaskSheetProps = {
   open: boolean;
   editingItem: NSKTask | null;
+  spaces: NSKSpace[];
+  defaultSpaceId: string;
   onClose: () => void;
   onSaveTask: (values: TaskFormValues, calendar: GoogleCalendarSubmitPrefs) => boolean | Promise<boolean>;
   onDisconnectGoogleCalendar?: () => void | Promise<void>;
@@ -44,11 +54,14 @@ const DEFAULT_FORM: TaskFormValues = {
   title: "",
   description: "",
   due_date: "",
+  space_id: "",
 };
 
 export function AddTaskSheet({
   open,
   editingItem,
+  spaces,
+  defaultSpaceId,
   onClose,
   onSaveTask,
   onDisconnectGoogleCalendar,
@@ -76,6 +89,7 @@ export function AddTaskSheet({
           title: editingItem.title,
           description: editingItem.description ?? "",
           due_date: editingItem.due_date ?? "",
+          space_id: editingItem.space_id,
         });
         setAddToCalendar(Boolean(editingItem.google_calendar_event_id));
         setReminderMinutes(
@@ -83,7 +97,7 @@ export function AddTaskSheet({
             defaultReminderMinutesForAppKind("tasks")
         );
       } else {
-        setForm({ ...DEFAULT_FORM });
+        setForm({ ...DEFAULT_FORM, space_id: defaultSpaceId });
         setAddToCalendar(false);
         setReminderMinutes(defaultReminderMinutesForAppKind("tasks"));
       }
@@ -94,8 +108,10 @@ export function AddTaskSheet({
     });
     return () => cancelAnimationFrame(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- avoid resetting form when only `editingItem` (e.g. comments) updates for the same task id
-  }, [open, editingItem?.id]);
+  }, [open, editingItem?.id, defaultSpaceId]);
 
+  /** Create uses `defaultSpaceId` (active space). Move only when editing with multiple spaces. */
+  const showSpaceField = Boolean(editingItem) && spaces.length >= 2;
   const showGoogleCalendar = sessionKind === "google" && Boolean(form.due_date.trim());
 
   async function handleSaveTask() {
@@ -119,6 +135,7 @@ export function AddTaskSheet({
           title,
           description: form.description.trim() || "",
           due_date: due,
+          space_id: form.space_id || defaultSpaceId,
         },
         calendar
       );
@@ -159,6 +176,32 @@ export function AddTaskSheet({
         </SheetHeader>
 
         <div className="space-y-4 overflow-y-auto px-4 pb-4">
+          {showSpaceField ? (
+            <Field>
+              <FieldLabel>{t.tasks.fields.space}</FieldLabel>
+              <Select
+                value={form.space_id || defaultSpaceId}
+                itemToStringLabel={(value) =>
+                  spaces.find((s) => s.id === value)?.name ?? String(value ?? "")
+                }
+                onValueChange={(value) => {
+                  if (value) setForm((f) => ({ ...f, space_id: value }));
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t.tasks.fields.spacePlaceholder} />
+                </SelectTrigger>
+                <SelectContent>
+                  {spaces.map((space) => (
+                    <SelectItem key={space.id} value={space.id}>
+                      {space.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          ) : null}
+
           <Field>
             <FieldLabel>
               {t.tasks.fields.title}

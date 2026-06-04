@@ -81,12 +81,33 @@ function ListSkeleton() {
   );
 }
 
+function CalendarSkeleton() {
+  return (
+    <div className="rounded-lg border border-border p-4">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <Skeleton className="h-8 w-44" />
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-9 rounded-md" />
+          <Skeleton className="h-9 w-9 rounded-md" />
+        </div>
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {Array.from({ length: 42 }).map((_, idx) => (
+          <Skeleton key={`tasks-cal-${idx}`} className="aspect-square rounded-md" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function TasksViewSkeleton({ viewMode }: TasksViewSkeletonProps) {
   switch (viewMode) {
     case "kanban":
       return <KanbanSkeleton />;
     case "list":
       return <ListSkeleton />;
+    case "calendar":
+      return <CalendarSkeleton />;
     default:
       return null;
   }

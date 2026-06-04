@@ -31,6 +31,7 @@ import {
 import {
   aggregateOutstandingByCurrency,
   balanceByCurrency,
+  compareLoansForDisplay,
   formatLoanNumber,
   loanMatchesFilter,
   loanMatchesSearch,
@@ -181,11 +182,7 @@ export function LoansAppPage() {
   const filteredItems = store.items.filter((item) => loanMatchesFilter(item, activeFilter));
   const searchFilteredItems = filterItemsBySearch(filteredItems, loanSearch, loanMatchesSearch);
 
-  const sortedItems = [...searchFilteredItems].sort((a, b) => {
-    const byUpdated = b.updated_at.localeCompare(a.updated_at);
-    if (byUpdated !== 0) return byUpdated;
-    return a.counterparty_name.localeCompare(b.counterparty_name);
-  });
+  const sortedItems = [...searchFilteredItems].sort(compareLoansForDisplay);
 
   const loansFilterItems = buildLoansFilterItems(t.loans.filters, filterCounts);
 

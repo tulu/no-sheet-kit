@@ -27,11 +27,11 @@ export function ManageCollectionsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="flex w-full flex-col gap-4 sm:max-w-md">
+      <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
         <SheetHeader>
           <SheetTitle>{t.collections.manageCollectionsTitle}</SheetTitle>
         </SheetHeader>
-        <ul className="min-h-0 flex-1 space-y-2 overflow-auto">
+        <ul className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 pb-4">
           {collections.length === 0 ? (
             <li className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
               {t.collections.manageCollectionsEmpty}

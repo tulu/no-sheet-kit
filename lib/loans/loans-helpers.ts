@@ -68,6 +68,16 @@ export function isLoanSettled(loan: NSKLoanItem): boolean {
   return parseAmount(loan.amount) > 0 && !isLoanActive(loan);
 }
 
+/** Active loans first, then settled; within each group, newest `updated_at` first. */
+export function compareLoansForDisplay(a: NSKLoanItem, b: NSKLoanItem): number {
+  const aActive = isLoanActive(a);
+  const bActive = isLoanActive(b);
+  if (aActive !== bActive) return aActive ? -1 : 1;
+  const byUpdated = b.updated_at.localeCompare(a.updated_at);
+  if (byUpdated !== 0) return byUpdated;
+  return a.counterparty_name.localeCompare(b.counterparty_name);
+}
+
 export function loanMatchesFilter(loan: NSKLoanItem, filter: LoanFilterId): boolean {
   switch (filter) {
     case "all":

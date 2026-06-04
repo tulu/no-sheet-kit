@@ -66,8 +66,10 @@ export function TaskCard({
         "border border-border/70 shadow-sm transition-shadow",
         /** Base Card uses py-4 + gap-4; compact Kanban needs tighter vertical rhythm and room on the sides. */
         compact && "gap-1 py-0",
-        highlightFlash && "ring-2 ring-teal-500/80 ring-offset-2 ring-offset-background animate-pulse dark:ring-teal-400/70",
-        isDragging && "opacity-60 ring-2 ring-ring",
+        highlightFlash &&
+          "z-[1] shadow-[inset_0_0_0_2px_rgba(20,184,166,0.85)] ring-2 ring-teal-500/90 ring-inset animate-pulse dark:shadow-[inset_0_0_0_2px_rgba(45,212,191,0.75)]",
+        isDragging &&
+          "opacity-60 shadow-[inset_0_0_0_2px_hsl(var(--ring)/0.45)] ring-2 ring-inset ring-ring/40",
         task.archived && "opacity-75"
       )}
       {...dragAttributes}

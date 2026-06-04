@@ -1,6 +1,7 @@
 "use client";
 
-import { Folder, LayoutDashboard, LayoutGrid, List, Settings2 } from "lucide-react";
+import { Calendar, Folder, LayoutDashboard, LayoutGrid, List, Settings2 } from "lucide-react";
+import { startOfMonth } from "date-fns";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -65,11 +66,14 @@ import {
 import type { NskCalendarEventInput } from "@/lib/google/google-calendar";
 import { useAppsSessionKind, useSessionStorageSuffix } from "@/lib/storage/session-storage-context";
 import {
+  moveTaskToSpace,
   nextOrderForColumn,
   sortSpaces,
   taskMatchesSearch,
+  taskSpaceDropId,
   tasksInSpace,
 } from "@/lib/tasks/tasks-helpers";
+import { TasksKanbanDndProvider } from "./tasks-kanban-dnd-provider";
 import { getIntlLocaleTag } from "@/lib/i18n/locale-display";
 import { AddSpaceSheet } from "./add-space-sheet";
 import { AddTaskSheet } from "./add-task-sheet";
@@ -97,9 +101,10 @@ export function TasksAppPage() {
   const [taskSearch, setTaskSearch] = useState("");
   const [showArchived, setShowArchived] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [taskKanbanDragging, setTaskKanbanDragging] = useState(false);
 
   const [spaceSheetOpen, setSpaceSheetOpen] = useState(false);
-  const [spaceSheetInitialName, setSpaceSheetInitialName] = useState<string | undefined>(undefined);
+  const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(new Date()));
   const [reopenManageAfterSpaceSheet, setReopenManageAfterSpaceSheet] = useState(false);
   const [manageSheetOpen, setManageSheetOpen] = useState(false);
   const [editingSpace, setEditingSpace] = useState<NSKSpace | null>(null);
@@ -113,6 +118,7 @@ export function TasksAppPage() {
     taskId: string;
     commentId: string;
   } | null>(null);
+  const [archiveAllConfirmCount, setArchiveAllConfirmCount] = useState<number | null>(null);
   const [createCalendarConfirmOpen, setCreateCalendarConfirmOpen] = useState(false);
   const createCalendarConfirmResolverRef = useRef<((accepted: boolean) => void) | null>(null);
 
@@ -281,7 +287,15 @@ export function TasksAppPage() {
   function handleViewModeChange(next: TasksViewMode) {
     setViewMode(next);
     persistAppViewBundle("tasks", next);
+    if (next === "calendar") {
+      setCalendarMonth(startOfMonth(new Date()));
+    }
   }
+
+  const mobileNavTitle =
+    activeNav === TASKS_DASHBOARD_NAV_ID
+      ? t.tasks.dashboardNav
+      : (store.spaces.find((s) => s.id === activeNav)?.name ?? t.tasks.sidebarTitle);
 
   function openCreateTask() {
     if (!activeSpaceId) return;
@@ -294,27 +308,24 @@ export function TasksAppPage() {
     setTaskSheetOpen(true);
   }
 
-  function openCreateSpace(initialName?: string) {
+  function openCreateSpace() {
     setEditingSpace(null);
-    setSpaceSheetInitialName(initialName);
     setSpaceSheetOpen(true);
   }
 
   function openCreateSpaceFromDashboard() {
     setReopenManageAfterSpaceSheet(false);
-    openCreateSpace(t.tasks.defaultSpaceName);
+    openCreateSpace();
   }
 
   function openEditSpace(space: NSKSpace) {
     setEditingSpace(space);
-    setSpaceSheetInitialName(undefined);
     setSpaceSheetOpen(true);
   }
 
   function closeSpaceSheet() {
     setSpaceSheetOpen(false);
     setEditingSpace(null);
-    setSpaceSheetInitialName(undefined);
     if (reopenManageAfterSpaceSheet) {
       setReopenManageAfterSpaceSheet(false);
       setManageSheetOpen(true);
@@ -328,7 +339,7 @@ export function TasksAppPage() {
   function openAddSpaceFromManage() {
     setReopenManageAfterSpaceSheet(true);
     setManageSheetOpen(false);
-    openCreateSpace(t.tasks.defaultSpaceName);
+    openCreateSpace();
   }
 
   function openRenameSpaceFromManage(space: NSKSpace) {
@@ -349,7 +360,6 @@ export function TasksAppPage() {
   function dismissSpaceSheetAfterSave() {
     setSpaceSheetOpen(false);
     setEditingSpace(null);
-    setSpaceSheetInitialName(undefined);
     setReopenManageAfterSpaceSheet(false);
   }
 
@@ -441,16 +451,18 @@ export function TasksAppPage() {
   }
 
   async function handleSaveTaskFromForm(
-    values: { title: string; description: string; due_date: string },
+    values: { title: string; description: string; due_date: string; space_id: string },
     calendar: GoogleCalendarSubmitPrefs
   ): Promise<boolean> {
-    if (!activeSpaceId) return false;
+    const targetSpaceId = values.space_id || activeSpaceId;
+    if (!targetSpaceId) return false;
     const now = new Date().toISOString();
     const due = values.due_date || undefined;
 
     if (editingTask) {
       const current = store.tasks.find((x) => x.id === editingTask.id) ?? editingTask;
       const status = current.status;
+      const spaceChanged = targetSpaceId !== current.space_id;
       let merged: NSKTask = {
         ...current,
         title: values.title,
@@ -459,6 +471,9 @@ export function TasksAppPage() {
         status,
         updated_at: now,
       };
+      if (!spaceChanged) {
+        merged = { ...merged, space_id: targetSpaceId };
+      }
 
       if (merged.google_calendar_event_id && !due) {
         await nskCalendarDeleteEvent(merged.google_calendar_event_id);
@@ -525,19 +540,27 @@ export function TasksAppPage() {
         }
       }
 
-      commit((prev) => ({
-        ...prev,
-        tasks: prev.tasks.map((x) => (x.id === editingTask.id ? merged : x)),
-      }));
+      commit((prev) => {
+        let tasks = prev.tasks.map((x) => (x.id === editingTask.id ? merged : x));
+        if (spaceChanged) {
+          tasks = moveTaskToSpace(tasks, editingTask.id, targetSpaceId);
+        }
+        return { ...prev, tasks };
+      });
       appCrudToast(t, "tasks", "updated");
+      if (spaceChanged && activeNav !== targetSpaceId) {
+        setActiveNav(targetSpaceId);
+        setHighlightTaskId(null);
+        syncTasksUrlToNav(targetSpaceId);
+      }
       return true;
     }
 
-    const order = nextOrderForColumn(store.tasks, activeSpaceId, "todo");
+    const order = nextOrderForColumn(store.tasks, targetSpaceId, "todo");
     const id = crypto.randomUUID();
     let row: NSKTask = {
       id,
-      space_id: activeSpaceId,
+      space_id: targetSpaceId,
       title: values.title,
       description: values.description || undefined,
       due_date: due,
@@ -555,7 +578,7 @@ export function TasksAppPage() {
         const accepted = await requestCreateCalendarConfirm();
         if (!accepted) return false;
       }
-      const spaceName = store.spaces.find((s) => s.id === activeSpaceId)?.name;
+      const spaceName = store.spaces.find((s) => s.id === targetSpaceId)?.name;
       const { summary, description } = buildTaskCalendarCopy({
         task: row,
         spaceName,
@@ -581,6 +604,11 @@ export function TasksAppPage() {
     }
 
     commit((prev) => ({ ...prev, tasks: [...prev.tasks, row] }));
+    if (targetSpaceId !== activeSpaceId) {
+      setActiveNav(targetSpaceId);
+      setHighlightTaskId(null);
+      syncTasksUrlToNav(targetSpaceId);
+    }
     appCrudToast(t, "tasks", "created");
     return true;
   }
@@ -664,6 +692,48 @@ export function TasksAppPage() {
     }));
   }
 
+  function requestArchiveAllDone() {
+    if (!activeSpaceId) return;
+    const count = store.tasks.filter(
+      (t) => t.space_id === activeSpaceId && t.status === "done" && !t.archived
+    ).length;
+    if (count === 0) return;
+    setArchiveAllConfirmCount(count);
+  }
+
+  async function confirmArchiveAllDone() {
+    if (!activeSpaceId || archiveAllConfirmCount == null) return;
+    const victims = store.tasks.filter(
+      (t) => t.space_id === activeSpaceId && t.status === "done" && !t.archived
+    );
+    if (victims.length === 0) {
+      setArchiveAllConfirmCount(null);
+      return;
+    }
+    await Promise.all(
+      victims.map((t) =>
+        t.google_calendar_event_id ? nskCalendarDeleteEvent(t.google_calendar_event_id) : Promise.resolve()
+      )
+    );
+    const now = new Date().toISOString();
+    const ids = new Set(victims.map((t) => t.id));
+    commit((prev) => ({
+      ...prev,
+      tasks: prev.tasks.map((x) =>
+        ids.has(x.id)
+          ? {
+              ...x,
+              archived: true,
+              updated_at: now,
+              google_calendar_event_id: undefined,
+              google_calendar_email_reminder_minutes: undefined,
+            }
+          : x
+      ),
+    }));
+    setArchiveAllConfirmCount(null);
+  }
+
   function handleUnarchive(task: NSKTask) {
     const now = new Date().toISOString();
     commit((prev) => ({
@@ -723,6 +793,206 @@ export function TasksAppPage() {
     ? `${t.tasks.deleteTaskDescription}\n\n${t.googleCalendar.deleteItemAlsoDeletesEvent}`
     : t.tasks.deleteTaskDescription;
 
+  const kanbanSpaceDnD =
+    isStoreHydrated && viewMode === "kanban" && activeSpaceId != null;
+
+  const spaceDropNavProps = kanbanSpaceDnD
+    ? {
+        getDropTargetId: (id: NavId) =>
+          id === TASKS_DASHBOARD_NAV_ID ? null : taskSpaceDropId(id),
+        showDropTargets: taskKanbanDragging,
+      }
+    : {};
+
+  function handleTaskMovedToSpace(targetSpaceId: string) {
+    setActiveNav(targetSpaceId);
+    setHighlightTaskId(null);
+    syncTasksUrlToNav(targetSpaceId);
+    setFiltersOpen(false);
+  }
+
+  const tasksWorkspace = (
+    <>
+      <FilterSidebarDesktopAside<NavId>
+        title={t.tasks.sidebarTitle}
+        items={sidebarItems}
+        activeId={activeNav}
+        onFilterChange={handleNavChange}
+        {...spaceDropNavProps}
+        footer={
+          <Button type="button" variant="outline" size="sm" className="w-full gap-2" onClick={openManageSpaces}>
+            <Settings2 className="size-4 shrink-0" aria-hidden />
+            {t.tasks.manageSpacesTitle}
+          </Button>
+        }
+      />
+
+      <FilterSidebarMobileSheet<NavId>
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        title={t.tasks.sidebarTitle}
+        items={sidebarItems}
+        activeId={activeNav}
+        onFilterChange={handleNavChange}
+        {...spaceDropNavProps}
+        footer={
+          <Button type="button" variant="outline" size="sm" className="w-full gap-2" onClick={openManageSpaces}>
+            <Settings2 className="size-4 shrink-0" aria-hidden />
+            {t.tasks.manageSpacesTitle}
+          </Button>
+        }
+      />
+
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <FilterSidebarMobileBar
+          title={mobileNavTitle}
+          onOpen={() => setFiltersOpen(true)}
+          openButtonAriaLabel={t.tasks.openSpacesNav}
+          endSlot={
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              onClick={openManageSpaces}
+              aria-label={t.tasks.manageSpacesTitle}
+            >
+              <Settings2 className="size-4" aria-hidden />
+            </Button>
+          }
+        />
+
+        {!isStoreHydrated ? (
+          <div className="min-h-0 min-w-0 flex-1 overflow-y-auto px-6 py-6">
+            {activeSpaceId ? (
+              <TasksViewSkeleton viewMode={viewMode} />
+            ) : (
+              <div className="space-y-4">
+                <div className="h-40 animate-pulse rounded-lg bg-muted/40" />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="h-32 animate-pulse rounded-lg bg-muted/40" />
+                  <div className="h-32 animate-pulse rounded-lg bg-muted/40" />
+                </div>
+              </div>
+            )}
+          </div>
+        ) : activeNav === TASKS_DASHBOARD_NAV_ID ? (
+          <div className="min-h-0 min-w-0 flex-1 overflow-auto px-6 py-6">
+            {store.spaces.length === 0 ? (
+              <Empty className="border border-border p-10">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Folder />
+                  </EmptyMedia>
+                  <EmptyTitle className="text-xl font-semibold text-foreground">{t.tasks.dashboardEmptyTitle}</EmptyTitle>
+                  <EmptyDescription>{t.tasks.dashboardEmptyBody}</EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button type="button" onClick={openCreateSpaceFromDashboard}>
+                    {t.tasks.dashboardEmptyCta}
+                  </Button>
+                </EmptyContent>
+              </Empty>
+            ) : (
+              <TasksDashboard schema={store} />
+            )}
+          </div>
+        ) : (
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden px-6 py-6">
+            <div className="shrink-0">
+              <AppListToolbar<TasksViewMode>
+                totalLabel={t.tasks.totalLabel.replace("{count}", String(searchFilteredTasks.length))}
+                viewModes={[
+                  { id: "kanban", icon: LayoutGrid, ariaLabel: t.tasks.viewKanban },
+                  { id: "list", icon: List, ariaLabel: t.tasks.viewList },
+                  { id: "calendar", icon: Calendar, ariaLabel: t.tasks.viewCalendar },
+                ]}
+                viewMode={viewMode}
+                onViewModeChange={handleViewModeChange}
+                addButtonLabel={t.tasks.addTask}
+                onAdd={openCreateTask}
+                search={{
+                  value: taskSearch,
+                  onChange: setTaskSearch,
+                  placeholder: t.tasks.searchPlaceholder,
+                  "aria-label": t.tasks.searchAriaLabel,
+                }}
+                searchTrailing={
+                  <>
+                    <Switch id="tasks-archived" checked={showArchived} onCheckedChange={setShowArchived} />
+                    <Label htmlFor="tasks-archived" className="text-sm text-muted-foreground whitespace-nowrap">
+                      {showArchived ? t.tasks.hideArchived : t.tasks.showArchived}
+                    </Label>
+                  </>
+                }
+              />
+            </div>
+
+            <div
+              className={
+                viewMode === "kanban"
+                  ? "flex h-full min-h-0 flex-1 flex-col overflow-hidden"
+                  : "min-h-0 flex-1 overflow-hidden"
+              }
+            >
+              {spaceTasksRaw.length === 0 ? (
+                <Empty className="border border-border p-10">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Folder />
+                    </EmptyMedia>
+                    <EmptyTitle className="text-xl font-semibold text-foreground">
+                      {t.tasks.emptySpaceTitle}
+                    </EmptyTitle>
+                    <EmptyDescription>{t.tasks.emptySpaceBody}</EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Button onClick={openCreateTask}>{t.tasks.addTask}</Button>
+                  </EmptyContent>
+                </Empty>
+              ) : searchFilteredTasks.length === 0 && taskSearch.trim() ? (
+                <ListSearchEmptyState
+                  labels={{
+                    title: t.tasks.emptySearchTitle,
+                    body: t.tasks.emptySearchBody,
+                    clear: t.tasks.searchClear,
+                  }}
+                  onClear={() => setTaskSearch("")}
+                />
+              ) : (
+                <TasksView
+                  viewMode={viewMode}
+                  spaceId={activeSpaceId!}
+                  tasks={searchFilteredTasks}
+                  allTasks={store.tasks}
+                  highlightTaskId={highlightTaskId}
+                  onTasksReplace={handleTasksReplace}
+                  columnTitles={columnTitles}
+                  cardLabels={cardLabels}
+                  listLabels={listLabels}
+                  statusLabel={statusLabel}
+                  localeTag={getIntlLocaleTag(locale)}
+                  locale={locale}
+                  calendarMonth={calendarMonth}
+                  onCalendarMonthChange={setCalendarMonth}
+                  onSwitchToListView={() => handleViewModeChange("list")}
+                  onEdit={openEditTask}
+                  onDelete={(task) => setTaskPendingDelete(task)}
+                  onArchive={handleArchive}
+                  onUnarchive={handleUnarchive}
+                  onArchiveAllDone={requestArchiveAllDone}
+                  doneColumnMenuLabels={{
+                    menuAriaLabel: t.tasks.doneColumnMenuAria,
+                    archiveAllLabel: t.tasks.archiveAll,
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+
   return (
     <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
       <ConfirmDeleteAlertDialog
@@ -762,6 +1032,31 @@ export function TasksAppPage() {
         onConfirm={confirmDeleteComment}
       />
       <AlertDialog
+        open={archiveAllConfirmCount != null}
+        onOpenChange={(open) => {
+          if (!open) setArchiveAllConfirmCount(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.tasks.archiveAllConfirmTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t.tasks.archiveAllConfirmDescription.replace(
+                "{count}",
+                String(archiveAllConfirmCount ?? 0)
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t.tasks.deleteCancel}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void confirmArchiveAllDone()}>
+              {t.tasks.archiveAllConfirmAction}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
         open={createCalendarConfirmOpen}
         onOpenChange={(open) => {
           if (!open) resolveCreateCalendarConfirm(false);
@@ -790,173 +1085,26 @@ export function TasksAppPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-row">
-        <FilterSidebarDesktopAside<NavId>
-          title={t.tasks.sidebarTitle}
-          items={sidebarItems}
-          activeId={activeNav}
-          onFilterChange={handleNavChange}
-          footer={
-            <Button type="button" variant="outline" size="sm" className="w-full gap-2" onClick={openManageSpaces}>
-              <Settings2 className="size-4 shrink-0" aria-hidden />
-              {t.tasks.manageSpacesTitle}
-            </Button>
-          }
-        />
-
-        <FilterSidebarMobileSheet<NavId>
-          open={filtersOpen}
-          onOpenChange={setFiltersOpen}
-          title={t.tasks.sidebarTitle}
-          items={sidebarItems}
-          activeId={activeNav}
-          onFilterChange={handleNavChange}
-          footer={
-            <Button type="button" variant="outline" size="sm" className="w-full gap-2" onClick={openManageSpaces}>
-              <Settings2 className="size-4 shrink-0" aria-hidden />
-              {t.tasks.manageSpacesTitle}
-            </Button>
-          }
-        />
-
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <FilterSidebarMobileBar
-            title={t.tasks.sidebarTitle}
-            onOpen={() => setFiltersOpen(true)}
-            openButtonAriaLabel={t.tasks.openSpacesNav}
-            endSlot={
-              <Button
-                type="button"
-                variant="outline"
-                size="icon-sm"
-                onClick={openManageSpaces}
-                aria-label={t.tasks.manageSpacesTitle}
-              >
-                <Settings2 className="size-4" aria-hidden />
-              </Button>
+      {kanbanSpaceDnD ? (
+        <TasksKanbanDndProvider
+          spaceId={activeSpaceId!}
+          allTasks={store.tasks}
+          onTasksReplace={handleTasksReplace}
+          onMovedToSpace={handleTaskMovedToSpace}
+          onDragStart={() => {
+            setTaskKanbanDragging(true);
+            if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
+              setFiltersOpen(true);
             }
-          />
-
-          {!isStoreHydrated ? (
-            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto px-6 py-6">
-              {activeSpaceId ? (
-                <TasksViewSkeleton viewMode={viewMode} />
-              ) : (
-                <div className="space-y-4">
-                  <div className="h-40 animate-pulse rounded-lg bg-muted/40" />
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="h-32 animate-pulse rounded-lg bg-muted/40" />
-                    <div className="h-32 animate-pulse rounded-lg bg-muted/40" />
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : activeNav === TASKS_DASHBOARD_NAV_ID ? (
-            <div className="min-h-0 min-w-0 flex-1 overflow-auto px-6 py-6">
-              {store.spaces.length === 0 ? (
-                <Empty className="border border-border p-10">
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <Folder />
-                    </EmptyMedia>
-                    <EmptyTitle className="text-xl font-semibold text-foreground">{t.tasks.dashboardEmptyTitle}</EmptyTitle>
-                    <EmptyDescription>{t.tasks.dashboardEmptyBody}</EmptyDescription>
-                  </EmptyHeader>
-                  <EmptyContent>
-                    <Button type="button" onClick={openCreateSpaceFromDashboard}>
-                      {t.tasks.dashboardEmptyCta}
-                    </Button>
-                  </EmptyContent>
-                </Empty>
-              ) : (
-                <TasksDashboard schema={store} />
-              )}
-            </div>
-          ) : (
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden px-6 py-6">
-                <div className="shrink-0">
-                  <AppListToolbar<TasksViewMode>
-                  totalLabel={t.tasks.totalLabel.replace("{count}", String(searchFilteredTasks.length))}
-                  viewModes={[
-                    { id: "kanban", icon: LayoutGrid, ariaLabel: t.tasks.viewKanban },
-                    { id: "list", icon: List, ariaLabel: t.tasks.viewList },
-                  ]}
-                  viewMode={viewMode}
-                  onViewModeChange={handleViewModeChange}
-                  addButtonLabel={t.tasks.addTask}
-                  onAdd={openCreateTask}
-                  search={{
-                    value: taskSearch,
-                    onChange: setTaskSearch,
-                    placeholder: t.tasks.searchPlaceholder,
-                    "aria-label": t.tasks.searchAriaLabel,
-                  }}
-                  searchTrailing={
-                    <>
-                      <Switch id="tasks-archived" checked={showArchived} onCheckedChange={setShowArchived} />
-                      <Label htmlFor="tasks-archived" className="text-sm text-muted-foreground whitespace-nowrap">
-                        {showArchived ? t.tasks.hideArchived : t.tasks.showArchived}
-                      </Label>
-                    </>
-                  }
-                  />
-                </div>
-
-                <div
-                  className={
-                    viewMode === "kanban"
-                      ? "flex h-full min-h-0 flex-1 flex-col overflow-hidden"
-                      : "min-h-0 flex-1 overflow-y-auto"
-                  }
-                >
-                  {spaceTasksRaw.length === 0 ? (
-                    <Empty className="border border-border p-10">
-                      <EmptyHeader>
-                        <EmptyMedia variant="icon">
-                          <Folder />
-                        </EmptyMedia>
-                        <EmptyTitle className="text-xl font-semibold text-foreground">
-                          {t.tasks.emptySpaceTitle}
-                        </EmptyTitle>
-                        <EmptyDescription>{t.tasks.emptySpaceBody}</EmptyDescription>
-                      </EmptyHeader>
-                      <EmptyContent>
-                        <Button onClick={openCreateTask}>{t.tasks.addTask}</Button>
-                      </EmptyContent>
-                    </Empty>
-                  ) : searchFilteredTasks.length === 0 && taskSearch.trim() ? (
-                    <ListSearchEmptyState
-                      labels={{
-                        title: t.tasks.emptySearchTitle,
-                        body: t.tasks.emptySearchBody,
-                        clear: t.tasks.searchClear,
-                      }}
-                      onClear={() => setTaskSearch("")}
-                    />
-                  ) : (
-                    <TasksView
-                      viewMode={viewMode}
-                      spaceId={activeSpaceId!}
-                      tasks={searchFilteredTasks}
-                      allTasks={store.tasks}
-                      highlightTaskId={highlightTaskId}
-                      onTasksReplace={handleTasksReplace}
-                      columnTitles={columnTitles}
-                      cardLabels={cardLabels}
-                      listLabels={listLabels}
-                      statusLabel={statusLabel}
-                      localeTag={getIntlLocaleTag(locale)}
-                      onEdit={openEditTask}
-                      onDelete={(task) => setTaskPendingDelete(task)}
-                      onArchive={handleArchive}
-                      onUnarchive={handleUnarchive}
-                    />
-                  )}
-                </div>
-              </div>
-          )}
-        </div>
-      </div>
+          }}
+          onDragEnd={() => setTaskKanbanDragging(false)}
+          cardLabels={cardLabels}
+        >
+          <div className="flex min-h-0 min-w-0 flex-1 flex-row">{tasksWorkspace}</div>
+        </TasksKanbanDndProvider>
+      ) : (
+        <div className="flex min-h-0 min-w-0 flex-1 flex-row">{tasksWorkspace}</div>
+      )}
 
       <ManageSpacesSheet
         open={manageSheetOpen}
@@ -990,7 +1138,6 @@ export function TasksAppPage() {
       <AddSpaceSheet
         open={spaceSheetOpen}
         editingSpace={editingSpace}
-        initialNameWhenCreate={editingSpace ? undefined : spaceSheetInitialName}
         onClose={closeSpaceSheet}
         onSubmit={handleSpaceSubmit}
       />
@@ -998,6 +1145,8 @@ export function TasksAppPage() {
       <AddTaskSheet
         open={taskSheetOpen}
         editingItem={editingTaskLive}
+        spaces={spacesSorted}
+        defaultSpaceId={activeSpaceId ?? spacesSorted[0]?.id ?? ""}
         onClose={() => {
           setTaskSheetOpen(false);
           setEditingTask(null);
