@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Fragment } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import { PanelLeft, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,26 +37,113 @@ export type FilterSidebarNavProps<T extends string> = {
   activeId: T;
   onFilterChange: (id: T) => void;
   onAfterSelect?: () => void;
+  /** When set, matching nav rows accept drops (e.g. drag task to another space). */
+  getDropTargetId?: (id: T) => string | null;
+  /** Highlights droppable rows while a drag is in progress. */
+  showDropTargets?: boolean;
 };
+
+function FilterSidebarNavRow<T extends string>({
+  item,
+  isActive,
+  dropTargetId,
+  showDropTarget,
+  onSelect,
+}: {
+  item: FilterSidebarItem<T>;
+  isActive: boolean;
+  dropTargetId: string | null;
+  showDropTarget: boolean;
+  onSelect: () => void;
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: dropTargetId ?? `__filter_nav_no_drop_${item.id}`,
+    disabled: !dropTargetId,
+  });
+  const Icon = item.icon;
+  const tone = item.tone ?? "default";
+  const destructive = tone === "destructive";
+  const accent = tone === "accent";
+
+  return (
+    <button
+      ref={dropTargetId ? setNodeRef : undefined}
+      type="button"
+      className={cn(
+        "flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
+        isActive &&
+          tone === "default" &&
+          "bg-accent font-medium text-accent-foreground",
+        isActive &&
+          destructive &&
+          "border border-destructive/40 bg-destructive/10 font-medium text-destructive",
+        isActive &&
+          accent &&
+          "border border-teal-500/40 bg-teal-500/10 font-medium text-teal-900 dark:border-teal-400/35 dark:bg-teal-500/15 dark:text-teal-100",
+        !isActive &&
+          tone === "default" &&
+          "text-muted-foreground hover:bg-muted hover:text-foreground",
+        !isActive &&
+          destructive &&
+          "border border-transparent text-destructive/90 hover:border-destructive/25 hover:bg-destructive/5",
+        !isActive &&
+          accent &&
+          "border border-transparent text-teal-800/95 hover:border-teal-500/25 hover:bg-teal-500/10 dark:text-teal-200/90 dark:hover:border-teal-400/20 dark:hover:bg-teal-500/10",
+        showDropTarget &&
+          !isActive &&
+          "border border-dashed border-teal-500/35 dark:border-teal-400/30",
+        dropTargetId &&
+          isOver &&
+          "shadow-[inset_0_0_0_2px_rgba(20,184,166,0.8)] ring-2 ring-inset ring-teal-500/80 dark:shadow-[inset_0_0_0_2px_rgba(45,212,191,0.75)]"
+      )}
+      aria-current={isActive ? "true" : undefined}
+      onClick={onSelect}
+    >
+      <Icon
+        className={cn(
+          "size-4 shrink-0",
+          accent && !isActive && "text-teal-600 dark:text-teal-400",
+          accent && isActive && "text-teal-700 dark:text-teal-300"
+        )}
+        aria-hidden
+      />
+      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+      {item.hideCount ? null : (
+        <span
+          className={cn(
+            "tabular-nums",
+            destructive && "text-destructive/80",
+            accent &&
+              (isActive
+                ? "text-teal-900/80 dark:text-teal-100/85"
+                : "text-teal-700/90 dark:text-teal-400/90"),
+            tone === "default" && "text-muted-foreground"
+          )}
+        >
+          {item.count}
+        </span>
+      )}
+    </button>
+  );
+}
 
 export function FilterSidebarNav<T extends string>({
   items,
   activeId,
   onFilterChange,
   onAfterSelect,
+  getDropTargetId,
+  showDropTargets = false,
 }: FilterSidebarNavProps<T>) {
   return (
-    <ul className="flex flex-col gap-1">
+    <ul className={cn("flex flex-col gap-1", showDropTargets && "px-0.5")}>
       {items.map((item, index) => {
         const prev = index > 0 ? items[index - 1] : undefined;
         const showGroupHeading =
           item.navGroupLabel &&
           (!prev?.navGroupLabel || prev.navGroupLabel !== item.navGroupLabel);
-        const Icon = item.icon;
         const isActive = item.id === activeId;
-        const tone = item.tone ?? "default";
-        const destructive = tone === "destructive";
-        const accent = tone === "accent";
+        const dropTargetId = getDropTargetId?.(item.id) ?? null;
         return (
           <Fragment key={item.id}>
             {showGroupHeading ? (
@@ -71,60 +159,16 @@ export function FilterSidebarNav<T extends string>({
               </li>
             ) : null}
             <li className={cn(item.dividerBefore && "mt-2 border-t border-border pt-2")}>
-              <button
-                type="button"
-                className={cn(
-                  "flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
-                  isActive &&
-                    tone === "default" &&
-                    "bg-accent font-medium text-accent-foreground",
-                  isActive &&
-                    destructive &&
-                    "border border-destructive/40 bg-destructive/10 font-medium text-destructive",
-                  isActive &&
-                    accent &&
-                    "border border-teal-500/40 bg-teal-500/10 font-medium text-teal-900 dark:border-teal-400/35 dark:bg-teal-500/15 dark:text-teal-100",
-                  !isActive &&
-                    tone === "default" &&
-                    "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  !isActive &&
-                    destructive &&
-                    "border border-transparent text-destructive/90 hover:border-destructive/25 hover:bg-destructive/5",
-                  !isActive &&
-                    accent &&
-                    "border border-transparent text-teal-800/95 hover:border-teal-500/25 hover:bg-teal-500/10 dark:text-teal-200/90 dark:hover:border-teal-400/20 dark:hover:bg-teal-500/10"
-                )}
-                aria-current={isActive ? "true" : undefined}
-                onClick={() => {
+              <FilterSidebarNavRow
+                item={item}
+                isActive={isActive}
+                dropTargetId={dropTargetId}
+                showDropTarget={showDropTargets && Boolean(dropTargetId)}
+                onSelect={() => {
                   onFilterChange(item.id);
                   onAfterSelect?.();
                 }}
-              >
-                <Icon
-                  className={cn(
-                    "size-4 shrink-0",
-                    accent && !isActive && "text-teal-600 dark:text-teal-400",
-                    accent && isActive && "text-teal-700 dark:text-teal-300"
-                  )}
-                  aria-hidden
-                />
-                <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                {item.hideCount ? null : (
-                  <span
-                    className={cn(
-                      "tabular-nums",
-                      destructive && "text-destructive/80",
-                      accent &&
-                        (isActive
-                          ? "text-teal-900/80 dark:text-teal-100/85"
-                          : "text-teal-700/90 dark:text-teal-400/90"),
-                      tone === "default" && "text-muted-foreground"
-                    )}
-                  >
-                    {item.count}
-                  </span>
-                )}
-              </button>
+              />
             </li>
           </Fragment>
         );
@@ -150,6 +194,8 @@ export function FilterSidebarDesktopAside<T extends string>({
   items,
   activeId,
   onFilterChange,
+  getDropTargetId,
+  showDropTargets,
 }: FilterSidebarDesktopAsideProps<T>) {
   const aria = navAriaLabel ?? title;
   return (
@@ -159,13 +205,18 @@ export function FilterSidebarDesktopAside<T extends string>({
           <h2 className="shrink-0 text-sm font-semibold tracking-tight text-foreground">{title}</h2>
         )}
         <nav
-          className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden"
+          className={cn(
+            "min-h-0 flex-1 overflow-y-auto",
+            showDropTargets ? "overflow-x-visible px-0.5" : "overflow-x-hidden"
+          )}
           aria-label={aria}
         >
           <FilterSidebarNav
             items={items}
             activeId={activeId}
             onFilterChange={onFilterChange}
+            getDropTargetId={getDropTargetId}
+            showDropTargets={showDropTargets}
           />
         </nav>
         {footer ? <div className="shrink-0">{footer}</div> : null}
@@ -194,6 +245,8 @@ export function FilterSidebarMobileSheet<T extends string>({
   items,
   activeId,
   onFilterChange,
+  getDropTargetId,
+  showDropTargets,
 }: FilterSidebarMobileSheetProps<T>) {
   const aria = navAriaLabel ?? title;
   return (
@@ -211,6 +264,8 @@ export function FilterSidebarMobileSheet<T extends string>({
             activeId={activeId}
             onFilterChange={onFilterChange}
             onAfterSelect={() => onOpenChange(false)}
+            getDropTargetId={getDropTargetId}
+            showDropTargets={showDropTargets}
           />
         </nav>
         {footer ? (

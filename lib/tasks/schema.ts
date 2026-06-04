@@ -4,7 +4,7 @@ export const NSKTASKS_SCHEMA_VERSION = 1;
 export const TASK_STATUSES = ["todo", "in_progress", "done"] as const;
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 
-export const TASKS_VIEW_MODES = ["kanban", "list"] as const;
+export const TASKS_VIEW_MODES = ["kanban", "list", "calendar"] as const;
 export type TasksViewMode = (typeof TASKS_VIEW_MODES)[number];
 
 /** Sidebar: overview entry (not a real space id). */

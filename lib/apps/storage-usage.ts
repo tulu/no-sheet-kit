@@ -5,7 +5,8 @@ import { getAppDisplayName } from "@/components/apps/launcher-apps";
 import { buildNskListAppStorageKey, type NskListAppSlug } from "@/lib/storage/session-storage-keys";
 import { getSavedElementCountForApp } from "@/lib/apps/list-app-saved-counts";
 
-export const MAX_LOCAL_STORAGE_PER_APP_BYTES = 5 * 1024 * 1024;
+/** Estimated total browser localStorage budget for all NoSheetKit apps in one session. */
+export const MAX_LOCAL_STORAGE_TOTAL_BYTES = 5 * 1024 * 1024;
 
 export type AppStorageUsage = {
   id: AppId;
@@ -31,7 +32,10 @@ function readLocalStorageBytesForApp(appId: AppId, sessionSuffix: string): numbe
 export function getAppStorageUsage(sessionSuffix: string): AppStorageUsage[] {
   return APP_ORDER.map((id) => {
     const usedBytes = readLocalStorageBytesForApp(id, sessionSuffix);
-    const usedPercent = Math.min(100, (usedBytes / MAX_LOCAL_STORAGE_PER_APP_BYTES) * 100);
+    const usedPercent = Math.min(
+      100,
+      (usedBytes / MAX_LOCAL_STORAGE_TOTAL_BYTES) * 100
+    );
     return {
       id,
       displayName: getAppDisplayName(id),
@@ -69,6 +73,10 @@ export function getLastGoogleSyncAt(sessionSuffix: string): string | null {
     }
   }
   return maxIso;
+}
+
+export function getTotalStorageUsedPercent(totalUsedBytes: number): number {
+  return Math.min(100, (totalUsedBytes / MAX_LOCAL_STORAGE_TOTAL_BYTES) * 100);
 }
 
 export function formatStorageBytes(bytes: number): string {

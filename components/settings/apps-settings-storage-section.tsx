@@ -7,7 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import {
   formatStorageBytes,
   getAppStorageUsage,
-  MAX_LOCAL_STORAGE_PER_APP_BYTES,
+  getTotalStorageUsedPercent,
+  MAX_LOCAL_STORAGE_TOTAL_BYTES,
   type AppStorageUsage,
 } from "@/lib/apps/storage-usage";
 
@@ -37,7 +38,9 @@ export function AppsSettingsStorageSection() {
   }, [refresh]);
 
   const totalBytes = items.reduce((acc, item) => acc + item.usedBytes, 0);
-  const maxBytesLabel = formatStorageBytes(MAX_LOCAL_STORAGE_PER_APP_BYTES);
+  const maxBytesLabel = formatStorageBytes(MAX_LOCAL_STORAGE_TOTAL_BYTES);
+  const totalPercent = getTotalStorageUsedPercent(totalBytes);
+  const totalPercentLabel = `${Math.round(totalPercent)}%`;
 
   return (
     <section className="space-y-6">
@@ -47,9 +50,24 @@ export function AppsSettingsStorageSection() {
         <p className="mt-4 text-sm text-muted-foreground">
           {t.apps.settings.storage.description.replace("{max}", maxBytesLabel)}
         </p>
-        <p className="mt-2 text-xs text-muted-foreground">
-          {t.apps.settings.storage.totalUsed.replace("{used}", formatStorageBytes(totalBytes))}
-        </p>
+        <div className="mt-4 rounded-lg border border-border p-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-medium text-foreground">{t.apps.settings.storage.totalLabel}</p>
+            <p className="text-xs text-muted-foreground">
+              {t.apps.settings.storage.totalUsed
+                .replace("{used}", formatStorageBytes(totalBytes))
+                .replace("{max}", maxBytesLabel)
+                .replace("{percent}", totalPercentLabel)}
+            </p>
+          </div>
+          <Progress
+            className="mt-2"
+            value={totalPercent}
+            aria-label={t.apps.settings.storage.totalProgressAria
+              .replace("{percent}", totalPercentLabel)}
+          />
+          <p className="mt-1 text-right text-xs text-muted-foreground">{totalPercentLabel}</p>
+        </div>
       </div>
 
       <ul className="grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -60,9 +78,7 @@ export function AppsSettingsStorageSection() {
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-medium text-foreground">{item.displayName}</p>
                 <p className="text-xs text-muted-foreground">
-                  {t.apps.settings.storage.usedOfMax
-                    .replace("{used}", formatStorageBytes(item.usedBytes))
-                    .replace("{max}", maxBytesLabel)}
+                  {formatStorageBytes(item.usedBytes)}
                 </p>
               </div>
               <Progress
@@ -72,7 +88,9 @@ export function AppsSettingsStorageSection() {
                   .replace("{app}", item.displayName)
                   .replace("{percent}", percentLabel)}
               />
-              <p className="mt-1 text-right text-xs text-muted-foreground">{percentLabel}</p>
+              <p className="mt-1 text-right text-xs text-muted-foreground">
+                {t.apps.settings.storage.appShareOfTotal.replace("{percent}", percentLabel)}
+              </p>
             </li>
           );
         })}
