@@ -2,7 +2,15 @@
  * Single source of truth: which apps exist, order, availability, and launch path.
  * UI (landing, /apps, switcher) should not hardcode per-app ids — use `APP_ORDER`, `isAppAvailable`, `getAppHref`.
  */
-export const APP_ORDER = ["collections", "dates", "domains", "links", "loans", "tasks"] as const;
+export const APP_ORDER = [
+  "collections",
+  "dates",
+  "domains",
+  "links",
+  "loans",
+  "tasks",
+  "tracker",
+] as const;
 export type AppId = (typeof APP_ORDER)[number];
 
 type AppCatalogEntry = {
@@ -19,6 +27,7 @@ export const APP_CATALOG: Record<AppId, AppCatalogEntry> = {
   domains: { available: true, path: "/apps/domains" },
   tasks: { available: true, path: "/apps/tasks" },
   collections: { available: true, path: "/apps/collections" },
+  tracker: { available: true, path: "/apps/tracker" },
 };
 
 export function isAppAvailable(id: AppId): boolean {

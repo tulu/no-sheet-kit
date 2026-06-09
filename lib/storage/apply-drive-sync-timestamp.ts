@@ -4,6 +4,7 @@ import { readNSKDomainsStorage, writeNSKDomainsStorage } from "@/lib/domains/sto
 import { readNSKLinksStorage, writeNSKLinksStorage } from "@/lib/links/storage";
 import { readNSKLoansStorage, writeNSKLoansStorage } from "@/lib/loans/storage";
 import { readNSKTasksStorage, writeNSKTasksStorage } from "@/lib/tasks/storage";
+import { readNSKTrackerStorage, writeNSKTrackerStorage } from "@/lib/tracker/storage";
 import { clearPendingDriveSync } from "@/lib/storage/pending-drive-sync";
 
 /** After a successful Drive upload, set the same `last_google_sync_at` on every list-app payload and clear pending. */
@@ -37,6 +38,11 @@ export function applyDriveSyncTimestampToAllListApps(sessionSuffix: string, sync
 
   const collections = readNSKCollectionsStorage(sessionSuffix);
   writeNSKCollectionsStorage(sessionSuffix, { ...collections, last_google_sync_at: syncedAt }, {
+    skipPendingDriveMark: true,
+  });
+
+  const tracker = readNSKTrackerStorage(sessionSuffix);
+  writeNSKTrackerStorage(sessionSuffix, { ...tracker, last_google_sync_at: syncedAt }, {
     skipPendingDriveMark: true,
   });
 

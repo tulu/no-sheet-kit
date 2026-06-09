@@ -26,6 +26,11 @@ const spacePersonal = "c0ffee00-0000-4000-8000-000000000002";
 const colGames = "dddd0001-0000-4000-8000-000000000001";
 const colBooks = "dddd0002-0000-4000-8000-000000000002";
 
+const trackMaintenance = "eeee0001-0000-4000-8000-000000000001";
+const trackOutings = "eeee0002-0000-4000-8000-000000000002";
+const trackSideProject = "eeee0003-0000-4000-8000-000000000003";
+const trackReading = "eeee0004-0000-4000-8000-000000000004";
+
 const loans = {
   version: 1,
   last_google_sync_at: null,
@@ -403,6 +408,124 @@ const collections = {
   ],
 };
 
+const tracker = {
+  version: 1,
+  last_google_sync_at: null,
+  tracks: [
+    {
+      id: trackMaintenance,
+      name: "Home upkeep",
+      order: 0,
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: trackOutings,
+      name: "Outings",
+      order: 1,
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: trackSideProject,
+      name: "Side project",
+      order: 2,
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: trackReading,
+      name: "Reading log",
+      order: 3,
+      created_at: T0,
+      updated_at: T0,
+    },
+  ],
+  entries: [
+    {
+      id: "r0000001-0000-4000-8000-000000000001",
+      track_id: trackMaintenance,
+      occurred_on: "2026-01-08",
+      start_time: "09:00",
+      end_time: "11:30",
+      notes: "Deep clean and filter swap.",
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: "r0000002-0000-4000-8000-000000000002",
+      track_id: trackMaintenance,
+      occurred_on: "2026-01-15",
+      notes: "Quick tidy before guests.",
+      created_at: T0,
+      updated_at: T1,
+    },
+    {
+      id: "r0000003-0000-4000-8000-000000000003",
+      track_id: trackOutings,
+      occurred_on: "2026-01-10",
+      start_time: "14:00",
+      end_time: "17:45",
+      notes: "Museum and late lunch downtown.",
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: "r0000004-0000-4000-8000-000000000004",
+      track_id: trackOutings,
+      occurred_on: "2026-01-10",
+      start_time: "19:30",
+      end_time: "21:00",
+      notes: "Evening show (same day, second mark).",
+      created_at: T1,
+      updated_at: T1,
+    },
+    {
+      id: "r0000005-0000-4000-8000-000000000005",
+      track_id: trackOutings,
+      occurred_on: "2026-01-18",
+      created_at: T1,
+      updated_at: T1,
+    },
+    {
+      id: "r0000006-0000-4000-8000-000000000006",
+      track_id: trackSideProject,
+      occurred_on: "2026-01-11",
+      start_time: "20:00",
+      end_time: "22:15",
+      notes: "Polished onboarding copy and fixed mobile nav.",
+      created_at: T0,
+      updated_at: T1,
+    },
+    {
+      id: "r0000007-0000-4000-8000-000000000007",
+      track_id: trackSideProject,
+      occurred_on: "2026-01-17",
+      notes: "Shipped v0.1.3 changelog draft.",
+      created_at: T1,
+      updated_at: T1,
+    },
+    {
+      id: "r0000008-0000-4000-8000-000000000008",
+      track_id: trackReading,
+      occurred_on: "2026-01-09",
+      start_time: "07:30",
+      end_time: "08:10",
+      notes: "Finished chapter 4 of Working in Public.",
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: "r0000009-0000-4000-8000-000000000009",
+      track_id: trackReading,
+      occurred_on: "2026-01-16",
+      notes: "Skimmed design systems article from bookmarks.",
+      created_at: T1,
+      updated_at: T1,
+    },
+  ],
+};
+
 function pretty(obj) {
   return `${JSON.stringify(obj, null, 2)}\n`;
 }
@@ -414,6 +537,7 @@ zip.file("links.json", pretty(links));
 zip.file("domains.json", pretty(domains));
 zip.file("tasks.json", pretty(tasks));
 zip.file("collections.json", pretty(collections));
+zip.file("tracker.json", pretty(tracker));
 
 const buf = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 fs.mkdirSync(outDir, { recursive: true });

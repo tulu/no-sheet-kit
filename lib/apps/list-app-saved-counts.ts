@@ -7,6 +7,7 @@ import { readNSKDomainsStorage } from "@/lib/domains/storage";
 import { readNSKLinksStorage } from "@/lib/links/storage";
 import { readNSKLoansStorage } from "@/lib/loans/storage";
 import { readNSKTasksStorage } from "@/lib/tasks/storage";
+import { readNSKTrackerStorage } from "@/lib/tracker/storage";
 
 /** Count of user-visible “things” stored for each list app (same rules as normalized storage reads). */
 export function getSavedElementCountForApp(appId: AppId, sessionSuffix: string): number {
@@ -25,6 +26,8 @@ export function getSavedElementCountForApp(appId: AppId, sessionSuffix: string):
       const s = readNSKCollectionsStorage(sessionSuffix);
       return s.collections.length + s.items.length;
     }
+    case "tracker":
+      return readNSKTrackerStorage(sessionSuffix).entries.length;
     default:
       return 0;
   }

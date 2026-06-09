@@ -15,6 +15,7 @@ const SOLUTION_KEYWORDS: Record<AppId, string[]> = {
   links: ["bookmark manager", "link organizer", "save links", "NoSheetKit"],
   tasks: ["task tracker", "kanban board", "simple todo", "NoSheetKit"],
   collections: ["collection tracker", "inventory list", "lent borrowed", "NoSheetKit"],
+  tracker: ["day log", "activity tracker", "daily log", "personal tracker", "NoSheetKit"],
 };
 
 export function buildSolutionMetadata(appId: AppId): Metadata {

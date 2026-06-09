@@ -7,7 +7,8 @@ export type NskListAppSlug =
   | "links"
   | "domains"
   | "tasks"
-  | "collections";
+  | "collections"
+  | "tracker";
 
 export const NSK_LIST_APP_SLUGS: NskListAppSlug[] = [
   "loans",
@@ -16,6 +17,7 @@ export const NSK_LIST_APP_SLUGS: NskListAppSlug[] = [
   "domains",
   "tasks",
   "collections",
+  "tracker",
 ];
 
 const PREFIX: Record<NskListAppSlug, string> = {
@@ -25,6 +27,7 @@ const PREFIX: Record<NskListAppSlug, string> = {
   domains: "nskdomains",
   tasks: "nsktasks",
   collections: "nskcollections",
+  tracker: "nsktracker",
 };
 
 export const ZIP_FILENAME_BY_SLUG: Record<NskListAppSlug, string> = {
@@ -34,6 +37,7 @@ export const ZIP_FILENAME_BY_SLUG: Record<NskListAppSlug, string> = {
   domains: "domains.json",
   tasks: "tasks.json",
   collections: "collections.json",
+  tracker: "tracker.json",
 };
 
 export const GUEST_BACKUP_FILENAME_TO_SLUG: Record<string, NskListAppSlug> = {
@@ -43,6 +47,7 @@ export const GUEST_BACKUP_FILENAME_TO_SLUG: Record<string, NskListAppSlug> = {
   "domains.json": "domains",
   "tasks.json": "tasks",
   "collections.json": "collections",
+  "tracker.json": "tracker",
 };
 
 export function googleSessionSuffixFromSub(sub: string): string {

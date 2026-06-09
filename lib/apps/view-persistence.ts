@@ -10,6 +10,7 @@ export const APP_VIEW_PERSISTENCE_KEYS = [
   "links",
   "tasks",
   "collections",
+  "tracker",
 ] as const;
 export type AppViewPersistenceKey = (typeof APP_VIEW_PERSISTENCE_KEYS)[number];
 

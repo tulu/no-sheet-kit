@@ -171,6 +171,31 @@ const enPages: Record<AppId, SolutionPageCopy> = {
     relatedTitle: "More focused mini-apps",
     learnMore: "Learn more about this app",
   },
+  tracker: {
+    h1: "Activity tracker for days you want to remember",
+    subtitle: "A simple day log, private in your browser.",
+    intent:
+      "Need a simple log without a spreadsheet? NSKTracker lets you mark days in named tracks with optional times. Grid, table, and month calendar included.",
+    benefits: [
+      "Named tracks for anything you log over time",
+      "Grid, table, and calendar views; multiple marks per day allowed",
+      "Optional start and end times on each mark",
+      "Local-first. No Google Calendar sync in this app.",
+    ],
+    vsAlternatives: {
+      title: "Why not a spreadsheet or a subscription app?",
+      items: [
+        "Unlike spreadsheet rows, dates and optional times are structured fields with a calendar view",
+        "Unlike subscription trackers, your log stays on your device by default",
+        "Unlike Google Calendar, this records what happened. It is not a reminder system.",
+      ],
+    },
+    ctaOpen: "Open NSKTracker",
+    ctaDocs: "Read documentation",
+    ctaLogin: "Get started free",
+    relatedTitle: "More focused mini-apps",
+    learnMore: "Learn more about this app",
+  },
 };
 
 const esPages: Record<AppId, SolutionPageCopy> = {
@@ -324,6 +349,31 @@ const esPages: Record<AppId, SolutionPageCopy> = {
     relatedTitle: "Más mini-apps enfocadas",
     learnMore: "Más sobre esta app",
   },
+  tracker: {
+    h1: "Registro de actividad para los días que quieres anotar",
+    subtitle: "Un registro de días sencillo, privado en el navegador.",
+    intent:
+      "¿Buscas un registro simple sin hoja de cálculo? NSKTracker te deja marcar días en seguimientos con horarios opcionales. Cuadrícula, tabla y calendario mensual incluidos.",
+    benefits: [
+      "Seguimientos con nombre para lo que quieras registrar",
+      "Vistas cuadrícula, tabla y calendario; varios registros el mismo día",
+      "Hora de inicio y fin opcionales en cada marca",
+      "Local por defecto. Sin sincronización con Google Calendar.",
+    ],
+    vsAlternatives: {
+      title: "¿Por qué no una hoja de cálculo o una app de pago?",
+      items: [
+        "A diferencia de filas sueltas, hay campos de fecha y hora opcionales con vista calendario",
+        "A diferencia de apps con suscripción, tu registro queda en el dispositivo",
+        "A diferencia de Google Calendar, esto registra lo que pasó. No es un sistema de recordatorios.",
+      ],
+    },
+    ctaOpen: "Abrir NSKTracker",
+    ctaDocs: "Ver documentación",
+    ctaLogin: "Empezar gratis",
+    relatedTitle: "Más mini-apps enfocadas",
+    learnMore: "Más sobre esta app",
+  },
 };
 
 const ptPages: Record<AppId, SolutionPageCopy> = {
@@ -472,6 +522,31 @@ const ptPages: Record<AppId, SolutionPageCopy> = {
       ],
     },
     ctaOpen: "Abrir NSKCollections",
+    ctaDocs: "Ver documentação",
+    ctaLogin: "Começar grátis",
+    relatedTitle: "Mais mini-apps focadas",
+    learnMore: "Saiba mais sobre este app",
+  },
+  tracker: {
+    h1: "Registro de atividade para os dias que você quer anotar",
+    subtitle: "Um registro de dias simples, privado no navegador.",
+    intent:
+      "Precisa de um registro simples sem planilha? O NSKTracker marca dias em acompanhamentos com horários opcionais. Grade, tabela e calendário mensal incluídos.",
+    benefits: [
+      "Acompanhamentos nomeados para o que você quiser registrar",
+      "Visualizações em grade, tabela e calendário; vários registros no mesmo dia",
+      "Horário de início e fim opcionais em cada marca",
+      "Local por padrão. Sem sincronização com o Google Calendar.",
+    ],
+    vsAlternatives: {
+      title: "Por que não planilha ou app pago?",
+      items: [
+        "Diferente de linhas soltas, há campos de data e hora opcionais com vista de calendário",
+        "Diferente de apps com assinatura, seu registro fica no dispositivo",
+        "Diferente do Google Calendar, isso registra o que aconteceu. Não é um sistema de lembretes.",
+      ],
+    },
+    ctaOpen: "Abrir NSKTracker",
     ctaDocs: "Ver documentação",
     ctaLogin: "Começar grátis",
     relatedTitle: "Mais mini-apps focadas",
