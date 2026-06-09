@@ -6,7 +6,14 @@ import {
 } from "@/lib/analytics/events";
 import type { Messages } from "@/lib/i18n/messages";
 
-export type AppToastApp = "links" | "domains" | "dates" | "loans" | "tasks" | "collections";
+export type AppToastApp =
+  | "links"
+  | "domains"
+  | "dates"
+  | "loans"
+  | "tasks"
+  | "collections"
+  | "tracker";
 
 export type AppCrudAction = "created" | "updated" | "deleted";
 
@@ -57,6 +64,26 @@ export function appTasksCommentToast(t: Messages, action: "created" | "updated" 
         ? t.common.appToasts.tasks.commentUpdated
         : t.common.appToasts.tasks.commentDeleted;
   toast.success(row.title);
+}
+
+export function appTrackerTrackToast(
+  t: Messages,
+  action: "created" | "updated" | "deleted"
+): void {
+  const row =
+    action === "created"
+      ? t.common.appToasts.tracker.trackCreated
+      : action === "updated"
+        ? t.common.appToasts.tracker.trackUpdated
+        : t.common.appToasts.tracker.trackDeleted;
+  toast.success(row.title);
+  if (action === "created") {
+    trackAppRecordCreated("tracker");
+  } else if (action === "updated") {
+    trackAppRecordUpdated("tracker");
+  } else {
+    trackAppRecordDeleted("tracker");
+  }
 }
 
 export function appCollectionsCollectionToast(

@@ -6,7 +6,8 @@ export type SolutionSeoKey =
   | "solutionLoans"
   | "solutionLinks"
   | "solutionTasks"
-  | "solutionCollections";
+  | "solutionCollections"
+  | "solutionTracker";
 
 export type SolutionEntry = {
   appId: AppId;
@@ -21,6 +22,7 @@ export const SOLUTION_ENTRIES: SolutionEntry[] = [
   { appId: "links", slug: "bookmark-manager", seoKey: "solutionLinks" },
   { appId: "tasks", slug: "task-tracker", seoKey: "solutionTasks" },
   { appId: "collections", slug: "collection-tracker", seoKey: "solutionCollections" },
+  { appId: "tracker", slug: "activity-tracker", seoKey: "solutionTracker" },
 ];
 
 const bySlug = new Map(SOLUTION_ENTRIES.map((e) => [e.slug, e]));
