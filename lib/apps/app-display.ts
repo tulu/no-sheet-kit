@@ -1,4 +1,5 @@
 import {
+  Activity,
   Banknote,
   CalendarHeart,
   Globe,
@@ -16,6 +17,7 @@ export const APP_DISPLAY_ICONS: Record<AppId, LucideIcon> = {
   domains: Globe,
   tasks: ListTodo,
   collections: Layers,
+  tracker: Activity,
 };
 
 /** Product names (not translated). */
@@ -26,6 +28,7 @@ export const APP_DISPLAY_NAMES: Record<AppId, string> = {
   domains: "NSKDomains",
   tasks: "NSKTasks",
   collections: "NSKCollections",
+  tracker: "NSKTracker",
 };
 
 export function getAppDisplayName(id: AppId): string {

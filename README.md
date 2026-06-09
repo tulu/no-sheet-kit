@@ -32,6 +32,7 @@ Open the hub at **`/apps`** and pick a tool. Each app keeps its own data in the 
 | **Domains** | A private portfolio of names, registrars, renewal dates, and notes—with calendar-friendly expiry awareness. |
 | **Tasks** | Spaces (e.g. personal vs work) with Kanban and list views, due dates, and comments. |
 | **Collections** | Named collections (books, games, gear, anything) with optional price and link fields and simple “owned / lent / borrowed / wanted” tracking. |
+| **Tracker** | Mark days you want to remember, organized in tracks with grid, table, and calendar views. Optional start/end times per mark. No Google Calendar sync. |
 
 Together, these replace the “misc” tabs people bolt onto the same spreadsheet—**with clearer boundaries and less risk of mixing unrelated data.**
 

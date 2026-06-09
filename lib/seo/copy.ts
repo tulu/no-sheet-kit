@@ -3,7 +3,7 @@ export const seoCopy = {
   home: {
     title: "NoSheetKit — Simple, private mini-apps for everyday tracking",
     description:
-      "Private browser mini-apps: birthday reminders, loan tracker, domain portfolio, bookmarks, tasks, and collections—no spreadsheet.",
+      "Private browser mini-apps: birthday reminders, loan tracker, domain portfolio, bookmarks, tasks, collections, and activity tracker—no spreadsheet.",
   },
   solutionDates: {
     title: "Birthday Reminder — private browser app",
@@ -35,9 +35,15 @@ export const seoCopy = {
     description:
       "Collection tracker for games, books, gear, and more—see what you own, lent, borrowed, or still want.",
   },
+  solutionTracker: {
+    title: "Activity Tracker — log days in your browser",
+    description:
+      "Mark days in named tracks with grid, table, and month calendar views. Optional start and end times.",
+  },
   apps: {
     title: "Apps",
-    description: "Open NoSheetKit and launch a mini-app—loans, dates, domains, links, tasks, or collections.",
+    description:
+      "Open NoSheetKit and launch a mini-app—loans, dates, domains, links, tasks, collections, or tracker.",
   },
   dates: {
     title: "NSKDates",
@@ -63,6 +69,11 @@ export const seoCopy = {
     title: "NSKCollections",
     description: "Named collections with owned, lent, borrowed, or wanted status—list or grid view.",
   },
+  tracker: {
+    title: "NSKTracker",
+    description:
+      "Mark days in tracks with grid, table, and calendar views. Optional start and end times per mark.",
+  },
   settings: {
     title: "Settings",
     description: "Language, theme, account, storage, and backup settings for your NoSheetKit apps.",
@@ -85,7 +96,7 @@ export const seoCopy = {
   },
   docsWelcomeFeatures: {
     title: "Documentation — Key features",
-    description: "Features of the kit: six mini-apps, local storage, shared UI, and one launcher.",
+    description: "Features of the kit: seven mini-apps, local storage, shared UI, and one launcher.",
   },
   docsWelcomeQuickstart: {
     title: "Documentation — Quickstart",
@@ -126,5 +137,9 @@ export const seoCopy = {
   docsApplicationTasks: {
     title: "Task Tracker Documentation — NSKTasks",
     description: "Docs for spaces, Kanban and list boards, due dates, and task comments.",
+  },
+  docsApplicationTracker: {
+    title: "Activity Tracker Documentation — NSKTracker",
+    description: "Docs for logging days in tracks: grid, table, calendar, and optional start/end times.",
   },
 } as const;

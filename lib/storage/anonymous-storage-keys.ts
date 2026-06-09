@@ -15,6 +15,7 @@ export const NSKLINKS_STORAGE_KEY = buildNskListAppStorageKey("links", SESSION_S
 export const NSKDOMAINS_STORAGE_KEY = buildNskListAppStorageKey("domains", SESSION_SUFFIX_ANONYMOUS);
 export const NSKTASKS_STORAGE_KEY = buildNskListAppStorageKey("tasks", SESSION_SUFFIX_ANONYMOUS);
 export const NSKCOLLECTIONS_STORAGE_KEY = buildNskListAppStorageKey("collections", SESSION_SUFFIX_ANONYMOUS);
+export const NSKTRACKER_STORAGE_KEY = buildNskListAppStorageKey("tracker", SESSION_SUFFIX_ANONYMOUS);
 
 export const ALL_ANONYMOUS_APP_STORAGE_KEYS = [
   NSKLOANS_STORAGE_KEY,
@@ -23,6 +24,7 @@ export const ALL_ANONYMOUS_APP_STORAGE_KEYS = [
   NSKDOMAINS_STORAGE_KEY,
   NSKTASKS_STORAGE_KEY,
   NSKCOLLECTIONS_STORAGE_KEY,
+  NSKTRACKER_STORAGE_KEY,
 ] as const;
 
 export function clearAllAnonymousAppLocalStorage(): void {

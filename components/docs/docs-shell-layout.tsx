@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  Activity,
   Banknote,
   CalendarDays,
   CalendarHeart,
@@ -40,6 +41,7 @@ const APP_DOC_ICONS: Record<AppId, LucideIcon> = {
   domains: Globe,
   tasks: ListTodo,
   collections: Layers,
+  tracker: Activity,
 };
 
 export type DocNavId =
