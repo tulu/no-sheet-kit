@@ -36,6 +36,84 @@ export function sortEntriesForDisplay(entries: NSKTrackerEntry[]): NSKTrackerEnt
   return [...entries].sort(compareEntriesForDisplay);
 }
 
+/** Chronological order within a calendar month block (grid grouping). */
+export function compareEntriesWithinMonthAsc(a: NSKTrackerEntry, b: NSKTrackerEntry): number {
+  const byDate = a.occurred_on.localeCompare(b.occurred_on);
+  if (byDate !== 0) return byDate;
+  const aStart = a.start_time ?? "";
+  const bStart = b.start_time ?? "";
+  const byStart = aStart.localeCompare(bStart);
+  if (byStart !== 0) return byStart;
+  return a.created_at.localeCompare(b.created_at);
+}
+
+export function yearMonthKey(year: number, month: number): string {
+  return `${year}-${month}`;
+}
+
+export function parseYearMonthKey(key: string): { year: number; month: number } {
+  const [ys, ms] = key.split("-");
+  return { year: Number(ys), month: Number(ms) };
+}
+
+export function monthYearLabel(locale: Locale, year: number, monthIndex: number): string {
+  return new Intl.DateTimeFormat(getIntlLocaleTag(locale), {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(year, monthIndex, 1));
+}
+
+function entryYearMonth(entry: NSKTrackerEntry): { year: number; month: number } | null {
+  const d = parseISODate(entry.occurred_on);
+  if (!d) return null;
+  return { year: d.getFullYear(), month: d.getMonth() };
+}
+
+function calendarMonthIndex(year: number, month: number): number {
+  return year * 12 + month;
+}
+
+/** True when the entry falls in a calendar month before the current one. */
+export function isEntryInPastCalendarMonth(entry: NSKTrackerEntry, now: Date = new Date()): boolean {
+  const ym = entryYearMonth(entry);
+  if (!ym) return false;
+  const entryIndex = calendarMonthIndex(ym.year, ym.month);
+  const nowIndex = calendarMonthIndex(now.getFullYear(), now.getMonth());
+  return entryIndex < nowIndex;
+}
+
+export function buildEntriesYearMonthBucketMap(
+  entries: NSKTrackerEntry[],
+  mode: "upcoming" | "past",
+  now: Date = new Date()
+): Map<string, NSKTrackerEntry[]> {
+  const map = new Map<string, NSKTrackerEntry[]>();
+  for (const entry of entries) {
+    const inPastMonth = isEntryInPastCalendarMonth(entry, now);
+    if (mode === "upcoming" && inPastMonth) continue;
+    if (mode === "past" && !inPastMonth) continue;
+
+    const ym = entryYearMonth(entry);
+    if (!ym) continue;
+    const key = yearMonthKey(ym.year, ym.month);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(entry);
+  }
+  for (const list of map.values()) {
+    list.sort(compareEntriesWithinMonthAsc);
+  }
+  return map;
+}
+
+export function sortedYearMonthKeys(keys: string[], order: "asc" | "desc"): string[] {
+  const parsed = keys.map((k) => ({ k, ...parseYearMonthKey(k) }));
+  parsed.sort((a, b) => {
+    if (a.year !== b.year) return order === "asc" ? a.year - b.year : b.year - a.year;
+    return order === "asc" ? a.month - b.month : b.month - a.month;
+  });
+  return parsed.map((p) => p.k);
+}
+
 function parseISODate(value: string): Date | null {
   if (!DATE_RE.test(value)) return null;
   const d = new Date(`${value}T00:00:00`);

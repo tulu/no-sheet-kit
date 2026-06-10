@@ -1,6 +1,7 @@
 "use client";
 
-import { Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   CardActionsMenu,
@@ -8,14 +9,20 @@ import {
 } from "@/components/common/card-actions-menu";
 import { MonthGridCalendar } from "@/components/common/month-grid-calendar";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { Badge } from "@/components/ui/badge";
 import type { Locale } from "@/lib/i18n/types";
 import type { NSKTrackerEntry, TrackerViewMode } from "@/lib/tracker/schema";
 import {
+  buildEntriesYearMonthBucketMap,
   entriesOnCalendarDay,
   formatEntryTimeRange,
   formatTrackerDateLong,
   formatTrackerDateShort,
+  monthYearLabel,
+  parseYearMonthKey,
+  sortedYearMonthKeys,
 } from "@/lib/tracker/tracker-helpers";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -47,6 +54,87 @@ function entryMenuActions(
   ];
 }
 
+type TrackerEntryCardProps = {
+  entry: NSKTrackerEntry;
+  locale: Locale;
+  menuLabels: { edit: string; delete: string };
+  onEdit: (entry: NSKTrackerEntry) => void;
+  onDelete: (entry: NSKTrackerEntry) => void;
+};
+
+function TrackerEntryCard({ entry, locale, menuLabels, onEdit, onDelete }: TrackerEntryCardProps) {
+  const { t } = useI18n();
+  const timeRange = formatEntryTimeRange(entry);
+
+  return (
+    <Card className="h-full overflow-hidden border border-border/70 gap-0 py-0 pb-4 shadow-sm">
+      <div className="h-1 w-full shrink-0 bg-blue-500" aria-hidden />
+      <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 rounded-none px-4 pb-0 pt-3">
+        <CardTitle className="text-base font-semibold leading-snug">
+          {formatTrackerDateLong(entry.occurred_on, locale)}
+        </CardTitle>
+        <CardActionsMenu
+          ariaLabel={t.tracker.cardActionsMenu}
+          actions={entryMenuActions(entry, menuLabels, () => onEdit(entry), () => onDelete(entry))}
+        />
+      </CardHeader>
+      <CardContent className="space-y-1 px-4 pb-0 pt-1.5 text-sm">
+        {timeRange ? (
+          <p className="text-muted-foreground">
+            <span className="font-medium text-foreground">{t.tracker.fields.timeRange}:</span>{" "}
+            {timeRange}
+          </p>
+        ) : null}
+        {entry.notes ? (
+          <p className="line-clamp-3 whitespace-pre-wrap text-muted-foreground">{entry.notes}</p>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+type TrackerMonthBlockProps = {
+  monthEntries: NSKTrackerEntry[];
+  monthLabel: string;
+  locale: Locale;
+  menuLabels: { edit: string; delete: string };
+  onEdit: (entry: NSKTrackerEntry) => void;
+  onDelete: (entry: NSKTrackerEntry) => void;
+};
+
+function TrackerMonthBlock({
+  monthEntries,
+  monthLabel,
+  locale,
+  menuLabels,
+  onEdit,
+  onDelete,
+}: TrackerMonthBlockProps) {
+  if (monthEntries.length === 0) return null;
+
+  return (
+    <section>
+      <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+        {monthLabel} ({monthEntries.length})
+      </h3>
+
+      <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {monthEntries.map((entry) => (
+          <li key={entry.id}>
+            <TrackerEntryCard
+              entry={entry}
+              locale={locale}
+              menuLabels={menuLabels}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function TrackerView({
   entries,
   viewMode,
@@ -57,43 +145,70 @@ export function TrackerView({
   onDelete,
 }: TrackerViewProps) {
   const { t } = useI18n();
+  const [pastOpen, setPastOpen] = useState(false);
   const menuLabels = { edit: t.tracker.editEntry, delete: t.tracker.deleteEntryAction };
 
   function renderGrid() {
+    const now = new Date();
+    const upcomingMap = buildEntriesYearMonthBucketMap(entries, "upcoming", now);
+    const pastMap = buildEntriesYearMonthBucketMap(entries, "past", now);
+
+    const upcomingKeys = sortedYearMonthKeys([...upcomingMap.keys()], "asc");
+    const pastKeys = sortedYearMonthKeys([...pastMap.keys()], "desc");
+    const showPastToggle = pastKeys.length > 0;
+
     return (
-      <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {entries.map((entry) => {
-          const timeRange = formatEntryTimeRange(entry);
+      <div className="space-y-8">
+        {upcomingKeys.map((key) => {
+          const { year, month } = parseYearMonthKey(key);
           return (
-            <li key={entry.id}>
-              <Card className="h-full border border-border/70 shadow-sm">
-                <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
-                  <CardTitle className="text-base font-semibold leading-snug">
-                    {formatTrackerDateLong(entry.occurred_on, locale)}
-                  </CardTitle>
-                  <CardActionsMenu
-                    ariaLabel={t.tracker.cardActionsMenu}
-                    actions={entryMenuActions(entry, menuLabels, () => onEdit(entry), () =>
-                      onDelete(entry)
-                    )}
-                  />
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  {timeRange ? (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium text-foreground">{t.tracker.fields.timeRange}:</span>{" "}
-                      {timeRange}
-                    </p>
-                  ) : null}
-                  {entry.notes ? (
-                    <p className="line-clamp-3 whitespace-pre-wrap text-muted-foreground">{entry.notes}</p>
-                  ) : null}
-                </CardContent>
-              </Card>
-            </li>
+            <TrackerMonthBlock
+              key={`up-${key}`}
+              monthEntries={upcomingMap.get(key)!}
+              monthLabel={monthYearLabel(locale, year, month)}
+              locale={locale}
+              menuLabels={menuLabels}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
           );
         })}
-      </ul>
+
+        {showPastToggle ? (
+          <div className="border-t border-border pt-6">
+            <button
+              type="button"
+              className="flex w-full items-center gap-2 rounded-lg py-2 text-left text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-expanded={pastOpen}
+              onClick={() => setPastOpen((o) => !o)}
+            >
+              <ChevronDown
+                className={cn("size-4 shrink-0 transition-transform", pastOpen && "rotate-180")}
+                aria-hidden
+              />
+              {pastOpen ? t.tracker.hidePastMonths : t.tracker.showPastMonths}
+            </button>
+            {pastOpen ? (
+              <div className="mt-4 space-y-8">
+                {pastKeys.map((key) => {
+                  const { year, month } = parseYearMonthKey(key);
+                  return (
+                    <TrackerMonthBlock
+                      key={`past-${key}`}
+                      monthEntries={pastMap.get(key)!}
+                      monthLabel={monthYearLabel(locale, year, month)}
+                      locale={locale}
+                      menuLabels={menuLabels}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                    />
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     );
   }
 
@@ -164,20 +279,26 @@ export function TrackerView({
         getItemKey={(entry) => entry.id}
         renderItem={(entry) => {
           const timeRange = formatEntryTimeRange(entry);
-          const label = timeRange
-            ? `${formatTrackerDateShort(entry.occurred_on, locale)} ${timeRange}`
-            : formatTrackerDateShort(entry.occurred_on, locale);
+          const notes = entry.notes?.trim() ?? "";
+          const headline = timeRange || t.tracker.calendarDayMark;
           return (
-            <button
-              type="button"
+            <Badge
+              variant="outline"
+              render={<button type="button" />}
+              title={notes ? `${headline} — ${notes}` : headline}
               onClick={() => onEdit(entry)}
-              className="flex w-full max-w-full min-w-0 items-center rounded-md border border-border/80 bg-background px-1.5 py-0.5 text-left text-[11px] leading-tight transition-colors hover:bg-muted/60 sm:text-xs"
-              title={entry.notes ?? label}
+              className={cn(
+                "h-auto min-h-5 w-full max-w-full flex-col items-stretch gap-0 whitespace-normal rounded-md px-1.5 py-0.5 text-left text-[11px] leading-tight sm:text-xs",
+                "border border-blue-500/40 bg-blue-500/10 text-blue-700 dark:text-blue-300"
+              )}
             >
-              <span className="min-w-0 flex-1 truncate font-medium text-foreground">
-                {timeRange || t.tracker.calendarDayMark}
-              </span>
-            </button>
+              <span className="w-full truncate font-medium">{headline}</span>
+              {notes ? (
+                <span className="w-full truncate text-[10px] font-normal opacity-80 sm:text-[11px]">
+                  {notes}
+                </span>
+              ) : null}
+            </Badge>
           );
         }}
       />
