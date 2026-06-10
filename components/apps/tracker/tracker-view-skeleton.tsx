@@ -19,24 +19,32 @@ export type TrackerViewSkeletonProps = {
 
 function TrackerSkeletonGrid() {
   return (
-    <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, idx) => (
-        <li key={`tracker-skel-card-${idx}`}>
-          <Card className="h-full border border-border/70 gap-0 py-0 pb-4">
-            <CardHeader className="gap-2 rounded-none px-4 pt-4">
-              <div className="flex items-start justify-between gap-3">
-                <Skeleton className="h-5 min-w-0 flex-1 max-w-full" />
-                <Skeleton className="h-8 w-8 shrink-0 rounded-md" />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2 px-4 pb-0 pt-3">
-              <Skeleton className="h-3 w-2/3 max-w-full" />
-              <Skeleton className="h-3 w-full" />
-            </CardContent>
-          </Card>
-        </li>
+    <div className="space-y-8">
+      {Array.from({ length: 2 }).map((_, sectionIdx) => (
+        <section key={`tracker-skel-section-${sectionIdx}`}>
+          <Skeleton className="mb-2 h-4 w-36" />
+          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: sectionIdx === 0 ? 4 : 2 }).map((__, idx) => (
+              <li key={`tracker-skel-card-${sectionIdx}-${idx}`}>
+                <Card className="h-full overflow-hidden border border-border/70 gap-0 py-0 pb-4">
+                  <div className="h-1 w-full shrink-0 bg-blue-500" aria-hidden />
+                  <CardHeader className="gap-2 rounded-none px-4 pb-0 pt-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <Skeleton className="h-5 min-w-0 flex-1 max-w-full" />
+                      <Skeleton className="h-8 w-8 shrink-0 rounded-md" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-1 px-4 pb-0 pt-1.5">
+                    <Skeleton className="h-3 w-2/3 max-w-full" />
+                    <Skeleton className="h-3 w-full" />
+                  </CardContent>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        </section>
       ))}
-    </ul>
+    </div>
   );
 }
 

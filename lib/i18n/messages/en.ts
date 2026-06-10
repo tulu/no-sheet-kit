@@ -1052,8 +1052,10 @@ export const enMessages = {
     calendarMonthNav: "Month navigation",
     calendarPrevMonth: "Previous month",
     calendarNextMonth: "Next month",
-    calendarDayMark: "Mark",
+    calendarDayMark: "Event",
     cardActionsMenu: "Mark actions",
+    showPastMonths: "Show past months",
+    hidePastMonths: "Hide past months",
     fields: {
       trackName: "Track name",
       trackNamePlaceholderExample: "e.g. Personal",

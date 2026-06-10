@@ -1058,6 +1058,8 @@ export const esMessages = {
     calendarNextMonth: "Mes siguiente",
     calendarDayMark: "Registro",
     cardActionsMenu: "Acciones del registro",
+    showPastMonths: "Mostrar meses pasados",
+    hidePastMonths: "Ocultar meses pasados",
     fields: {
       trackName: "Nombre del seguimiento",
       trackNamePlaceholderExample: "p. ej. Personal",
