@@ -1057,6 +1057,8 @@ export const ptMessages = {
     calendarNextMonth: "Próximo mês",
     calendarDayMark: "Registro",
     cardActionsMenu: "Ações do registro",
+    showPastMonths: "Mostrar meses passados",
+    hidePastMonths: "Ocultar meses passados",
     fields: {
       trackName: "Nome do acompanhamento",
       trackNamePlaceholderExample: "ex. Pessoal",
