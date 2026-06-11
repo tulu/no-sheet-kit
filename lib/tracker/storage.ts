@@ -6,10 +6,12 @@ import { buildNskListAppStorageKey } from "@/lib/storage/session-storage-keys";
 import { isValidTrackerDate, isValidTrackerTime } from "./tracker-helpers";
 import {
   createEmptyNSKTrackerSchema,
+  isTrackerOutcomeId,
   NSKTRACKER_SCHEMA_VERSION,
   type NSKTrackerEntry,
   type NSKTrackerSchema,
   type NSKTrackerTrack,
+  type TrackerOutcomeId,
 } from "./schema";
 
 function normalizeTracks(raw: unknown): NSKTrackerTrack[] {
@@ -50,10 +52,15 @@ function normalizeEntries(raw: unknown, validTrackIds: Set<string>): NSKTrackerE
       typeof e.end_time === "string" && isValidTrackerTime(e.end_time) ? e.end_time : undefined;
     const createdAt = typeof e.created_at === "string" ? e.created_at : now;
     const updatedAt = typeof e.updated_at === "string" ? e.updated_at : createdAt;
+    const outcomeId: TrackerOutcomeId =
+      typeof e.outcome_id === "string" && isTrackerOutcomeId(e.outcome_id)
+        ? e.outcome_id
+        : "fulfilled";
     acc.push({
       id: typeof e.id === "string" && e.id.trim() ? e.id : crypto.randomUUID(),
       track_id: e.track_id,
       occurred_on: e.occurred_on,
+      outcome_id: outcomeId,
       start_time: startTime,
       end_time: endTime,
       notes: typeof e.notes === "string" && e.notes.trim() ? e.notes.trim() : undefined,

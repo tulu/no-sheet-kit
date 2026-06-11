@@ -4,6 +4,13 @@ export const NSKTRACKER_SCHEMA_VERSION = 1;
 export const TRACKER_VIEW_MODES = ["grid", "list", "calendar"] as const;
 export type TrackerViewMode = (typeof TRACKER_VIEW_MODES)[number];
 
+export const TRACKER_OUTCOME_IDS = ["fulfilled", "partial", "missed"] as const;
+export type TrackerOutcomeId = (typeof TRACKER_OUTCOME_IDS)[number];
+
+export function isTrackerOutcomeId(value: string): value is TrackerOutcomeId {
+  return (TRACKER_OUTCOME_IDS as readonly string[]).includes(value);
+}
+
 export type NSKTrackerTrack = {
   id: string;
   name: string;
@@ -17,6 +24,7 @@ export type NSKTrackerEntry = {
   track_id: string;
   /** YYYY-MM-DD */
   occurred_on: string;
+  outcome_id: TrackerOutcomeId;
   /** HH:MM */
   start_time?: string;
   /** HH:MM */

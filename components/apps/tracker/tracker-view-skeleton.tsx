@@ -56,6 +56,7 @@ function TrackerSkeletonList() {
         <TableHeader>
           <TableRow className="border-border bg-muted/40 hover:bg-muted/40">
             <TableHead className="px-3 py-2">{t.tracker.table.date}</TableHead>
+            <TableHead className="px-3 py-2">{t.tracker.table.outcome}</TableHead>
             <TableHead className="px-3 py-2">{t.tracker.table.start}</TableHead>
             <TableHead className="px-3 py-2">{t.tracker.table.end}</TableHead>
             <TableHead className="px-3 py-2">{t.tracker.table.notes}</TableHead>
@@ -67,6 +68,9 @@ function TrackerSkeletonList() {
             <TableRow key={`tracker-skel-row-${idx}`}>
               <TableCell className="px-3 py-2">
                 <Skeleton className="h-4 w-28" />
+              </TableCell>
+              <TableCell className="px-3 py-2">
+                <Skeleton className="h-5 w-20 rounded-full" />
               </TableCell>
               <TableCell className="px-3 py-2">
                 <Skeleton className="h-4 w-16" />

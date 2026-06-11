@@ -34,6 +34,10 @@ const SEMANTIC_TO_TONE: Record<string, BadgeTone> = {
   lent_out: "amber",
   borrowed: "blue",
   wanted: "violet",
+  /** Tracker entry outcome */
+  fulfilled: "emerald",
+  partial: "amber",
+  missed: "rose",
 };
 
 const DEFAULT_TONE: BadgeTone = "slate";
