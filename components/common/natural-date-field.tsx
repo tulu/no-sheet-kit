@@ -118,6 +118,10 @@ export function NaturalDateField({
   }
 
   useEffect(() => {
+    return () => clearBlurCommitTimer();
+  }, []);
+
+  useEffect(() => {
     if (!disabled) return;
     queueMicrotask(() => {
       setCalendarOpen(false);
