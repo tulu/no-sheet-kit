@@ -42,7 +42,6 @@ import {
   formatTrackerDateLong,
   sortEntriesForDisplay,
   sortTracks,
-  todayIsoDate,
 } from "@/lib/tracker/tracker-helpers";
 import { useSessionStorageSuffix } from "@/lib/storage/session-storage-context";
 import { AddEntrySheet } from "./add-entry-sheet";
@@ -76,7 +75,6 @@ export function TrackerAppPage() {
 
   const [entrySheetOpen, setEntrySheetOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<NSKTrackerEntry | null>(null);
-  const [entryDefaultDate, setEntryDefaultDate] = useState<string | undefined>(undefined);
   const [entryPendingDelete, setEntryPendingDelete] = useState<NSKTrackerEntry | null>(null);
 
   function commit(updater: (prev: NSKTrackerSchema) => NSKTrackerSchema) {
@@ -263,21 +261,20 @@ export function TrackerAppPage() {
     setTrackDeleteWithEntries(null);
   }
 
-  function openCreateEntry(markToday = false) {
+  function openCreateEntry() {
     if (!activeTrackId) return;
     setEditingEntry(null);
-    setEntryDefaultDate(markToday ? todayIsoDate() : undefined);
     setEntrySheetOpen(true);
   }
 
   function openEditEntry(entry: NSKTrackerEntry) {
     setEditingEntry(entry);
-    setEntryDefaultDate(undefined);
     setEntrySheetOpen(true);
   }
 
   function handleSaveEntry(values: {
     occurred_on: string;
+    outcome_id: NSKTrackerEntry["outcome_id"];
     start_time: string;
     end_time: string;
     notes: string;
@@ -296,6 +293,7 @@ export function TrackerAppPage() {
             ? {
                 ...e,
                 occurred_on: values.occurred_on,
+                outcome_id: values.outcome_id,
                 start_time: startTime,
                 end_time: endTime,
                 notes,
@@ -310,6 +308,7 @@ export function TrackerAppPage() {
         id: crypto.randomUUID(),
         track_id: activeTrackId!,
         occurred_on: values.occurred_on,
+        outcome_id: values.outcome_id,
         start_time: startTime,
         end_time: endTime,
         notes,
@@ -321,7 +320,6 @@ export function TrackerAppPage() {
     }
     setEntrySheetOpen(false);
     setEditingEntry(null);
-    setEntryDefaultDate(undefined);
   }
 
   function confirmDeleteEntry() {
@@ -444,8 +442,8 @@ export function TrackerAppPage() {
                   ]}
                   viewMode={viewMode}
                   onViewModeChange={handleViewModeChange}
-                  addButtonLabel={t.tracker.markToday}
-                  onAdd={() => openCreateEntry(true)}
+                  addButtonLabel={t.tracker.addEntry}
+                  onAdd={openCreateEntry}
                   search={{
                     value: entrySearch,
                     onChange: setEntrySearch,
@@ -466,7 +464,7 @@ export function TrackerAppPage() {
                       <EmptyDescription>{t.tracker.emptyTrackBody}</EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
-                      <Button onClick={() => openCreateEntry(true)}>{t.tracker.markToday}</Button>
+                      <Button onClick={openCreateEntry}>{t.tracker.addEntry}</Button>
                     </EmptyContent>
                   </Empty>
                 ) : sortedEntries.length === 0 && entrySearch.trim() ? (
@@ -536,11 +534,9 @@ export function TrackerAppPage() {
       <AddEntrySheet
         open={entrySheetOpen}
         editingEntry={editingEntry}
-        defaultOccurredOn={entryDefaultDate}
         onClose={() => {
           setEntrySheetOpen(false);
           setEditingEntry(null);
-          setEntryDefaultDate(undefined);
         }}
         onSubmit={handleSaveEntry}
       />

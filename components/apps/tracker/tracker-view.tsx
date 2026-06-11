@@ -8,6 +8,11 @@ import {
   type CardActionsMenuItem,
 } from "@/components/common/card-actions-menu";
 import { MonthGridCalendar } from "@/components/common/month-grid-calendar";
+import {
+  semanticBadgeOutlineClass,
+  semanticToTone,
+  type BadgeTone,
+} from "@/components/common/semantic-badge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Badge } from "@/components/ui/badge";
 import type { Locale } from "@/lib/i18n/types";
@@ -31,6 +36,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+const TONE_TOP_ACCENT: Record<BadgeTone, string> = {
+  emerald: "bg-emerald-500",
+  neutral: "bg-muted-foreground/45",
+  amber: "bg-amber-500",
+  rose: "bg-rose-500",
+  blue: "bg-blue-500",
+  pink: "bg-pink-500",
+  violet: "bg-violet-500",
+  slate: "bg-slate-500",
+  teal: "bg-teal-500",
+};
 
 export type TrackerViewProps = {
   entries: NSKTrackerEntry[];
@@ -68,7 +85,13 @@ function TrackerEntryCard({ entry, locale, menuLabels, onEdit, onDelete }: Track
 
   return (
     <Card className="h-full overflow-hidden border border-border/70 gap-0 py-0 pb-4 shadow-sm">
-      <div className="h-1 w-full shrink-0 bg-blue-500" aria-hidden />
+      <div
+        className={cn(
+          "h-1 w-full shrink-0",
+          TONE_TOP_ACCENT[semanticToTone(entry.outcome_id)]
+        )}
+        aria-hidden
+      />
       <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 rounded-none px-4 pb-0 pt-3">
         <CardTitle className="text-base font-semibold leading-snug">
           {formatTrackerDateLong(entry.occurred_on, locale)}
@@ -222,6 +245,9 @@ export function TrackerView({
                 {t.tracker.table.date}
               </TableHead>
               <TableHead className="px-3 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {t.tracker.table.outcome}
+              </TableHead>
+              <TableHead className="px-3 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t.tracker.table.start}
               </TableHead>
               <TableHead className="px-3 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -240,6 +266,14 @@ export function TrackerView({
               <TableRow key={entry.id} className="hover:bg-muted/20">
                 <TableCell className="px-3 py-2 font-medium text-foreground">
                   {formatTrackerDateShort(entry.occurred_on, locale)}
+                </TableCell>
+                <TableCell className="px-3 py-2">
+                  <Badge
+                    variant="outline"
+                    className={cn("font-medium", semanticBadgeOutlineClass(entry.outcome_id))}
+                  >
+                    {t.tracker.outcomes[entry.outcome_id]}
+                  </Badge>
                 </TableCell>
                 <TableCell className="px-3 py-2 text-muted-foreground">
                   {entry.start_time ?? "—"}
@@ -289,7 +323,7 @@ export function TrackerView({
               onClick={() => onEdit(entry)}
               className={cn(
                 "h-auto min-h-5 w-full max-w-full flex-col items-stretch gap-0 whitespace-normal rounded-md px-1.5 py-0.5 text-left text-[11px] leading-tight sm:text-xs",
-                "border border-blue-500/40 bg-blue-500/10 text-blue-700 dark:text-blue-300"
+                semanticBadgeOutlineClass(entry.outcome_id)
               )}
             >
               <span className="w-full truncate font-medium">{headline}</span>
