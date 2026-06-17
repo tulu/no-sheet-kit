@@ -10,4 +10,5 @@ export const DOC_APPLICATION_SEO_KEY: Record<AppId, keyof typeof seoCopy> = {
   loans: "docsApplicationLoans",
   tasks: "docsApplicationTasks",
   tracker: "docsApplicationTracker",
+  events: "docsApplicationEvents",
 };

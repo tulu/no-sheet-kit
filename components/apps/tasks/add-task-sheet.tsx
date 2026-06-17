@@ -30,7 +30,7 @@ const REQUIRED_MARK = (
   </span>
 );
 
-type TaskFormValues = {
+export type TaskFormValues = {
   title: string;
   description: string;
   due_date: string;
@@ -42,6 +42,8 @@ type AddTaskSheetProps = {
   editingItem: NSKTask | null;
   spaces: NSKSpace[];
   defaultSpaceId: string;
+  /** When `"events"`, uses `t.events.tasks` copy instead of `t.tasks`. */
+  variant?: "tasks" | "events";
   onClose: () => void;
   onSaveTask: (values: TaskFormValues, calendar: GoogleCalendarSubmitPrefs) => boolean | Promise<boolean>;
   onDisconnectGoogleCalendar?: () => void | Promise<void>;
@@ -62,6 +64,7 @@ export function AddTaskSheet({
   editingItem,
   spaces,
   defaultSpaceId,
+  variant = "tasks",
   onClose,
   onSaveTask,
   onDisconnectGoogleCalendar,
@@ -71,6 +74,7 @@ export function AddTaskSheet({
 }: AddTaskSheetProps) {
   const { t, locale } = useI18n();
   const sessionKind = useAppsSessionKind();
+  const copy = variant === "events" ? t.events.tasks : t.tasks;
   const [form, setForm] = useState<TaskFormValues>(DEFAULT_FORM);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -118,7 +122,7 @@ export function AddTaskSheet({
     if (isSaving) return;
     const title = form.title.trim();
     if (!title) {
-      setError(t.tasks.errors.titleRequired);
+      setError(copy.errors.titleRequired);
       return;
     }
     const due = form.due_date.trim();
@@ -172,7 +176,7 @@ export function AddTaskSheet({
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent side="right" className="w-full p-0 sm:max-w-[460px]">
         <SheetHeader>
-          <SheetTitle>{editingItem ? t.tasks.editTask : t.tasks.addTask}</SheetTitle>
+          <SheetTitle>{editingItem ? copy.editTask : copy.addTask}</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-4 overflow-y-auto px-4 pb-4">
@@ -204,22 +208,22 @@ export function AddTaskSheet({
 
           <Field>
             <FieldLabel>
-              {t.tasks.fields.title}
+              {copy.fields.title}
               {REQUIRED_MARK}
             </FieldLabel>
             <Input
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              placeholder={t.tasks.fields.titlePlaceholder}
+              placeholder={copy.fields.titlePlaceholder}
             />
           </Field>
 
           <Field>
-            <FieldLabel>{t.tasks.fields.description}</FieldLabel>
+            <FieldLabel>{copy.fields.description}</FieldLabel>
             <Textarea
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              placeholder={t.tasks.fields.descriptionPlaceholder}
+              placeholder={copy.fields.descriptionPlaceholder}
               rows={3}
             />
           </Field>
@@ -227,9 +231,9 @@ export function AddTaskSheet({
           <NaturalDateField
             id="nsk-tasks-due-natural"
             locale={locale}
-            label={t.tasks.fields.dueDate}
-            hint={t.tasks.fields.dueDateHint}
-            placeholder={t.tasks.fields.dueDateNaturalPlaceholder}
+            label={copy.fields.dueDate}
+            hint={copy.fields.dueDateHint}
+            placeholder={copy.fields.dueDateNaturalPlaceholder}
             valueIso={form.due_date}
             onChangeIso={(iso) => setForm((f) => ({ ...f, due_date: iso }))}
           />
@@ -252,7 +256,7 @@ export function AddTaskSheet({
 
           {editingItem ? (
             <div className="border-t border-border pt-4">
-              <h4 className="mb-2 text-sm font-medium">{t.tasks.fields.comments}</h4>
+              <h4 className="mb-2 text-sm font-medium">{copy.fields.comments}</h4>
               <ul className="mb-3 space-y-2">
                 {comments.map((c) => (
                   <li key={c.id} className="rounded-md border border-border/80 p-2 text-sm">
@@ -265,7 +269,7 @@ export function AddTaskSheet({
                         />
                         <div className="flex gap-2">
                           <Button type="button" size="sm" onClick={saveEditComment}>
-                            {t.tasks.fields.editComment}
+                            {copy.fields.editComment}
                           </Button>
                           <Button
                             type="button"
@@ -276,7 +280,7 @@ export function AddTaskSheet({
                               setEditingCommentBody("");
                             }}
                           >
-                            {t.tasks.cancel}
+                            {copy.cancel}
                           </Button>
                         </div>
                       </div>
@@ -310,11 +314,11 @@ export function AddTaskSheet({
                 <Textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder={t.tasks.fields.commentPlaceholder}
+                  placeholder={copy.fields.commentPlaceholder}
                   rows={2}
                 />
                 <Button type="button" variant="secondary" onClick={handleAddComment}>
-                  {t.tasks.fields.addComment}
+                  {copy.fields.addComment}
                 </Button>
               </div>
             </div>
@@ -323,10 +327,10 @@ export function AddTaskSheet({
 
         <SheetFooter className="flex-row gap-2 sm:justify-end">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
-            {t.tasks.cancel}
+            {copy.cancel}
           </Button>
           <Button type="button" onClick={() => void handleSaveTask()} disabled={isSaving}>
-            {t.tasks.save}
+            {copy.save}
           </Button>
         </SheetFooter>
       </SheetContent>

@@ -10,6 +10,7 @@ export const PUBLIC_SITEMAP_PATHS: string[] = [
   "/login",
   "/privacy",
   "/terms",
+  "/solutions",
   "/docs/welcome/why",
   "/docs/welcome/key-features",
   "/docs/welcome/quickstart",

@@ -11,6 +11,9 @@ export const APP_VIEW_PERSISTENCE_KEYS = [
   "tasks",
   "collections",
   "tracker",
+  "events",
+  "events_tasks",
+  "events_expenses",
 ] as const;
 export type AppViewPersistenceKey = (typeof APP_VIEW_PERSISTENCE_KEYS)[number];
 

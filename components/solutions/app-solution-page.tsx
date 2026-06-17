@@ -27,7 +27,13 @@ export function AppSolutionPage({ appId }: AppSolutionPageProps) {
   return (
     <article className="mx-auto max-w-[1100px] px-6 pb-16 pt-28 max-sm:px-5 max-sm:pt-24">
       <header className="mb-10 space-y-4">
-        <p className="pt-4 text-sm font-medium text-muted-foreground">{displayName}</p>
+        <Link
+          href="/solutions"
+          className="inline-block text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+        >
+          {t.solutions.nav.allSolutions}
+        </Link>
+        <p className="text-sm font-medium text-muted-foreground">{displayName}</p>
         <h1 className="font-display text-[clamp(36px,5vw,52px)] leading-[1.1] tracking-[-0.025em] text-foreground">
           {page.h1}
         </h1>

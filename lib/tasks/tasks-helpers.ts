@@ -3,8 +3,36 @@ import { TASK_STATUSES, type NSKSpace, type NSKTask, type NSKTasksSchema, type T
 
 export function taskMatchesSearch(task: NSKTask, query: string): boolean {
   if (!query.trim()) return true;
-  const hay = [task.title, task.description ?? ""].join("\n");
+  const commentBodies = task.comments.map((c) => c.body).join("\n");
+  const hay = [task.title, task.description ?? "", commentBodies].join("\n");
   return tokensMatchHaystack(query, hay);
+}
+
+export function isUserVisibleSpace(space: NSKSpace): boolean {
+  return space.visibility !== "embedded";
+}
+
+export function userVisibleSpaces(spaces: NSKSpace[]): NSKSpace[] {
+  return spaces.filter(isUserVisibleSpace);
+}
+
+export function isTaskInUserSpace(schema: NSKTasksSchema, task: NSKTask): boolean {
+  const space = schema.spaces.find((s) => s.id === task.space_id);
+  return space != null && isUserVisibleSpace(space);
+}
+
+export function activeTasksInUserSpaces(schema: NSKTasksSchema): NSKTask[] {
+  return schema.tasks.filter((t) => !t.archived && isTaskInUserSpace(schema, t));
+}
+
+export function userVisibleTasksSchema(schema: NSKTasksSchema): NSKTasksSchema {
+  const spaces = userVisibleSpaces(schema.spaces);
+  const spaceIds = new Set(spaces.map((s) => s.id));
+  return {
+    ...schema,
+    spaces,
+    tasks: schema.tasks.filter((t) => spaceIds.has(t.space_id)),
+  };
 }
 
 export function sortSpaces(spaces: NSKSpace[]): NSKSpace[] {

@@ -8,7 +8,9 @@ import { getNextOccurrenceDate, isUpcomingWithin30Days } from "@/lib/dates/dates
 import { readNSKDatesStorage } from "@/lib/dates/storage";
 import { readNSKDomainsStorage } from "@/lib/domains/storage";
 import { readNSKLinksStorage } from "@/lib/links/storage";
+import { readNSKEventsStorage } from "@/lib/events/storage";
 import { readNSKTasksStorage } from "@/lib/tasks/storage";
+import { isTaskInUserSpace } from "@/lib/tasks/tasks-helpers";
 import { isYmdInNext30DaysInclusive, parseYmdLocal, startOfLocalDay } from "@/lib/notifications/date-window";
 import type { UpcomingNotificationRow } from "@/lib/notifications/types";
 
@@ -73,6 +75,7 @@ export function collectUpcomingNotifications(args: {
 
   const tasksSchema = readNSKTasksStorage(sessionSuffix);
   for (const task of tasksSchema.tasks) {
+    if (!isTaskInUserSpace(tasksSchema, task)) continue;
     if (task.archived) continue;
     if (task.status === "done") continue;
     const due = task.due_date?.trim();
@@ -108,6 +111,30 @@ export function collectUpcomingNotifications(args: {
       itemTitle,
       dateLabel: formatMediumDate(d, locale),
       href: hrefForApp("links"),
+    });
+  }
+
+  const eventsSchema = readNSKEventsStorage(sessionSuffix);
+  const eventByTaskSpaceId = new Map(
+    eventsSchema.events.map((event) => [event.tasks_space_id, event])
+  );
+  for (const task of tasksSchema.tasks) {
+    const event = eventByTaskSpaceId.get(task.space_id);
+    if (!event) continue;
+    if (task.archived) continue;
+    if (task.status === "done") continue;
+    const due = task.due_date?.trim();
+    if (!due || !isYmdInNext30DaysInclusive(due, now)) continue;
+    const d = parseYmdLocal(due);
+    if (!d) continue;
+    rows.push({
+      id: `events:task:${task.id}`,
+      appId: "events",
+      sortTime: d.getTime(),
+      kindLabel: n.kindEventTaskDue,
+      itemTitle: `${event.name} · ${task.title}`,
+      dateLabel: formatMediumDate(d, locale),
+      href: `${hrefForApp("events")}?event=${encodeURIComponent(event.id)}`,
     });
   }
 

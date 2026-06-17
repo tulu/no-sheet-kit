@@ -3,7 +3,7 @@ export const seoCopy = {
   home: {
     title: "NoSheetKit — Simple, private mini-apps for everyday tracking",
     description:
-      "Private browser mini-apps: birthday reminders, loan tracker, domain portfolio, bookmarks, tasks, collections, and activity tracker—no spreadsheet.",
+      "Private browser mini-apps: birthday reminders, loan tracker, domain portfolio, bookmarks, tasks, collections, activity tracker, and event planner—no spreadsheet.",
   },
   solutionDates: {
     title: "Birthday Reminder — private browser app",
@@ -40,10 +40,20 @@ export const seoCopy = {
     description:
       "Mark days in named tracks with grid, table, and month calendar views. Optional start and end times.",
   },
+  solutionEvents: {
+    title: "Event Planner — guests, tasks, and expenses in your browser",
+    description:
+      "Plan parties and reunions with guest lists, families, task kanban, and expense tracking with partial payments.",
+  },
+  solutionsIndex: {
+    title: "Solutions — private browser mini-apps",
+    description:
+      "Explore NoSheetKit solutions: birthday reminders, loans, domains, bookmarks, tasks, collections, activity tracker, and event planner.",
+  },
   apps: {
     title: "Apps",
     description:
-      "Open NoSheetKit and launch a mini-app—loans, dates, domains, links, tasks, collections, or tracker.",
+      "Open NoSheetKit and launch a mini-app—loans, dates, domains, links, tasks, collections, tracker, or events.",
   },
   dates: {
     title: "NSKDates",
@@ -74,6 +84,11 @@ export const seoCopy = {
     description:
       "Mark days in tracks with grid, table, and calendar views. Optional start and end times per mark.",
   },
+  events: {
+    title: "NSKEvents",
+    description:
+      "Plan personal events with guests, families, task kanban, and expense tracking with partial payments.",
+  },
   settings: {
     title: "Settings",
     description: "Language, theme, account, storage, and backup settings for your NoSheetKit apps.",
@@ -96,7 +111,7 @@ export const seoCopy = {
   },
   docsWelcomeFeatures: {
     title: "Documentation — Key features",
-    description: "Features of the kit: seven mini-apps, local storage, shared UI, and one launcher.",
+    description: "Features of the kit: eight mini-apps, local storage, shared UI, and one launcher.",
   },
   docsWelcomeQuickstart: {
     title: "Documentation — Quickstart",
@@ -141,5 +156,9 @@ export const seoCopy = {
   docsApplicationTracker: {
     title: "Activity Tracker Documentation — NSKTracker",
     description: "Docs for logging days in tracks: grid, table, calendar, and optional start/end times.",
+  },
+  docsApplicationEvents: {
+    title: "Event Planner Documentation — NSKEvents",
+    description: "Docs for planning events with guests, tasks, and expense tracking.",
   },
 } as const;

@@ -90,6 +90,28 @@ export function buildLinkCalendarCopy(args: {
   return { summary, description };
 }
 
+export function buildEventTaskCalendarCopy(args: {
+  task: Pick<NSKTask, "title" | "description" | "due_date">;
+  eventName: string | null | undefined;
+  t: Messages;
+  locale: Locale;
+}): { summary: string; description: string } {
+  const { task, eventName, t, locale } = args;
+  const gc = t.googleCalendar;
+  const due = task.due_date ?? "";
+  const dateStr = formatYmdMedium(due, locale);
+  const summary = tpl(gc.titleTasks, { title: task.title, date: dateStr });
+  const detail: string[] = [];
+  if (eventName?.trim()) {
+    detail.push(`${gc.descEvent}: ${eventName.trim()}`);
+  }
+  if (task.description?.trim()) {
+    detail.push(`${gc.descDescription}: ${task.description.trim()}`);
+  }
+  const description = joinBlocks(detail, gc.eventCreatedAutomaticallyFooter);
+  return { summary, description };
+}
+
 export function buildTaskCalendarCopy(args: {
   task: Pick<NSKTask, "title" | "description" | "due_date">;
   spaceName: string | null | undefined;
