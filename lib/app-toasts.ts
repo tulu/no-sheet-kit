@@ -13,7 +13,8 @@ export type AppToastApp =
   | "loans"
   | "tasks"
   | "collections"
-  | "tracker";
+  | "tracker"
+  | "events";
 
 export type AppCrudAction = "created" | "updated" | "deleted";
 
@@ -84,6 +85,59 @@ export function appTrackerTrackToast(
   } else {
     trackAppRecordDeleted("tracker");
   }
+}
+
+export function appEventsEventToast(
+  t: Messages,
+  action: "created" | "updated" | "deleted"
+): void {
+  const row =
+    action === "created"
+      ? t.common.appToasts.events.eventCreated
+      : action === "updated"
+        ? t.common.appToasts.events.eventUpdated
+        : t.common.appToasts.events.eventDeleted;
+  toast.success(row.title);
+  if (action === "created") {
+    trackAppRecordCreated("events");
+  } else if (action === "updated") {
+    trackAppRecordUpdated("events");
+  } else {
+    trackAppRecordDeleted("events");
+  }
+}
+
+export function appEventsTaskToast(
+  t: Messages,
+  action: "created" | "updated" | "deleted"
+): void {
+  const row =
+    action === "created"
+      ? t.common.appToasts.events.taskCreated
+      : action === "updated"
+        ? t.common.appToasts.events.taskUpdated
+        : t.common.appToasts.events.taskDeleted;
+  toast.success(row.title);
+  if (action === "created") {
+    trackAppRecordCreated("events");
+  } else if (action === "updated") {
+    trackAppRecordUpdated("events");
+  } else {
+    trackAppRecordDeleted("events");
+  }
+}
+
+export function appEventsTaskCommentToast(
+  t: Messages,
+  action: "created" | "updated" | "deleted"
+): void {
+  const row =
+    action === "created"
+      ? t.common.appToasts.events.taskCommentAdded
+      : action === "updated"
+        ? t.common.appToasts.events.taskCommentUpdated
+        : t.common.appToasts.events.taskCommentDeleted;
+  toast.success(row.title);
 }
 
 export function appCollectionsCollectionToast(

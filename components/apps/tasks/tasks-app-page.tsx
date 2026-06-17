@@ -55,23 +55,30 @@ import {
   type TasksViewMode,
 } from "@/lib/tasks/schema";
 import { readNSKTasksStorage, writeNSKTasksStorage } from "@/lib/tasks/storage";
-import { buildTaskCalendarCopy } from "@/lib/google/calendar-event-copy";
-import { buildAllDayNskEventInput } from "@/lib/google/calendar-event-body";
-import {
-  nskCalendarCreateEvent,
-  nskCalendarDeleteEvent,
-  nskCalendarGetNoSheetKitCalendarId,
-  nskCalendarPatchEvent,
-} from "@/lib/google/calendar-sync-client";
-import type { NskCalendarEventInput } from "@/lib/google/google-calendar";
+import { nskCalendarDeleteEvent } from "@/lib/google/calendar-sync-client";
 import { useAppsSessionKind, useSessionStorageSuffix } from "@/lib/storage/session-storage-context";
 import {
-  moveTaskToSpace,
-  nextOrderForColumn,
+  addTaskComment,
+  applyArchivedTask,
+  applyDisconnectedTask,
+  archiveAllDoneInSpace,
+  archiveTask,
+  deleteTaskWithCalendar,
+  disconnectTaskCalendar,
+  removeTaskComment,
+  removeTaskFromList,
+  saveTaskFromForm,
+  unarchiveTask,
+  updateTaskComment,
+} from "@/lib/tasks/task-workspace-actions";
+import {
+  isUserVisibleSpace,
   sortSpaces,
   taskMatchesSearch,
   taskSpaceDropId,
   tasksInSpace,
+  userVisibleSpaces,
+  userVisibleTasksSchema,
 } from "@/lib/tasks/tasks-helpers";
 import { TasksKanbanDndProvider } from "./tasks-kanban-dnd-provider";
 import { getIntlLocaleTag } from "@/lib/i18n/locale-display";
@@ -174,7 +181,7 @@ export function TasksAppPage() {
 
       if (highlight) {
         const task = store.tasks.find((t) => t.id === highlight);
-        if (task && store.spaces.some((s) => s.id === task.space_id)) {
+        if (task && store.spaces.some((s) => s.id === task.space_id && isUserVisibleSpace(s))) {
           setActiveNav(task.space_id);
           setHighlightTaskId(task.id);
           const p = new URLSearchParams(searchParams.toString());
@@ -186,7 +193,7 @@ export function TasksAppPage() {
         }
       }
 
-      if (space && store.spaces.some((s) => s.id === space)) {
+      if (space && store.spaces.some((s) => s.id === space && isUserVisibleSpace(s))) {
         setActiveNav(space);
       }
     });
@@ -226,31 +233,12 @@ export function TasksAppPage() {
   async function handleDisconnectTaskCalendar() {
     const live = editingTaskLive;
     if (!live?.google_calendar_event_id) return;
-    await nskCalendarDeleteEvent(live.google_calendar_event_id);
-    commit((prev) => ({
-      ...prev,
-      tasks: prev.tasks.map((x) =>
-        x.id === live.id
-          ? {
-              ...x,
-              google_calendar_event_id: undefined,
-              google_calendar_email_reminder_minutes: undefined,
-            }
-          : x
-      ),
-    }));
-    setEditingTask((prev) =>
-      prev && prev.id === live.id
-        ? {
-            ...prev,
-            google_calendar_event_id: undefined,
-            google_calendar_email_reminder_minutes: undefined,
-          }
-        : prev
-    );
+    const updated = await disconnectTaskCalendar(live);
+    commit((prev) => ({ ...prev, tasks: applyDisconnectedTask(prev.tasks, updated) }));
+    setEditingTask((prev) => (prev && prev.id === live.id ? updated : prev));
   }
 
-  const spacesSorted = sortSpaces(store.spaces);
+  const spacesSorted = sortSpaces(userVisibleSpaces(store.spaces));
 
   const sidebarItems: FilterSidebarItem<NavId>[] = (() => {
     const rows: FilterSidebarItem<NavId>[] = [
@@ -295,7 +283,7 @@ export function TasksAppPage() {
   const mobileNavTitle =
     activeNav === TASKS_DASHBOARD_NAV_ID
       ? t.tasks.dashboardNav
-      : (store.spaces.find((s) => s.id === activeNav)?.name ?? t.tasks.sidebarTitle);
+      : (userVisibleSpaces(store.spaces).find((s) => s.id === activeNav)?.name ?? t.tasks.sidebarTitle);
 
   function openCreateTask() {
     if (!activeSpaceId) return;
@@ -456,196 +444,44 @@ export function TasksAppPage() {
   ): Promise<boolean> {
     const targetSpaceId = values.space_id || activeSpaceId;
     if (!targetSpaceId) return false;
-    const now = new Date().toISOString();
-    const due = values.due_date || undefined;
 
-    if (editingTask) {
-      const current = store.tasks.find((x) => x.id === editingTask.id) ?? editingTask;
-      const status = current.status;
-      const spaceChanged = targetSpaceId !== current.space_id;
-      let merged: NSKTask = {
-        ...current,
-        title: values.title,
-        description: values.description || undefined,
-        due_date: due,
-        status,
-        updated_at: now,
-      };
-      if (!spaceChanged) {
-        merged = { ...merged, space_id: targetSpaceId };
-      }
+    const spaceName = store.spaces.find((s) => s.id === targetSpaceId)?.name;
+    const result = await saveTaskFromForm({
+      tasks: store.tasks,
+      spaces: store.spaces,
+      values,
+      calendar,
+      editingTask,
+      targetSpaceId,
+      activeSpaceId,
+      sessionKind,
+      calendarContext: { kind: "space", spaceName },
+      t,
+      locale,
+      requestCreateCalendarConfirm,
+      onCalendarSyncError: () => toast.error(t.googleCalendar.syncError),
+    });
 
-      if (merged.google_calendar_event_id && !due) {
-        await nskCalendarDeleteEvent(merged.google_calendar_event_id);
-        merged = {
-          ...merged,
-          google_calendar_event_id: undefined,
-          google_calendar_email_reminder_minutes: undefined,
-        };
-      }
-
-      if (sessionKind === "google" && due && calendar.enabled) {
-        const spaceName = store.spaces.find((s) => s.id === merged.space_id)?.name;
-        if (merged.google_calendar_event_id) {
-          const { summary, description } = buildTaskCalendarCopy({
-            task: merged,
-            spaceName,
-            t,
-            locale,
-          });
-          const body = buildAllDayNskEventInput({
-            summary,
-            description,
-            startDateYmd: due,
-            reminderEmailMinutes:
-              merged.google_calendar_email_reminder_minutes ?? calendar.reminderMinutes,
-          });
-          const patchBody: Partial<NskCalendarEventInput> = {
-            summary: body.summary,
-            description: body.description,
-            start: body.start,
-            end: body.end,
-            reminders: body.reminders,
-          };
-          const ok = await nskCalendarPatchEvent(merged.google_calendar_event_id, patchBody);
-          if (!ok) toast.error(t.googleCalendar.syncError);
-        } else {
-          const calendarId = await nskCalendarGetNoSheetKitCalendarId();
-          if (calendarId === null) {
-            const accepted = await requestCreateCalendarConfirm();
-            if (!accepted) return false;
-          }
-          const { summary, description } = buildTaskCalendarCopy({
-            task: merged,
-            spaceName,
-            t,
-            locale,
-          });
-          const body = buildAllDayNskEventInput({
-            summary,
-            description,
-            startDateYmd: due,
-            reminderEmailMinutes: calendar.reminderMinutes,
-          });
-          const created = await nskCalendarCreateEvent(body);
-          if (created) {
-            merged = {
-              ...merged,
-              google_calendar_event_id: created.id,
-              google_calendar_email_reminder_minutes: calendar.reminderMinutes,
-            };
-          } else {
-            toast.error(t.googleCalendar.syncError);
-          }
-        }
-      }
-
-      commit((prev) => {
-        let tasks = prev.tasks.map((x) => (x.id === editingTask.id ? merged : x));
-        if (spaceChanged) {
-          tasks = moveTaskToSpace(tasks, editingTask.id, targetSpaceId);
-        }
-        return { ...prev, tasks };
-      });
-      appCrudToast(t, "tasks", "updated");
-      if (spaceChanged && activeNav !== targetSpaceId) {
-        setActiveNav(targetSpaceId);
-        setHighlightTaskId(null);
-        syncTasksUrlToNav(targetSpaceId);
-      }
-      return true;
-    }
-
-    const order = nextOrderForColumn(store.tasks, targetSpaceId, "todo");
-    const id = crypto.randomUUID();
-    let row: NSKTask = {
-      id,
-      space_id: targetSpaceId,
-      title: values.title,
-      description: values.description || undefined,
-      due_date: due,
-      status: "todo",
-      archived: false,
-      order,
-      created_at: now,
-      updated_at: now,
-      comments: [],
-    };
-
-    if (sessionKind === "google" && due && calendar.enabled) {
-      const calendarId = await nskCalendarGetNoSheetKitCalendarId();
-      if (calendarId === null) {
-        const accepted = await requestCreateCalendarConfirm();
-        if (!accepted) return false;
-      }
-      const spaceName = store.spaces.find((s) => s.id === targetSpaceId)?.name;
-      const { summary, description } = buildTaskCalendarCopy({
-        task: row,
-        spaceName,
-        t,
-        locale,
-      });
-      const body = buildAllDayNskEventInput({
-        summary,
-        description,
-        startDateYmd: due,
-        reminderEmailMinutes: calendar.reminderMinutes,
-      });
-      const created = await nskCalendarCreateEvent(body);
-      if (created) {
-        row = {
-          ...row,
-          google_calendar_event_id: created.id,
-          google_calendar_email_reminder_minutes: calendar.reminderMinutes,
-        };
-      } else {
-        toast.error(t.googleCalendar.syncError);
-      }
-    }
-
-    commit((prev) => ({ ...prev, tasks: [...prev.tasks, row] }));
-    if (targetSpaceId !== activeSpaceId) {
-      setActiveNav(targetSpaceId);
+    if (!result.ok) return false;
+    commit((prev) => ({ ...prev, tasks: result.tasks }));
+    appCrudToast(t, "tasks", editingTask ? "updated" : "created");
+    if (result.navigateToSpaceId) {
+      setActiveNav(result.navigateToSpaceId);
       setHighlightTaskId(null);
-      syncTasksUrlToNav(targetSpaceId);
+      syncTasksUrlToNav(result.navigateToSpaceId);
     }
-    appCrudToast(t, "tasks", "created");
     return true;
   }
 
   function handleAddComment(taskId: string, body: string) {
-    const now = new Date().toISOString();
-    const cid = crypto.randomUUID();
-    commit((prev) => ({
-      ...prev,
-      tasks: prev.tasks.map((x) =>
-        x.id === taskId
-          ? {
-              ...x,
-              updated_at: now,
-              comments: [...x.comments, { id: cid, body, created_at: now, updated_at: now }],
-            }
-          : x
-      ),
-    }));
+    commit((prev) => ({ ...prev, tasks: addTaskComment(prev.tasks, taskId, body) }));
     appTasksCommentToast(t, "created");
   }
 
   function handleUpdateComment(taskId: string, commentId: string, body: string) {
-    const now = new Date().toISOString();
     commit((prev) => ({
       ...prev,
-      tasks: prev.tasks.map((x) =>
-        x.id === taskId
-          ? {
-              ...x,
-              updated_at: now,
-              comments: x.comments.map((c) =>
-                c.id === commentId ? { ...c, body, updated_at: now } : c
-              ),
-            }
-          : x
-      ),
+      tasks: updateTaskComment(prev.tasks, taskId, commentId, body),
     }));
     appTasksCommentToast(t, "updated");
   }
@@ -653,43 +489,17 @@ export function TasksAppPage() {
   function confirmDeleteComment() {
     if (!commentPendingDelete) return;
     const { taskId, commentId } = commentPendingDelete;
-    const now = new Date().toISOString();
     commit((prev) => ({
       ...prev,
-      tasks: prev.tasks.map((x) =>
-        x.id === taskId
-          ? {
-              ...x,
-              updated_at: now,
-              comments: x.comments.filter((c) => c.id !== commentId),
-            }
-          : x
-      ),
+      tasks: removeTaskComment(prev.tasks, taskId, commentId),
     }));
     appTasksCommentToast(t, "deleted");
     setCommentPendingDelete(null);
   }
 
   async function handleArchive(task: NSKTask) {
-    if (task.status !== "done" || task.archived) return;
-    if (task.google_calendar_event_id) {
-      await nskCalendarDeleteEvent(task.google_calendar_event_id);
-    }
-    const now = new Date().toISOString();
-    commit((prev) => ({
-      ...prev,
-      tasks: prev.tasks.map((x) =>
-        x.id === task.id
-          ? {
-              ...x,
-              archived: true,
-              updated_at: now,
-              google_calendar_event_id: undefined,
-              google_calendar_email_reminder_minutes: undefined,
-            }
-          : x
-      ),
-    }));
+    const archived = await archiveTask(task);
+    commit((prev) => ({ ...prev, tasks: applyArchivedTask(prev.tasks, archived) }));
   }
 
   function requestArchiveAllDone() {
@@ -703,54 +513,22 @@ export function TasksAppPage() {
 
   async function confirmArchiveAllDone() {
     if (!activeSpaceId || archiveAllConfirmCount == null) return;
-    const victims = store.tasks.filter(
-      (t) => t.space_id === activeSpaceId && t.status === "done" && !t.archived
-    );
-    if (victims.length === 0) {
-      setArchiveAllConfirmCount(null);
-      return;
-    }
-    await Promise.all(
-      victims.map((t) =>
-        t.google_calendar_event_id ? nskCalendarDeleteEvent(t.google_calendar_event_id) : Promise.resolve()
-      )
-    );
-    const now = new Date().toISOString();
-    const ids = new Set(victims.map((t) => t.id));
-    commit((prev) => ({
-      ...prev,
-      tasks: prev.tasks.map((x) =>
-        ids.has(x.id)
-          ? {
-              ...x,
-              archived: true,
-              updated_at: now,
-              google_calendar_event_id: undefined,
-              google_calendar_email_reminder_minutes: undefined,
-            }
-          : x
-      ),
-    }));
+    const next = await archiveAllDoneInSpace(store.tasks, activeSpaceId);
+    commit((prev) => ({ ...prev, tasks: next }));
     setArchiveAllConfirmCount(null);
   }
 
   function handleUnarchive(task: NSKTask) {
-    const now = new Date().toISOString();
-    commit((prev) => ({
-      ...prev,
-      tasks: prev.tasks.map((x) => (x.id === task.id ? { ...x, archived: false, updated_at: now } : x)),
-    }));
+    const updated = unarchiveTask(task);
+    commit((prev) => ({ ...prev, tasks: applyArchivedTask(prev.tasks, updated) }));
   }
 
   async function confirmDeleteTask() {
     if (!taskPendingDelete) return;
-    const ev = taskPendingDelete.google_calendar_event_id;
-    if (ev) {
-      await nskCalendarDeleteEvent(ev);
-    }
+    await deleteTaskWithCalendar(taskPendingDelete);
     commit((prev) => ({
       ...prev,
-      tasks: prev.tasks.filter((x) => x.id !== taskPendingDelete.id),
+      tasks: removeTaskFromList(prev.tasks, taskPendingDelete.id),
     }));
     appCrudToast(t, "tasks", "deleted");
     setTaskPendingDelete(null);
@@ -877,7 +655,7 @@ export function TasksAppPage() {
           </div>
         ) : activeNav === TASKS_DASHBOARD_NAV_ID ? (
           <div className="min-h-0 min-w-0 flex-1 overflow-auto px-6 py-6">
-            {store.spaces.length === 0 ? (
+            {userVisibleSpaces(store.spaces).length === 0 ? (
               <Empty className="border border-border p-10">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
@@ -893,7 +671,7 @@ export function TasksAppPage() {
                 </EmptyContent>
               </Empty>
             ) : (
-              <TasksDashboard schema={store} />
+              <TasksDashboard schema={userVisibleTasksSchema(store)} />
             )}
           </div>
         ) : (
@@ -1122,7 +900,7 @@ export function TasksAppPage() {
         key={spaceDeleteWithTasks?.id ?? "closed"}
         open={spaceDeleteWithTasks != null}
         space={spaceDeleteWithTasks}
-        otherSpaces={store.spaces}
+        otherSpaces={userVisibleSpaces(store.spaces)}
         taskCount={
           spaceDeleteWithTasks
             ? store.tasks.filter((x) => x.space_id === spaceDeleteWithTasks.id).length

@@ -7,7 +7,8 @@ export type SolutionSeoKey =
   | "solutionLinks"
   | "solutionTasks"
   | "solutionCollections"
-  | "solutionTracker";
+  | "solutionTracker"
+  | "solutionEvents";
 
 export type SolutionEntry = {
   appId: AppId;
@@ -23,6 +24,7 @@ export const SOLUTION_ENTRIES: SolutionEntry[] = [
   { appId: "tasks", slug: "task-tracker", seoKey: "solutionTasks" },
   { appId: "collections", slug: "collection-tracker", seoKey: "solutionCollections" },
   { appId: "tracker", slug: "activity-tracker", seoKey: "solutionTracker" },
+  { appId: "events", slug: "event-planner", seoKey: "solutionEvents" },
 ];
 
 const bySlug = new Map(SOLUTION_ENTRIES.map((e) => [e.slug, e]));
@@ -49,6 +51,13 @@ export function getSolutionPathname(appId: AppId): string {
 
 export function getSolutionScreenshotPath(appId: AppId): string {
   return `/docs/applications/${appId}.png`;
+}
+
+/** Apps without a real PNG yet — docs/solutions show the placeholder UI. */
+const APP_IDS_WITHOUT_SCREENSHOT = new Set<AppId>([]);
+
+export function hasApplicationScreenshot(appId: AppId): boolean {
+  return !APP_IDS_WITHOUT_SCREENSHOT.has(appId);
 }
 
 /** All solution pathnames for sitemap (English slugs). */

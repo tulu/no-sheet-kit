@@ -8,13 +8,14 @@ import { useI18n } from "@/components/providers/i18n-provider";
 import { cn } from "@/lib/utils";
 import type { NSKSpace, NSKTask, NSKTasksSchema } from "@/lib/tasks/schema";
 import {
-  activeTasksAllSpaces,
+  activeTasksInUserSpaces,
   completionRatio,
   countByStatus,
   isTaskPastDue,
   overdueActiveTasks,
   sortSpaces,
   tasksDueWithinDays,
+  userVisibleTasksSchema,
 } from "@/lib/tasks/tasks-helpers";
 
 export type TasksDashboardProps = {
@@ -23,13 +24,14 @@ export type TasksDashboardProps = {
 
 export function TasksDashboard({ schema }: TasksDashboardProps) {
   const { t } = useI18n();
-  if (schema.spaces.length === 0) return null;
-  const spaces = sortSpaces(schema.spaces);
-  const active = activeTasksAllSpaces(schema);
+  const visible = userVisibleTasksSchema(schema);
+  if (visible.spaces.length === 0) return null;
+  const spaces = sortSpaces(visible.spaces);
+  const active = activeTasksInUserSpaces(schema);
   const byStatus = countByStatus(active);
   const ratio = completionRatio(active);
-  const dueSoon = tasksDueWithinDays(schema.tasks, new Date(), 30).filter((x) => !x.archived);
-  const pastDue = overdueActiveTasks(schema.tasks, new Date()).sort(
+  const dueSoon = tasksDueWithinDays(visible.tasks, new Date(), 30).filter((x) => !x.archived);
+  const pastDue = overdueActiveTasks(visible.tasks, new Date()).sort(
     (a, b) => (a.due_date ?? "").localeCompare(b.due_date ?? "") || a.title.localeCompare(b.title)
   );
   const pct =
@@ -109,7 +111,7 @@ export function TasksDashboard({ schema }: TasksDashboardProps) {
                   <DashboardTaskRow
                     key={task.id}
                     task={task}
-                    spaceName={schema.spaces.find((s) => s.id === task.space_id)?.name ?? null}
+                    spaceName={visible.spaces.find((s) => s.id === task.space_id)?.name ?? null}
                   />
                 ))}
               </ul>
@@ -130,7 +132,7 @@ export function TasksDashboard({ schema }: TasksDashboardProps) {
                   <DashboardTaskRow
                     key={task.id}
                     task={task}
-                    spaceName={schema.spaces.find((s) => s.id === task.space_id)?.name ?? null}
+                    spaceName={visible.spaces.find((s) => s.id === task.space_id)?.name ?? null}
                   />
                 ))}
               </ul>
@@ -144,7 +146,7 @@ export function TasksDashboard({ schema }: TasksDashboardProps) {
         <ul className="grid gap-3 sm:grid-cols-2">
           {spaces.map((space) => (
             <li key={space.id}>
-              <SpaceShortcutCard space={space} schema={schema} />
+              <SpaceShortcutCard space={space} schema={visible} />
             </li>
           ))}
         </ul>

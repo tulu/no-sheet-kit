@@ -29,6 +29,8 @@ const SEMANTIC_TO_TONE: Record<string, BadgeTone> = {
   other: "teal",
   loan_active: "emerald",
   loan_settled: "neutral",
+  expense_paid: "emerald",
+  expense_pending: "amber",
   /** Collections item possession */
   owned: "emerald",
   lent_out: "amber",

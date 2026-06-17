@@ -22,7 +22,7 @@ NoSheetKit is a **personal kit of mini-apps**. Each app does one job, with a con
 
 ## What’s in the kit
 
-Open the hub at **`/apps`** and pick a tool. Each app keeps its own data in the browser and follows the same design language so switching between them feels familiar. The hub header also shows a **local “upcoming” summary** (bell icon): items in the next **30 calendar days** drawn from your storage—**Dates** next occurrences, **Domains** renewal dates, and open **Tasks** with due dates—without calling a backend.
+Open the hub at **`/apps`** and pick a tool. Each app keeps its own data in the browser and follows the same design language so switching between them feels familiar. The hub header also shows a **local “upcoming” summary** (bell icon): items in the next **30 calendar days** drawn from your storage—**Dates** next occurrences, **Domains** renewal dates, open **Tasks** with due dates, **Links** review dates, and **Events** task due dates—without calling a backend.
 
 | App | What it’s for |
 | --- | --- |
@@ -33,6 +33,7 @@ Open the hub at **`/apps`** and pick a tool. Each app keeps its own data in the 
 | **Tasks** | Spaces (e.g. personal vs work) with Kanban and list views, due dates, and comments. |
 | **Collections** | Named collections (books, games, gear, anything) with optional price and link fields and simple “owned / lent / borrowed / wanted” tracking. |
 | **Tracker** | Mark days you want to remember, organized in tracks with grid, table, and calendar views. Optional start/end times per mark. No Google Calendar sync. |
+| **Events** | Plan parties and reunions with guest lists, families, tasks, and multi-currency expenses with partial payments. |
 
 Together, these replace the “misc” tabs people bolt onto the same spreadsheet—**with clearer boundaries and less risk of mixing unrelated data.**
 

@@ -10,6 +10,7 @@ export const APP_ORDER = [
   "loans",
   "tasks",
   "tracker",
+  "events",
 ] as const;
 export type AppId = (typeof APP_ORDER)[number];
 
@@ -28,6 +29,7 @@ export const APP_CATALOG: Record<AppId, AppCatalogEntry> = {
   tasks: { available: true, path: "/apps/tasks" },
   collections: { available: true, path: "/apps/collections" },
   tracker: { available: true, path: "/apps/tracker" },
+  events: { available: true, path: "/apps/events" },
 };
 
 export function isAppAvailable(id: AppId): boolean {

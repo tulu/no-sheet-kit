@@ -4,6 +4,7 @@ import { readNSKDomainsStorage, writeNSKDomainsStorage } from "@/lib/domains/sto
 import { readNSKLinksStorage, writeNSKLinksStorage } from "@/lib/links/storage";
 import { readNSKLoansStorage, writeNSKLoansStorage } from "@/lib/loans/storage";
 import { readNSKTasksStorage, writeNSKTasksStorage } from "@/lib/tasks/storage";
+import { readNSKEventsStorage, writeNSKEventsStorage } from "@/lib/events/storage";
 import { readNSKTrackerStorage, writeNSKTrackerStorage } from "@/lib/tracker/storage";
 import { clearPendingDriveSync } from "@/lib/storage/pending-drive-sync";
 
@@ -43,6 +44,11 @@ export function applyDriveSyncTimestampToAllListApps(sessionSuffix: string, sync
 
   const tracker = readNSKTrackerStorage(sessionSuffix);
   writeNSKTrackerStorage(sessionSuffix, { ...tracker, last_google_sync_at: syncedAt }, {
+    skipPendingDriveMark: true,
+  });
+
+  const events = readNSKEventsStorage(sessionSuffix);
+  writeNSKEventsStorage(sessionSuffix, { ...events, last_google_sync_at: syncedAt }, {
     skipPendingDriveMark: true,
   });
 

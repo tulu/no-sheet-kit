@@ -36,13 +36,22 @@ export type NSKTask = {
   comments: NSKTaskComment[];
 };
 
+export const SPACE_VISIBILITIES = ["user", "embedded"] as const;
+export type SpaceVisibility = (typeof SPACE_VISIBILITIES)[number];
+
 export type NSKSpace = {
   id: string;
   name: string;
   order: number;
+  /** Absent or `"user"` — visible in Tasks app. `"embedded"` — hidden (Events/Trips). */
+  visibility?: SpaceVisibility;
   created_at: string;
   updated_at: string;
 };
+
+export function isSpaceVisibility(value: string): value is SpaceVisibility {
+  return (SPACE_VISIBILITIES as readonly string[]).includes(value);
+}
 
 export type NSKTasksSchema = {
   version: number;

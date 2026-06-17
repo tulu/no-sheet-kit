@@ -6,6 +6,7 @@ import {
   Layers,
   Link2,
   ListTodo,
+  PartyPopper,
   type LucideIcon,
 } from "lucide-react";
 import type { AppId } from "@/lib/apps/catalog";
@@ -18,6 +19,7 @@ export const APP_DISPLAY_ICONS: Record<AppId, LucideIcon> = {
   tasks: ListTodo,
   collections: Layers,
   tracker: Activity,
+  events: PartyPopper,
 };
 
 /** Product names (not translated). */
@@ -29,6 +31,7 @@ export const APP_DISPLAY_NAMES: Record<AppId, string> = {
   tasks: "NSKTasks",
   collections: "NSKCollections",
   tracker: "NSKTracker",
+  events: "NSKEvents",
 };
 
 export function getAppDisplayName(id: AppId): string {
