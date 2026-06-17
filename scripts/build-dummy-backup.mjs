@@ -4,6 +4,8 @@
  * Usage: `node scripts/build-dummy-backup.mjs`
  * Output: `public/demo/nosheetkit-dummy-data.zip`
  *
+ * Includes 8 JSON files: loans, dates, links, domains, tasks, collections, tracker, events.
+ *
  * Restore: Apps → Settings → Data management → Restore from file (guest or Google session),
  * or the guest header restore control when local data is empty.
  */
@@ -22,6 +24,13 @@ const T1 = "2026-01-12T14:30:00.000Z";
 
 const spaceWork = "c0ffee00-0000-4000-8000-000000000001";
 const spacePersonal = "c0ffee00-0000-4000-8000-000000000002";
+const spaceEventParty = "c0ffee00-0000-4000-8000-000000000011";
+const spaceEventOffsite = "c0ffee00-0000-4000-8000-000000000012";
+
+const eventParty = "f0000001-0000-4000-8000-000000000001";
+const eventOffsite = "f0000002-0000-4000-8000-000000000002";
+const familyGarcia = "f1000001-0000-4000-8000-000000000001";
+const familyKim = "f1000002-0000-4000-8000-000000000002";
 
 const colGames = "dddd0001-0000-4000-8000-000000000001";
 const colBooks = "dddd0002-0000-4000-8000-000000000002";
@@ -254,6 +263,22 @@ const tasks = {
       created_at: T0,
       updated_at: T0,
     },
+    {
+      id: spaceEventParty,
+      name: "Summer backyard party",
+      visibility: "embedded",
+      order: 2,
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: spaceEventOffsite,
+      name: "Team offsite",
+      visibility: "embedded",
+      order: 3,
+      created_at: T0,
+      updated_at: T0,
+    },
   ],
   tasks: [
     {
@@ -320,6 +345,76 @@ const tasks = {
       order: 1,
       created_at: T0,
       updated_at: T0,
+      comments: [],
+    },
+    {
+      id: "t0000006-0000-4000-8000-000000000006",
+      space_id: spaceEventParty,
+      title: "Book venue deposit",
+      due_date: "2026-01-24",
+      status: "todo",
+      archived: false,
+      order: 0,
+      created_at: T0,
+      updated_at: T0,
+      comments: [],
+    },
+    {
+      id: "t0000007-0000-4000-8000-000000000007",
+      space_id: spaceEventParty,
+      title: "Send invitations",
+      due_date: "2026-02-01",
+      status: "in_progress",
+      archived: false,
+      order: 1,
+      created_at: T0,
+      updated_at: T1,
+      comments: [],
+    },
+    {
+      id: "t0000008-0000-4000-8000-000000000008",
+      space_id: spaceEventParty,
+      title: "Order cake",
+      status: "done",
+      archived: false,
+      order: 0,
+      created_at: T0,
+      updated_at: T1,
+      comments: [],
+    },
+    {
+      id: "t0000009-0000-4000-8000-000000000009",
+      space_id: spaceEventOffsite,
+      title: "Confirm catering headcount",
+      due_date: "2026-01-28",
+      status: "todo",
+      archived: false,
+      order: 0,
+      created_at: T0,
+      updated_at: T0,
+      comments: [],
+    },
+    {
+      id: "t0000010-0000-4000-8000-000000000010",
+      space_id: spaceEventOffsite,
+      title: "Book travel for speakers",
+      due_date: "2026-02-05",
+      status: "in_progress",
+      archived: false,
+      order: 1,
+      created_at: T0,
+      updated_at: T0,
+      comments: [],
+    },
+    {
+      id: "t0000011-0000-4000-8000-000000000011",
+      space_id: spaceEventOffsite,
+      title: "Print name badges",
+      status: "done",
+      archived: false,
+      order: 0,
+      created_at: T0,
+      updated_at: T1,
       comments: [],
     },
   ],
@@ -526,6 +621,201 @@ const tracker = {
   ],
 };
 
+const events = {
+  version: 1,
+  last_google_sync_at: null,
+  events: [
+    {
+      id: eventParty,
+      name: "Summer backyard party",
+      tasks_space_id: spaceEventParty,
+      start_date: "2026-06-14",
+      start_time: "17:00",
+      location: "Backyard — 42 Oak Lane",
+      order: 0,
+      created_at: T0,
+      updated_at: T1,
+    },
+    {
+      id: eventOffsite,
+      name: "Team offsite",
+      tasks_space_id: spaceEventOffsite,
+      start_date: "2026-03-05",
+      location: "Lakeside retreat center",
+      order: 1,
+      created_at: T0,
+      updated_at: T0,
+    },
+  ],
+  families: [
+    {
+      id: familyGarcia,
+      event_id: eventParty,
+      name: "García family",
+      invitation_sent: true,
+      rsvp_status: "confirmed",
+      order: 0,
+      created_at: T0,
+      updated_at: T1,
+    },
+    {
+      id: familyKim,
+      event_id: eventParty,
+      name: "Kim family",
+      invitation_sent: true,
+      rsvp_status: "pending",
+      order: 1,
+      created_at: T0,
+      updated_at: T0,
+    },
+  ],
+  guests: [
+    {
+      id: "g0000001-0000-4000-8000-000000000001",
+      event_id: eventParty,
+      family_id: familyGarcia,
+      name: "Ana",
+      last_name: "García",
+      email: "ana.garcia@example.com",
+      phone: "+1 555 0101",
+      dietary_restrictions: "Vegetarian",
+      is_kid: false,
+      invitation_sent: true,
+      rsvp_status: "confirmed",
+      order: 0,
+      created_at: T0,
+      updated_at: T1,
+    },
+    {
+      id: "g0000002-0000-4000-8000-000000000002",
+      event_id: eventParty,
+      family_id: familyGarcia,
+      name: "Luis",
+      last_name: "García",
+      is_kid: true,
+      invitation_sent: true,
+      rsvp_status: "confirmed",
+      order: 1,
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: "g0000003-0000-4000-8000-000000000003",
+      event_id: eventParty,
+      family_id: familyKim,
+      name: "Min",
+      last_name: "Kim",
+      email: "min.kim@example.com",
+      is_kid: false,
+      invitation_sent: true,
+      rsvp_status: "pending",
+      order: 2,
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: "g0000004-0000-4000-8000-000000000004",
+      event_id: eventParty,
+      family_id: familyKim,
+      name: "Sora",
+      last_name: "Kim",
+      is_kid: true,
+      invitation_sent: false,
+      rsvp_status: "pending",
+      order: 3,
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: "g0000005-0000-4000-8000-000000000005",
+      event_id: eventParty,
+      name: "Jordan",
+      last_name: "Lee",
+      email: "jordan@example.com",
+      is_kid: false,
+      invitation_sent: true,
+      rsvp_status: "declined",
+      order: 4,
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: "g0000006-0000-4000-8000-000000000006",
+      event_id: eventOffsite,
+      name: "Taylor",
+      last_name: "Nguyen",
+      email: "taylor@example.com",
+      is_kid: false,
+      invitation_sent: true,
+      rsvp_status: "confirmed",
+      order: 0,
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: "g0000007-0000-4000-8000-000000000007",
+      event_id: eventOffsite,
+      name: "Riley",
+      last_name: "Patel",
+      is_kid: false,
+      invitation_sent: false,
+      rsvp_status: "pending",
+      order: 1,
+      created_at: T0,
+      updated_at: T0,
+    },
+  ],
+  expenses: [
+    {
+      id: "x0000001-0000-4000-8000-000000000001",
+      event_id: eventParty,
+      name: "Venue rental",
+      total_amount: "1200",
+      currency: "USD",
+      payments: [
+        { id: "xp000001-0000-4000-8000-000000000001", amount: "400", date: "2026-01-05", note: "Deposit" },
+        { id: "xp000002-0000-4000-8000-000000000002", amount: "200", date: "2026-01-15" },
+      ],
+      order: 0,
+      created_at: T0,
+      updated_at: T1,
+    },
+    {
+      id: "x0000002-0000-4000-8000-000000000002",
+      event_id: eventParty,
+      name: "Catering",
+      total_amount: "850",
+      currency: "EUR",
+      payments: [{ id: "xp000003-0000-4000-8000-000000000003", amount: "300", date: "2026-01-10" }],
+      order: 1,
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: "x0000003-0000-4000-8000-000000000003",
+      event_id: eventOffsite,
+      name: "Retreat lodging",
+      total_amount: "2400",
+      currency: "USD",
+      payments: [{ id: "xp000004-0000-4000-8000-000000000004", amount: "2400", date: "2025-12-20" }],
+      order: 0,
+      created_at: T0,
+      updated_at: T0,
+    },
+    {
+      id: "x0000004-0000-4000-8000-000000000004",
+      event_id: eventOffsite,
+      name: "Shuttle service",
+      total_amount: "450",
+      currency: "USD",
+      payments: [],
+      order: 1,
+      created_at: T0,
+      updated_at: T0,
+    },
+  ],
+};
+
 function pretty(obj) {
   return `${JSON.stringify(obj, null, 2)}\n`;
 }
@@ -538,6 +828,7 @@ zip.file("domains.json", pretty(domains));
 zip.file("tasks.json", pretty(tasks));
 zip.file("collections.json", pretty(collections));
 zip.file("tracker.json", pretty(tracker));
+zip.file("events.json", pretty(events));
 
 const buf = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 fs.mkdirSync(outDir, { recursive: true });

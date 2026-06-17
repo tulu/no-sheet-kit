@@ -15,6 +15,11 @@ export type SolutionPageCopy = {
 
 export type SolutionsMessages = {
   nav: { allSolutions: string };
+  index: {
+    h1: string;
+    subtitle: string;
+    intro: string;
+  };
   pages: Record<AppId, SolutionPageCopy>;
   imagePlaceholderTitle: string;
   imagePlaceholderHint: string;
@@ -191,6 +196,32 @@ const enPages: Record<AppId, SolutionPageCopy> = {
       ],
     },
     ctaOpen: "Open NSKTracker",
+    ctaDocs: "Read documentation",
+    ctaLogin: "Get started free",
+    relatedTitle: "More focused mini-apps",
+    learnMore: "Learn more about this app",
+  },
+  events: {
+    h1: "Personal event planner in your browser",
+    subtitle: "Guests, tasks, and expenses—private, no spreadsheet.",
+    intent:
+      "Planning a party, wedding, or reunion? NSKEvents keeps guest lists with families, a simple task kanban, and expense tracking with partial payments—all on your device.",
+    benefits: [
+      "Events sidebar with optional date, time, and location",
+      "Info dashboard with RSVP, invitations, tasks, and expenses by currency",
+      "Guest lists with families, filters, and card or table views",
+      "Export filtered guest lists to Excel with event name, date, and location",
+      "Tasks powered by NSKTasks (kanban, list, calendar) plus multi-currency expenses with partial payments",
+    ],
+    vsAlternatives: {
+      title: "Why not a spreadsheet or a heavy planning app?",
+      items: [
+        "Unlike spreadsheet templates, guests, tasks, and expenses are structured—not fragile rows",
+        "Unlike subscription event apps, there is no monthly fee and no vendor database of your guests",
+        "Unlike paper lists, invitation status and expense balances stay in sync as you edit",
+      ],
+    },
+    ctaOpen: "Open NSKEvents",
     ctaDocs: "Read documentation",
     ctaLogin: "Get started free",
     relatedTitle: "More focused mini-apps",
@@ -374,6 +405,32 @@ const esPages: Record<AppId, SolutionPageCopy> = {
     relatedTitle: "Más mini-apps enfocadas",
     learnMore: "Más sobre esta app",
   },
+  events: {
+    h1: "Planificador de eventos personales en el navegador",
+    subtitle: "Invitados, tareas y gastos—privado, sin hoja de cálculo.",
+    intent:
+      "¿Organizas una fiesta, boda o reunión? NSKEvents reúne listas de invitados con familias, un kanban de tareas sencillo y gastos con pagos parciales—todo en tu dispositivo.",
+    benefits: [
+      "Barra lateral de eventos con fecha, hora y ubicación opcionales",
+      "Panel de información con confirmación, invitaciones, tareas y gastos por moneda",
+      "Listas de invitados con familias, filtros y vista en tarjetas o tabla",
+      "Exporta listas filtradas de invitados a Excel con nombre, fecha y lugar del evento",
+      "Tareas con NSKTasks (kanban, lista, calendario) y gastos multi-moneda con pagos parciales",
+    ],
+    vsAlternatives: {
+      title: "¿Por qué no una hoja de cálculo o una app pesada de planificación?",
+      items: [
+        "A diferencia de plantillas, invitados, tareas y gastos son campos estructurados",
+        "A diferencia de apps de pago, no hay suscripción ni base de datos del proveedor con tus invitados",
+        "A diferencia de listas en papel, el estado de invitaciones y saldos se mantienen al editar",
+      ],
+    },
+    ctaOpen: "Abrir NSKEvents",
+    ctaDocs: "Ver documentación",
+    ctaLogin: "Empezar gratis",
+    relatedTitle: "Más mini-apps enfocadas",
+    learnMore: "Más sobre esta app",
+  },
 };
 
 const ptPages: Record<AppId, SolutionPageCopy> = {
@@ -552,10 +609,41 @@ const ptPages: Record<AppId, SolutionPageCopy> = {
     relatedTitle: "Mais mini-apps focadas",
     learnMore: "Saiba mais sobre este app",
   },
+  events: {
+    h1: "Planejador de eventos pessoais no navegador",
+    subtitle: "Convidados, tarefas e despesas—privado, sem planilha.",
+    intent:
+      "Organizando uma festa, casamento ou reunião? O NSKEvents reúne listas de convidados com famílias, um kanban de tarefas simples e despesas com pagamentos parciais—tudo no seu dispositivo.",
+    benefits: [
+      "Barra lateral de eventos com data, hora e local opcionais",
+      "Painel de informações com confirmação, convites, tarefas e despesas por moeda",
+      "Listas de convidados com famílias, filtros e vista em cartões ou tabela",
+      "Exporte listas filtradas de convidados para Excel com nome, data e local do evento",
+      "Tarefas com NSKTasks (kanban, lista, calendário) e despesas multi-moeda com pagamentos parciais",
+    ],
+    vsAlternatives: {
+      title: "Por que não planilha ou app pesado de planejamento?",
+      items: [
+        "Diferente de modelos, convidados, tarefas e despesas são campos estruturados",
+        "Diferente de apps pagos, não há assinatura nem base do fornecedor com seus convidados",
+        "Diferente de listas em papel, status de convites e saldos ficam sincronizados ao editar",
+      ],
+    },
+    ctaOpen: "Abrir NSKEvents",
+    ctaDocs: "Ver documentação",
+    ctaLogin: "Começar grátis",
+    relatedTitle: "Mais mini-apps focadas",
+    learnMore: "Saiba mais sobre este app",
+  },
 };
 
 export const solutionsMessagesEn: SolutionsMessages = {
   nav: { allSolutions: "All solutions" },
+  index: {
+    h1: "Focused mini-apps for everyday tracking",
+    subtitle: "Private browser tools—no spreadsheet, no subscription.",
+    intro: "Each page explains one NoSheetKit app and who it is for. Pick what you need and open it in your browser.",
+  },
   pages: enPages,
   imagePlaceholderTitle: "Screenshot placeholder",
   imagePlaceholderHint:
@@ -564,6 +652,11 @@ export const solutionsMessagesEn: SolutionsMessages = {
 
 export const solutionsMessagesEs: SolutionsMessages = {
   nav: { allSolutions: "Todas las soluciones" },
+  index: {
+    h1: "Mini-apps enfocadas para el día a día",
+    subtitle: "Herramientas privadas en el navegador—sin hoja de cálculo ni suscripción.",
+    intro: "Cada página explica una app de NoSheetKit y para quién es. Elige lo que necesitas y ábrela en el navegador.",
+  },
   pages: esPages,
   imagePlaceholderTitle: "Captura pendiente",
   imagePlaceholderHint:
@@ -572,6 +665,11 @@ export const solutionsMessagesEs: SolutionsMessages = {
 
 export const solutionsMessagesPt: SolutionsMessages = {
   nav: { allSolutions: "Todas as soluções" },
+  index: {
+    h1: "Mini-apps focadas para o dia a dia",
+    subtitle: "Ferramentas privadas no navegador—sem planilha nem assinatura.",
+    intro: "Cada página explica um app do NoSheetKit e para quem ele serve. Escolha o que precisa e abra no navegador.",
+  },
   pages: ptPages,
   imagePlaceholderTitle: "Captura pendente",
   imagePlaceholderHint:

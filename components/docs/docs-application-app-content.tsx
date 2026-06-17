@@ -7,6 +7,7 @@ import type { AppId } from "@/lib/apps/catalog";
 import { getAppHref } from "@/lib/apps/catalog";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { getSolutionHref } from "@/lib/seo/site-indexing";
+import { hasApplicationScreenshot } from "@/lib/seo/app-solutions";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +19,7 @@ export function DocsApplicationAppContent({ appId }: { appId: AppId }) {
   const href = getAppHref(appId);
   const solutionHref = getSolutionHref(appId);
   const learnMore = t.solutions.pages[appId].learnMore;
-  const [imageFailed, setImageFailed] = useState(false);
+  const [imageFailed, setImageFailed] = useState(() => !hasApplicationScreenshot(appId));
   const src = `${SCREENSHOT_PUBLIC_PATH}/${appId}.png`;
 
   return (

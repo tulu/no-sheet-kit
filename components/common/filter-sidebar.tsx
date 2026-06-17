@@ -18,6 +18,8 @@ export type FilterSidebarTone = "default" | "destructive" | "accent";
 export type FilterSidebarItem<T extends string = string> = {
   id: T;
   label: string;
+  /** Optional second line (e.g. event date/time in sidebar). */
+  subtitle?: string;
   icon: LucideIcon;
   count: number;
   /** When true, no trailing count is shown (e.g. dashboard overview). */
@@ -107,7 +109,14 @@ function FilterSidebarNavRow<T extends string>({
         )}
         aria-hidden
       />
-      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate">{item.label}</span>
+        {item.subtitle ? (
+          <span className="block truncate text-xs font-normal text-muted-foreground">
+            {item.subtitle}
+          </span>
+        ) : null}
+      </span>
       {item.hideCount ? null : (
         <span
           className={cn(

@@ -33,6 +33,10 @@ type AppListToolbarProps<TView extends string> = {
   search?: AppListToolbarSearchProps;
   /** Rendered after the search field in the leading cluster (e.g. toggles). */
   searchTrailing?: ReactNode;
+  /** Rendered immediately before the primary add button. */
+  addButtonLeading?: ReactNode;
+  /** Rendered after the primary add button (e.g. a second action). */
+  extraActions?: ReactNode;
 };
 
 export function AppListToolbar<TView extends string>({
@@ -45,6 +49,8 @@ export function AppListToolbar<TView extends string>({
   search,
   searchTrailing,
   showAddButton = true,
+  addButtonLeading,
+  extraActions,
 }: AppListToolbarProps<TView>) {
   return (
     <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
@@ -96,7 +102,9 @@ export function AppListToolbar<TView extends string>({
             ))}
           </div>
         ) : null}
+        {addButtonLeading}
         {showAddButton ? <Button onClick={onAdd}>{addButtonLabel}</Button> : null}
+        {extraActions}
       </div>
     </div>
   );

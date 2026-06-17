@@ -15,6 +15,7 @@ import {
   Layers,
   Link2,
   ListTodo,
+  PartyPopper,
   Rocket,
   Sparkles,
   type LucideIcon,
@@ -42,6 +43,7 @@ const APP_DOC_ICONS: Record<AppId, LucideIcon> = {
   tasks: ListTodo,
   collections: Layers,
   tracker: Activity,
+  events: PartyPopper,
 };
 
 export type DocNavId =

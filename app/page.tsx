@@ -16,6 +16,7 @@ const homeKeywords = [
   "bookmark manager",
   "task tracker",
   "collection tracker",
+  "event planner",
   "browser mini-apps",
   "Google Drive backup",
   "Google Calendar",

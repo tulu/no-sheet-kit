@@ -4,6 +4,8 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { useLegalPageHref } from "@/components/legal/use-legal-page-href";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { getSolutionHref } from "@/lib/seo/site-indexing";
+
 function LandingLegalLinks() {
   const { t } = useI18n();
   const privacyHref = useLegalPageHref("/privacy");
@@ -27,6 +29,20 @@ function LandingLegalLinks() {
   );
 }
 
+function SolutionsFooterLink() {
+  const { t } = useI18n();
+  if (!getSolutionHref("dates")) return null;
+
+  return (
+    <Link
+      href="/solutions"
+      className="text-sm text-muted-foreground no-underline transition-colors duration-150 hover:text-foreground"
+    >
+      {t.landing.footer.solutionsTitle}
+    </Link>
+  );
+}
+
 export function LandingFooter() {
   const { t } = useI18n();
 
@@ -46,6 +62,7 @@ export function LandingFooter() {
         >
           {t.common.docs}
         </Link>
+        <SolutionsFooterLink />
         <a
           href="https://github.com/tulu/no-sheet-kit"
           target="_blank"

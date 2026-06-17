@@ -5,12 +5,14 @@ import { markPendingDriveSync } from "@/lib/storage/pending-drive-sync";
 import { buildNskListAppStorageKey } from "@/lib/storage/session-storage-keys";
 import {
   createEmptyNSKTasksSchema,
+  isSpaceVisibility,
   isTaskStatus,
   NSKTASKS_SCHEMA_VERSION,
   type NSKSpace,
   type NSKTask,
   type NSKTaskComment,
   type NSKTasksSchema,
+  type SpaceVisibility,
   type TaskStatus,
 } from "./schema";
 
@@ -84,10 +86,13 @@ function normalizeSpaces(raw: unknown): NSKSpace[] {
     if (typeof s.name !== "string" || s.name.trim().length === 0) return acc;
     const createdAt = typeof s.created_at === "string" ? s.created_at : now;
     const updatedAt = typeof s.updated_at === "string" ? s.updated_at : createdAt;
+    const visibility: SpaceVisibility =
+      typeof s.visibility === "string" && isSpaceVisibility(s.visibility) ? s.visibility : "user";
     acc.push({
       id: typeof s.id === "string" && s.id.trim() ? s.id : crypto.randomUUID(),
       name: s.name.trim(),
       order: typeof s.order === "number" && Number.isFinite(s.order) ? s.order : acc.length,
+      visibility,
       created_at: createdAt,
       updated_at: updatedAt,
     });
