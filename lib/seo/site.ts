@@ -1,5 +1,5 @@
-/** Official production origin for canonical URLs, sitemap, Open Graph, and JSON-LD. */
-export const CANONICAL_PRODUCTION_ORIGIN = "https://www.nosheetkit.com";
+/** Official production origin for canonical URLs, Open Graph, and metadata fallback. */
+export const CANONICAL_PRODUCTION_ORIGIN = "https://open.nosheetkit.com";
 
 /** Logo in `public/` — used for Open Graph, Twitter, and JSON-LD. */
 export const siteLogoPath = "/nsk-iso.svg";
@@ -9,12 +9,14 @@ export const siteLogoPngPath = "/nsk-iso.png";
 
 export const siteName = "NoSheetKit";
 
-/** Use www on the official domain so canonicals match https://www.nosheetkit.com */
-function applyCanonicalWwwHost(url: URL): URL {
+const CANONICAL_HOST = "open.nosheetkit.com";
+
+/** Map legacy apex/www hosts to the current production host. */
+function applyCanonicalProductionHost(url: URL): URL {
   const host = url.hostname.toLowerCase();
-  if (host === "nosheetkit.com") {
+  if (host === "nosheetkit.com" || host === "www.nosheetkit.com") {
     const canonical = new URL(url.href);
-    canonical.hostname = "www.nosheetkit.com";
+    canonical.hostname = CANONICAL_HOST;
     return canonical;
   }
   return url;
@@ -26,16 +28,16 @@ export function getMetadataBase(): URL {
     process.env.NEXT_PUBLIC_SITE_URL?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (fromEnv) {
     const normalized = fromEnv.replace(/\/$/, "");
-    return applyCanonicalWwwHost(new URL(`${normalized}/`));
+    return applyCanonicalProductionHost(new URL(`${normalized}/`));
   }
   if (process.env.VERCEL_URL) {
     const host = process.env.VERCEL_URL.replace(/^https?:\/\//, "");
-    return applyCanonicalWwwHost(new URL(`https://${host}/`));
+    return applyCanonicalProductionHost(new URL(`https://${host}/`));
   }
   return new URL("http://localhost:3000/");
 }
 
-/** Origin string without trailing slash (e.g. https://www.nosheetkit.com). */
+/** Origin string without trailing slash (e.g. https://open.nosheetkit.com). */
 export function getCanonicalOrigin(): string {
   return getMetadataBase().origin.replace(/\/$/, "");
 }

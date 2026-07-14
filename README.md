@@ -73,7 +73,7 @@ To enable **Continue with Google**, create an OAuth 2.0 **Web application** clie
 | --- | --- |
 | `GOOGLE_CLIENT_ID` | OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | OAuth client secret |
-| `NEXT_PUBLIC_APP_URL` | **Required in production** when Google sign-in is enabled: canonical site origin (no trailing slash), e.g. `https://your-domain.com`. Used to build the OAuth redirect URI `…/api/auth/google/callback`. In development, if unset, the app derives the callback from request headers (typical for `pnpm dev`). |
+| `NEXT_PUBLIC_APP_URL` | **Required in production** when Google sign-in is enabled: canonical site origin (no trailing slash), e.g. `https://open.nosheetkit.com`. Used to build the OAuth redirect URI `…/api/auth/google/callback`. In development, if unset, the app derives the callback from request headers (typical for `pnpm dev`). |
 
 Authorized redirect URI in Google Cloud must match exactly: `{NEXT_PUBLIC_APP_URL}` in production, or your dev origin when testing locally without that variable.
 
@@ -88,11 +88,11 @@ Calendar uses `calendar.app.created` for event/calendar operations and `calendar
 
 **Behaviour:** After Google login, the app pulls your latest backup ZIP from Drive **app data** (hidden app folder) when present and restores it into browser storage for that Google account. **Save** in the apps header uploads a fresh ZIP and updates each app’s `last_google_sync_at`. Sign-out warns if changes were not saved yet. OAuth **refresh** tokens are kept in an **httpOnly** encrypted cookie; profile metadata for each Google `sub` can be cached in `localStorage` under `nsk_google_profile_*`.
 
-### SEO and canonical URLs (official deployment)
+### SEO and canonical URLs
 
-Set `NEXT_PUBLIC_SITE_URL` (or `NEXT_PUBLIC_APP_URL`) to your public origin **with `www`**, e.g. `https://www.nosheetkit.com`. Canonical tags, `sitemap.xml`, Open Graph, and JSON-LD all use that base. If the env value uses the apex host `nosheetkit.com`, the app normalizes it to `www.nosheetkit.com` for SEO output.
+Set `NEXT_PUBLIC_SITE_URL` (or `NEXT_PUBLIC_APP_URL`) to your public origin, e.g. `https://open.nosheetkit.com`. Canonical tags, Open Graph, and page metadata use that base. Legacy apex (`nosheetkit.com`) and `www.nosheetkit.com` values are normalized to `open.nosheetkit.com`.
 
-Enable public indexing only on the canonical site: `NEXT_PUBLIC_SITE_INDEXING_ENABLED=true`. Leave it unset on forks or private deployments.
+Crawling is hard-disabled: `robots.txt` disallows `/`, pages send `noindex, nofollow`, and the sitemap stays empty. Marketing titles and descriptions still ship; `NEXT_PUBLIC_SITE_INDEXING_ENABLED` is unused.
 
 ### Optional analytics
 

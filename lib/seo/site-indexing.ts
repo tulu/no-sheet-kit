@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
 import type { AppId } from "@/lib/apps/catalog";
 import { getSolutionPathname } from "@/lib/seo/app-solutions";
-import { PUBLIC_SITEMAP_PATHS } from "@/lib/seo/sitemap-paths";
 
-/** When true, public marketing/docs/solutions are indexable (official deployment only). */
-export function isSiteIndexingEnabled(): boolean {
-  const raw = process.env.NEXT_PUBLIC_SITE_INDEXING_ENABLED?.trim().toLowerCase();
-  return raw === "true" || raw === "1";
-}
-
+/** Site-wide crawl policy: never index. Page titles/OG/copy still ship. */
 export const siteRobotsWhenIndexingDisabled: Metadata["robots"] = {
   index: false,
   follow: false,
@@ -16,27 +10,25 @@ export const siteRobotsWhenIndexingDisabled: Metadata["robots"] = {
 };
 
 export function getSiteRobotsMetadata(): Metadata["robots"] {
-  return isSiteIndexingEnabled()
-    ? { index: true, follow: true }
-    : siteRobotsWhenIndexingDisabled;
+  return siteRobotsWhenIndexingDisabled;
 }
 
-/** Public URLs for sitemap.xml — empty when indexing is disabled. */
+/** No public sitemap while indexing is hard-disabled. */
 export function getPublicSitemapPaths(): string[] {
-  return isSiteIndexingEnabled() ? PUBLIC_SITEMAP_PATHS : [];
+  return [];
 }
 
-/** Marketing landing href, or null when indexing disabled. */
-export function getSolutionHref(appId: AppId): string | null {
-  if (!isSiteIndexingEnabled()) return null;
+/** Marketing landing href for an app solution page. */
+export function getSolutionHref(appId: AppId): string {
   return getSolutionPathname(appId);
 }
 
+/** JSON-LD is off while the site is not indexable. */
 export function shouldRenderSeoJsonLd(): boolean {
-  return isSiteIndexingEnabled();
+  return false;
 }
 
-/** Whether /solutions routes should be served (404 when false). */
+/** Solution marketing pages stay available to users. */
 export function areSolutionPagesEnabled(): boolean {
-  return isSiteIndexingEnabled();
+  return true;
 }
