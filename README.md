@@ -100,7 +100,7 @@ If you set `NEXT_PUBLIC_GA_MEASUREMENT_ID` (a Google Analytics 4 measurement ID)
 
 ## Contributing
 
-Issues and pull requests are welcome. If you change user-visible copy, keep the tone **plain, honest, and product-first**—the same voice as the in-app experience.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, conventions, and the pull request process. Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
 
 ## License
 
